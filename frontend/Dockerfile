@@ -1,4 +1,5 @@
-FROM node:24-alpine AS build
+# Frontend assets are platform-independent; keep Node/Vite off QEMU.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
