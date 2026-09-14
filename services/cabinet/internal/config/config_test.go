@@ -136,3 +136,30 @@ func TestDatabaseURL(t *testing.T) {
 		t.Fatal("migration uses wrong role")
 	}
 }
+
+func TestCatalogCommandConfig(t *testing.T) {
+	t.Setenv("CABINET_DATABASE_OWNER_PASSWORD", "test-owner")
+	t.Setenv("CABINET_DATABASE_APP_PASSWORD", "")
+	t.Setenv("CABINET_CATALOG_MIN_CITIES", "2")
+	c, err := Load("../../config.yaml", "sync-cities")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.Catalog.MinCities != 2 {
+		t.Fatal("catalog env override ignored")
+	}
+	t.Setenv("CABINET_CATALOG_CITIES_URL", "http://example.com/cities.zip")
+	if _, err := Load("../../config.yaml", "sync-cities"); err == nil {
+		t.Fatal("insecure source accepted")
+	}
+	t.Setenv("CABINET_CATALOG_CITIES_URL", "https://example.com/cities.zip")
+	t.Setenv("CABINET_CATALOG_MAX_CITIES", "1")
+	if _, err := Load("../../config.yaml", "sync-cities"); err == nil {
+		t.Fatal("invalid count limits accepted")
+	}
+	t.Setenv("CABINET_CATALOG_MAX_CITIES", "10")
+	t.Setenv("CABINET_DATABASE_OWNER_PASSWORD", "")
+	if _, err := Load("../../config.yaml", "sync-cities"); err == nil {
+		t.Fatal("missing owner password accepted")
+	}
+}

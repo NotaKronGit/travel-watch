@@ -10,7 +10,7 @@ import (
 )
 
 func (c Config) Validate(command string) error {
-	if command != "serve" && command != "migrate" {
+	if command != "serve" && command != "migrate" && command != "sync-cities" {
 		return errors.New("unknown Cabinet command")
 	}
 	d := c.Database
@@ -23,7 +23,7 @@ func (c Config) Validate(command string) error {
 	if command == "serve" && d.AppPassword == "" {
 		return errors.New("database.app_password is required")
 	}
-	if command == "migrate" && d.OwnerPassword == "" {
+	if (command == "migrate" || command == "sync-cities") && d.OwnerPassword == "" {
 		return errors.New("database.owner_password is required")
 	}
 	switch d.SSLMode {
@@ -43,6 +43,19 @@ func (c Config) Validate(command string) error {
 		}
 	}
 	if command == "migrate" {
+		return nil
+	}
+	if command == "sync-cities" {
+		for _, raw := range []string{c.Catalog.CitiesURL, c.Catalog.CountriesURL} {
+			u, err := url.Parse(raw)
+			if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.Fragment != "" {
+				return errors.New("catalog URLs must use HTTPS without credentials or fragments")
+			}
+		}
+		g := c.Catalog
+		if g.HTTPTimeout <= 0 || g.SyncTimeout <= 0 || g.MaxDownloadBytes <= 0 || g.MaxUncompressedBytes <= 0 || g.MinCities < 1 || g.MaxCities < g.MinCities {
+			return errors.New("invalid catalog timeouts or size limits")
+		}
 		return nil
 	}
 	s, a := c.Server, c.Auth
