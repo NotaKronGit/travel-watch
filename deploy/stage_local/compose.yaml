@@ -1,0 +1,73 @@
+name: travel-watch-stage-local
+x-cabinet: &cabinet-image
+  image: travel-watch-cabinet:${IMAGE_TAG:-local}
+  build:
+    context: ../..
+    dockerfile: services/cabinet/Dockerfile
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      CABINET_OWNER_PASSWORD: ${CABINET_OWNER_PASSWORD:?Set CABINET_OWNER_PASSWORD}
+      CABINET_APP_PASSWORD: ${CABINET_APP_PASSWORD:?Set CABINET_APP_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../compose/init-cabinet.sql:/docker-entrypoint-initdb.d/10-cabinet.sql:ro
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d cabinet"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  migrate:
+    <<: *cabinet-image
+    command: [migrate]
+    restart: "no"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      CABINET_OWNER_PASSWORD: ${CABINET_OWNER_PASSWORD:?Set CABINET_OWNER_PASSWORD}
+    networks: [database]
+    depends_on:
+      postgres: { condition: service_healthy }
+  cabinet:
+    <<: *cabinet-image
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      CABINET_APP_PASSWORD: ${CABINET_APP_PASSWORD:?Set CABINET_APP_PASSWORD}
+      CABINET_ADDR: 0.0.0.0:8080
+      CABINET_ORIGIN: http://localhost:${STAGE_LOCAL_PORT:-18080}
+      CABINET_COOKIE_SECURE: "false"
+    networks: [database, application]
+    depends_on:
+      postgres: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  frontend:
+    image: travel-watch-frontend:${IMAGE_TAG:-local}
+    build:
+      context: ../..
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    ports: ["127.0.0.1:${STAGE_LOCAL_PORT:-18080}:8080"]
+    networks: [application]
+    depends_on:
+      cabinet: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+networks:
+  database: { internal: true }
+  application: {}
+volumes:
+  postgres_data:

@@ -1,6 +1,6 @@
 # Архитектура Travel Watch
 
-Статус: предлагаемый ориентир для разработки, а не описание работающей системы. Контракты и детали реализации ещё предстоит спроектировать.
+Статус: общая архитектура остаётся ориентиром. Реализован локальный сценарий авторизации Cabinet и frontend; Search, Collector, Notification и брокеры пока не реализованы.
 
 ## Сервисы и владение данными
 
@@ -39,11 +39,11 @@ RabbitMQ используется для поручений выполнить �
 | Frontend | React, TypeScript, React Admin, Material UI, Vite |
 | API | ConnectRPC и Protobuf |
 | Локальное окружение | Docker Compose |
-| CI/CD | GitHub Actions, образы в GHCR с тегом commit SHA |
+| CI/CD | GitHub Actions, образы в GHCR с тегами commit SHA и dev-latest |
 
 ## Структура репозитория
 
-Каталоги созданы. Пока они содержат только `.gitkeep`, чтобы Git сохранял пустую структуру; при добавлении рабочих файлов эти заглушки можно удалить. `go.mod`, исходный код, Dockerfile и конфигурация окружения ещё не созданы.
+Созданы общий `go.mod`, исходники и миграции Cabinet, Protobuf-контракт и сгенерированные Go/TypeScript-типы, frontend и Compose для PostgreSQL. Пустые каталоги будущих компонентов содержат `.gitkeep`. Добавлены Dockerfile Cabinet/frontend, stage_local в Compose и GitHub Actions для проверок и сборки образов; удалённый деплой не настроен.
 
 ```text
 services/

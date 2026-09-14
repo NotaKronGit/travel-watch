@@ -1,0 +1,26 @@
+syntax = "proto3";
+package travelwatch.cabinet.v1;
+option go_package = "github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1;cabinetv1";
+
+import "google/protobuf/timestamp.proto";
+
+// AuthService обслуживает только собственную учётную запись пользователя.
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+}
+message User {
+  string id = 1;
+  string email = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+message RegisterRequest { string email = 1; string password = 2; }
+message RegisterResponse { User user = 1; }
+message LoginRequest { string email = 1; string password = 2; }
+message LoginResponse { User user = 1; }
+message LogoutRequest {}
+message LogoutResponse {}
+message GetCurrentUserRequest {}
+message GetCurrentUserResponse { User user = 1; }
