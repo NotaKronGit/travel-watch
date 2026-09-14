@@ -10,7 +10,7 @@ Go 1.26.2, Node.js 24 с npm, Docker с Compose v2 и запущенным daemo
 
 ## Первый запуск
 
-Скопируйте `.env.example` в `.env`, если своего файла ещё нет. Задайте три разных локальных пароля: POSTGRES_PASSWORD, CABINET_OWNER_PASSWORD и CABINET_APP_PASSWORD. `.env` исключён из Git.
+Скопируйте `.env.example` в `.env`, если своего файла ещё нет. Задайте три разных локальных пароля: POSTGRES_PASSWORD, CABINET_DATABASE_OWNER_PASSWORD и CABINET_DATABASE_APP_PASSWORD. `.env` исключён из Git.
 
 ```sh
 make db-up
@@ -32,7 +32,9 @@ make frontend
 
 PostgreSQL слушает только `127.0.0.1:55432`, Cabinet — `127.0.0.1:8080`. Vite проксирует API. Используйте именно `localhost:5173`: допустимый Origin задан в `.env`.
 
-`CABINET_COOKIE_SECURE=false` допустим только для локального HTTP. По умолчанию в коде Secure включён. Конфигурация публичного развёртывания ещё не подготовлена.
+Настройки Cabinet находятся в [services/cabinet/config.yaml](../../services/cabinet/config.yaml), переменные окружения имеют приоритет. Порядок загрузки, единые имена переменных и настройка Docker описаны в [конфигурации Cabinet](configuration.md).
+
+`CABINET_AUTH_COOKIE_SECURE=false` допустим только для локального HTTP; это также значение в поставляемом локальном YAML. Конфигурация публичного развёртывания ещё не подготовлена.
 
 ## Данные и миграции
 

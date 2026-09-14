@@ -60,8 +60,8 @@ jobs:
       - name: Validate Compose configurations
         env:
           POSTGRES_PASSWORD: ci-postgres
-          CABINET_OWNER_PASSWORD: ci-owner
-          CABINET_APP_PASSWORD: ci-app
+          CABINET_DATABASE_OWNER_PASSWORD: ci-owner
+          CABINET_DATABASE_APP_PASSWORD: ci-app
         run: |
           docker compose -f deploy/stage_local/compose.yaml config --quiet
           docker compose -f deploy/dev/compose.yaml config --quiet

@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/base64"
 	"errors"
 	"log/slog"
@@ -16,27 +15,36 @@ import (
 
 	"connectrpc.com/connect"
 	cabinetv1 "github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1"
-	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const sessionTTL = 7 * 24 * time.Hour
-
 var emailPattern = regexp.MustCompile(`^[a-z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$`)
 
+type Repository interface {
+	FindUserByEmail(context.Context, string) (storage.User, error)
+	FindUserBySession(context.Context, []byte) (storage.User, error)
+	RegisterWithSession(context.Context, string, string, storage.Session, []byte) (storage.User, error)
+	ReplaceSession(context.Context, string, storage.Session, []byte) error
+	DeleteSession(context.Context, []byte) error
+	Ping(context.Context) error
+}
+
 type Service struct {
-	db         *sql.DB
+	store      Repository
 	secure     bool
 	cookieName string
 	dummyHash  string
+	sessionTTL time.Duration
 }
 
-func NewService(db *sql.DB, secure bool) *Service {
+func NewService(store Repository, cfg config.Auth) *Service {
 	name := "tw_session"
-	if secure {
+	if cfg.CookieSecure {
 		name = "__Host-tw_session"
 	}
-	return &Service{db: db, secure: secure, cookieName: name, dummyHash: hashPassword("dummy-password-for-equal-work")}
+	return &Service{store: store, secure: cfg.CookieSecure, cookieName: name, sessionTTL: cfg.SessionTTL, dummyHash: hashPassword("dummy-password-for-equal-work")}
 }
 func credentials(email, password string) (string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -50,20 +58,11 @@ func credentials(email, password string) (string, error) {
 }
 func internalError(err error) error {
 	// Не включаем SQL, email, пароль или токен в логи и ответ клиенту.
-	slog.Error("cabinet database operation failed", "error_type", errorKind(err))
+	slog.Error("cabinet database operation failed", "error_type", storage.ErrorKind(err))
 	return connect.NewError(connect.CodeInternal, errors.New("Не удалось выполнить запрос. Попробуйте позже"))
 }
-func errorKind(err error) string {
-	if pg, ok := errors.AsType[*pgconn.PgError](err); ok {
-		return pg.Code
-	}
-	if errors.Is(err, context.DeadlineExceeded) {
-		return "timeout"
-	}
-	return "internal"
-}
 func (s *Service) cookie(token string, expires time.Time) *http.Cookie {
-	return &http.Cookie{Name: s.cookieName, Value: token, Path: "/", HttpOnly: true, Secure: s.secure, SameSite: http.SameSiteStrictMode, Expires: expires, MaxAge: int(sessionTTL.Seconds())}
+	return &http.Cookie{Name: s.cookieName, Value: token, Path: "/", HttpOnly: true, Secure: s.secure, SameSite: http.SameSiteStrictMode, Expires: expires, MaxAge: int(s.sessionTTL.Seconds())}
 }
 func (s *Service) sessionHash(header http.Header) []byte {
 	req := &http.Request{Header: header}
@@ -78,22 +77,12 @@ func (s *Service) sessionHash(header http.Header) []byte {
 	hash := sha256.Sum256(raw)
 	return hash[:]
 }
-func (s *Service) issueSession(ctx context.Context, tx *sql.Tx, userID string, header http.Header) (*http.Cookie, error) {
-	// При повторном входе заменяем только текущую сессию браузера.
-	if old := s.sessionHash(header); old != nil {
-		if _, err := tx.ExecContext(ctx, "DELETE FROM sessions WHERE token_hash=$1", old); err != nil {
-			return nil, err
-		}
-	}
+func (s *Service) newSession() (storage.Session, *http.Cookie) {
 	raw := make([]byte, 32)
 	_, _ = rand.Read(raw)
 	hash := sha256.Sum256(raw)
-	expires := time.Now().UTC().Add(sessionTTL)
-	_, err := tx.ExecContext(ctx, "INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,$3)", hash[:], userID, expires)
-	if err != nil {
-		return nil, err
-	}
-	return s.cookie(base64.RawURLEncoding.EncodeToString(raw), expires), nil
+	expires := time.Now().UTC().Add(s.sessionTTL)
+	return storage.Session{TokenHash: hash[:], ExpiresAt: expires}, s.cookie(base64.RawURLEncoding.EncodeToString(raw), expires)
 }
 func (s *Service) Register(ctx context.Context, req *connect.Request[cabinetv1.RegisterRequest]) (*connect.Response[cabinetv1.RegisterResponse], error) {
 	email, err := credentials(req.Msg.Email, req.Msg.Password)
@@ -101,28 +90,15 @@ func (s *Service) Register(ctx context.Context, req *connect.Request[cabinetv1.R
 		return nil, err
 	}
 	hash := hashPassword(req.Msg.Password)
-	tx, err := s.db.BeginTx(ctx, nil)
+	session, cookie := s.newSession()
+	user, err := s.store.RegisterWithSession(ctx, email, hash, session, s.sessionHash(req.Header()))
+	if errors.Is(err, storage.ErrEmailExists) {
+		return nil, connect.NewError(connect.CodeAlreadyExists, errors.New("Не удалось зарегистрировать аккаунт с этим email"))
+	}
 	if err != nil {
 		return nil, internalError(err)
 	}
-	defer tx.Rollback()
-	var id string
-	var created time.Time
-	err = tx.QueryRowContext(ctx, "INSERT INTO users(email,password_hash) VALUES($1,$2) RETURNING id,created_at", email, hash).Scan(&id, &created)
-	if err != nil {
-		if pg, ok := errors.AsType[*pgconn.PgError](err); ok && pg.Code == "23505" {
-			return nil, connect.NewError(connect.CodeAlreadyExists, errors.New("Не удалось зарегистрировать аккаунт с этим email"))
-		}
-		return nil, internalError(err)
-	}
-	cookie, err := s.issueSession(ctx, tx, id, req.Header())
-	if err != nil {
-		return nil, internalError(err)
-	}
-	if err = tx.Commit(); err != nil {
-		return nil, internalError(err)
-	}
-	res := connect.NewResponse(&cabinetv1.RegisterResponse{User: &cabinetv1.User{Id: id, Email: email, CreatedAt: timestamppb.New(created)}})
+	res := connect.NewResponse(&cabinetv1.RegisterResponse{User: &cabinetv1.User{Id: user.ID, Email: user.Email, CreatedAt: timestamppb.New(user.CreatedAt)}})
 	res.Header().Add("Set-Cookie", cookie.String())
 	return res, nil
 }
@@ -131,10 +107,9 @@ func (s *Service) Login(ctx context.Context, req *connect.Request[cabinetv1.Logi
 	if err != nil {
 		return nil, err
 	}
-	var id, hash string
-	var created time.Time
-	err = s.db.QueryRowContext(ctx, "SELECT id,password_hash,created_at FROM users WHERE email=$1", email).Scan(&id, &hash, &created)
-	missing := errors.Is(err, sql.ErrNoRows)
+	user, err := s.store.FindUserByEmail(ctx, email)
+	hash := user.PasswordHash
+	missing := errors.Is(err, storage.ErrNotFound)
 	if err != nil && !missing {
 		return nil, internalError(err)
 	}
@@ -148,25 +123,17 @@ func (s *Service) Login(ctx context.Context, req *connect.Request[cabinetv1.Logi
 	if missing || !valid {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("Неверный email или пароль"))
 	}
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
+	session, cookie := s.newSession()
+	if err := s.store.ReplaceSession(ctx, user.ID, session, s.sessionHash(req.Header())); err != nil {
 		return nil, internalError(err)
 	}
-	defer tx.Rollback()
-	cookie, err := s.issueSession(ctx, tx, id, req.Header())
-	if err != nil {
-		return nil, internalError(err)
-	}
-	if err = tx.Commit(); err != nil {
-		return nil, internalError(err)
-	}
-	res := connect.NewResponse(&cabinetv1.LoginResponse{User: &cabinetv1.User{Id: id, Email: email, CreatedAt: timestamppb.New(created)}})
+	res := connect.NewResponse(&cabinetv1.LoginResponse{User: &cabinetv1.User{Id: user.ID, Email: user.Email, CreatedAt: timestamppb.New(user.CreatedAt)}})
 	res.Header().Add("Set-Cookie", cookie.String())
 	return res, nil
 }
 func (s *Service) Logout(ctx context.Context, req *connect.Request[cabinetv1.LogoutRequest]) (*connect.Response[cabinetv1.LogoutResponse], error) {
 	if hash := s.sessionHash(req.Header()); hash != nil {
-		if _, err := s.db.ExecContext(ctx, "DELETE FROM sessions WHERE token_hash=$1", hash); err != nil {
+		if err := s.store.DeleteSession(ctx, hash); err != nil {
 			return nil, internalError(err)
 		}
 	}
@@ -182,14 +149,12 @@ func (s *Service) GetCurrentUser(ctx context.Context, req *connect.Request[cabin
 	if hash == nil {
 		return nil, unauth
 	}
-	var id, email string
-	var created time.Time
-	err := s.db.QueryRowContext(ctx, `SELECT u.id,u.email,u.created_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()`, hash).Scan(&id, &email, &created)
-	if errors.Is(err, sql.ErrNoRows) {
+	user, err := s.store.FindUserBySession(ctx, hash)
+	if errors.Is(err, storage.ErrNotFound) {
 		return nil, unauth
 	}
 	if err != nil {
 		return nil, internalError(err)
 	}
-	return connect.NewResponse(&cabinetv1.GetCurrentUserResponse{User: &cabinetv1.User{Id: id, Email: email, CreatedAt: timestamppb.New(created)}}), nil
+	return connect.NewResponse(&cabinetv1.GetCurrentUserResponse{User: &cabinetv1.User{Id: user.ID, Email: user.Email, CreatedAt: timestamppb.New(user.CreatedAt)}}), nil
 }

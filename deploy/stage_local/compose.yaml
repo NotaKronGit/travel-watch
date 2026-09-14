@@ -10,8 +10,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-      CABINET_OWNER_PASSWORD: ${CABINET_OWNER_PASSWORD:?Set CABINET_OWNER_PASSWORD}
-      CABINET_APP_PASSWORD: ${CABINET_APP_PASSWORD:?Set CABINET_APP_PASSWORD}
+      CABINET_DATABASE_OWNER_PASSWORD: ${CABINET_DATABASE_OWNER_PASSWORD:?Set CABINET_DATABASE_OWNER_PASSWORD}
+      CABINET_DATABASE_APP_PASSWORD: ${CABINET_DATABASE_APP_PASSWORD:?Set CABINET_DATABASE_APP_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../compose/init-cabinet.sql:/docker-entrypoint-initdb.d/10-cabinet.sql:ro
@@ -26,9 +26,9 @@ services:
     command: [migrate]
     restart: "no"
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: "5432"
-      CABINET_OWNER_PASSWORD: ${CABINET_OWNER_PASSWORD:?Set CABINET_OWNER_PASSWORD}
+      CABINET_DATABASE_HOST: postgres
+      CABINET_DATABASE_PORT: "5432"
+      CABINET_DATABASE_OWNER_PASSWORD: ${CABINET_DATABASE_OWNER_PASSWORD:?Set CABINET_DATABASE_OWNER_PASSWORD}
     networks: [database]
     depends_on:
       postgres: { condition: service_healthy }
@@ -36,12 +36,12 @@ services:
     <<: *cabinet-image
     restart: unless-stopped
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: "5432"
-      CABINET_APP_PASSWORD: ${CABINET_APP_PASSWORD:?Set CABINET_APP_PASSWORD}
-      CABINET_ADDR: 0.0.0.0:8080
-      CABINET_ORIGIN: http://localhost:${STAGE_LOCAL_PORT:-18080}
-      CABINET_COOKIE_SECURE: "false"
+      CABINET_DATABASE_HOST: postgres
+      CABINET_DATABASE_PORT: "5432"
+      CABINET_DATABASE_APP_PASSWORD: ${CABINET_DATABASE_APP_PASSWORD:?Set CABINET_DATABASE_APP_PASSWORD}
+      CABINET_SERVER_ADDRESS: 0.0.0.0:8080
+      CABINET_SERVER_ORIGIN: http://localhost:${STAGE_LOCAL_PORT:-18080}
+      CABINET_AUTH_COOKIE_SECURE: "false"
     networks: [database, application]
     depends_on:
       postgres: { condition: service_healthy }

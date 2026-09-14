@@ -10,6 +10,7 @@ FROM alpine:3.23
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=build /out/cabinet /usr/local/bin/cabinet
+COPY services/cabinet/config.yaml /app/config.yaml
 USER 10001:10001
 EXPOSE 8080
 ENTRYPOINT ["cabinet"]

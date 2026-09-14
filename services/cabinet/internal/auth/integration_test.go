@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
@@ -20,6 +21,7 @@ import (
 	"connectrpc.com/connect"
 	cabinetv1 "github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1"
 	"github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1/cabinetv1connect"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
@@ -31,7 +33,7 @@ func TestPostgresAuth(t *testing.T) {
 	if err != nil {
 		t.Fatal("integration test requires root .env and make db-up:", err)
 	}
-	port := env["POSTGRES_PORT"]
+	port := env["CABINET_DATABASE_PORT"]
 	if port == "" {
 		port = "55432"
 	}
@@ -53,7 +55,7 @@ func TestPostgresAuth(t *testing.T) {
 		t.Cleanup(func() { db.Close() })
 		return db
 	}
-	owner := open("cabinet_owner", env["CABINET_OWNER_PASSWORD"], "")
+	owner := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], "")
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 	if err := owner.PingContext(ctx); err != nil {
@@ -71,7 +73,7 @@ func TestPostgresAuth(t *testing.T) {
 	if _, err := owner.ExecContext(ctx, "GRANT USAGE ON SCHEMA "+schema+" TO cabinet_app"); err != nil {
 		t.Fatal(err)
 	}
-	migrator := open("cabinet_owner", env["CABINET_OWNER_PASSWORD"], schema)
+	migrator := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], schema)
 	goose.SetBaseFS(migrations.Files)
 	if err := goose.SetDialect("postgres"); err != nil {
 		t.Fatal(err)
@@ -81,11 +83,11 @@ func TestPostgresAuth(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	db := open("cabinet_app", env["CABINET_APP_PASSWORD"], schema)
+	db := open("cabinet_app", env["CABINET_DATABASE_APP_PASSWORD"], schema)
 	if _, err := db.ExecContext(ctx, "CREATE TABLE forbidden(id int)"); err == nil {
 		t.Fatal("app role can perform DDL")
 	}
-	server := httptest.NewServer(Handler(db, "http://localhost:5173", false))
+	server := httptest.NewServer(Handler(storage.New(db), testConfig(t)))
 	defer server.Close()
 	jar, _ := cookiejar.New(nil)
 	client := cabinetv1connect.NewAuthServiceClient(&http.Client{Jar: jar, Timeout: 10 * time.Second}, server.URL)
@@ -170,8 +172,55 @@ func TestPostgresAuth(t *testing.T) {
 	if _, err := current(); connect.CodeOf(err) != connect.CodeUnauthenticated {
 		t.Fatal("expired session accepted", err)
 	}
+	t.Run("storage rolls back partial registration and session replacement", func(t *testing.T) {
+		store := storage.New(db)
+		first := storage.Session{TokenHash: randBytes(32), ExpiresAt: time.Now().Add(time.Hour)}
+		collision := storage.Session{TokenHash: randBytes(32), ExpiresAt: time.Now().Add(time.Hour)}
+		for _, session := range []storage.Session{first, collision} {
+			if err := store.ReplaceSession(ctx, registered.Msg.User.Id, session, nil); err != nil {
+				t.Fatal(err)
+			}
+		}
+		// The second insert violates token uniqueness after deletion of the old token.
+		if err := store.ReplaceSession(ctx, registered.Msg.User.Id, collision, first.TokenHash); err == nil {
+			t.Fatal("duplicate token accepted")
+		}
+		if _, err := store.FindUserBySession(ctx, first.TokenHash); err != nil {
+			t.Fatal("old session lost on failed replacement", err)
+		}
+		if _, err := store.RegisterWithSession(ctx, "rollback@example.com", "test-only-hash", collision, first.TokenHash); err == nil {
+			t.Fatal("registration with duplicate token accepted")
+		}
+		if _, err := store.FindUserByEmail(ctx, "rollback@example.com"); !errors.Is(err, storage.ErrNotFound) {
+			t.Fatal("partial user survived rollback", err)
+		}
+		if _, err := store.FindUserBySession(ctx, first.TokenHash); err != nil {
+			t.Fatal("old session lost on failed registration", err)
+		}
+		if _, err := store.FindUserByEmail(ctx, "' OR 1=1 --"); !errors.Is(err, storage.ErrNotFound) {
+			t.Fatal("email was not parameterized", err)
+		}
+		cancelled, cancel := context.WithCancel(ctx)
+		cancel()
+		if err := store.DeleteSession(cancelled, first.TokenHash); err == nil {
+			t.Fatal("cancelled operation succeeded")
+		}
+		if _, err := store.FindUserBySession(ctx, first.TokenHash); err != nil {
+			t.Fatal("cancelled deletion removed session", err)
+		}
+		if err := store.DeleteExpiredSessions(ctx); err != nil {
+			t.Fatal(err)
+		}
+		var expired int
+		if err := db.QueryRowContext(ctx, "SELECT count(*) FROM sessions WHERE expires_at<=now()").Scan(&expired); err != nil || expired != 0 {
+			t.Fatal("expired sessions not cleaned", err)
+		}
+		if _, err := store.FindUserBySession(ctx, first.TokenHash); err != nil {
+			t.Fatal("cleanup removed active session", err)
+		}
+	})
 	// Новый обработчик даёт отдельное окно лимита для конкурентной регистрации.
-	concurrent := httptest.NewServer(Handler(db, "http://localhost:5173", false))
+	concurrent := httptest.NewServer(Handler(storage.New(db), testConfig(t)))
 	defer concurrent.Close()
 	cc := cabinetv1connect.NewAuthServiceClient(concurrent.Client(), concurrent.URL)
 	var wg sync.WaitGroup
