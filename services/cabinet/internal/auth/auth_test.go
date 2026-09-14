@@ -1,12 +1,23 @@
 package auth
 
 import (
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 )
+
+func testConfig(t *testing.T) config.Config {
+	t.Helper()
+	t.Setenv("CABINET_DATABASE_APP_PASSWORD", "test-only")
+	cfg, err := config.Load("../../config.yaml", "serve")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cfg
+}
 
 func TestPassword(t *testing.T) {
 	password := "correct horse battery staple"
@@ -40,7 +51,7 @@ func TestCredentials(t *testing.T) {
 	}
 }
 func TestLimit(t *testing.T) {
-	l := &limiter{entries: map[string]attempt{}}
+	l := &limiter{entries: map[string]attempt{}, config: testConfig(t).Auth}
 	now := time.Now()
 	for i := 0; i < 10; i++ {
 		if !l.allow("ip", now) {
@@ -55,7 +66,7 @@ func TestLimit(t *testing.T) {
 	}
 }
 func TestOriginAndCSRF(t *testing.T) {
-	handler := Handler(nil, "http://localhost:5173", false)
+	handler := Handler(nil, testConfig(t))
 	for _, tc := range []struct{ origin, csrf string }{{"http://evil.example", "1"}, {"http://localhost:5173", ""}, {"", "1"}} {
 		r := httptest.NewRequest(http.MethodPost, "/travelwatch.cabinet.v1.AuthService/Login", strings.NewReader(`{}`))
 		r.Header.Set("Origin", tc.origin)

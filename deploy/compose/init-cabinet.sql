@@ -1,5 +1,5 @@
-\getenv owner_password CABINET_OWNER_PASSWORD
-\getenv app_password CABINET_APP_PASSWORD
+\getenv owner_password CABINET_DATABASE_OWNER_PASSWORD
+\getenv app_password CABINET_DATABASE_APP_PASSWORD
 CREATE ROLE cabinet_owner LOGIN PASSWORD :'owner_password';
 CREATE ROLE cabinet_app LOGIN PASSWORD :'app_password';
 CREATE DATABASE cabinet OWNER cabinet_owner;

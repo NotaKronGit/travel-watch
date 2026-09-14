@@ -4,6 +4,8 @@
 
 Подробности: [спецификация авторизации](../specs/cabinet-auth.md), [локальный запуск](../ops/local-development.md).
 
+Реализация разделена на `internal/auth` (авторизация и HTTP/RPC), `internal/storage` (goqu-запросы и транзакции) и `internal/config` (YAML и env через Viper). Конфиг находится в `services/cabinet/config.yaml`; [правила настройки](../ops/configuration.md). Регистрация вместе с сессией и замена текущей сессии выполняются атомарно в storage.
+
 Cabinet отвечает за веб-кабинет пользователя и управление заявками.
 
 ## Ответственность и данные

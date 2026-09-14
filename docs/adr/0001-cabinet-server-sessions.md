@@ -20,6 +20,7 @@ Cabinet хранит сессии в PostgreSQL. Браузер получает
 ## Реализация
 
 - `services/cabinet/internal/auth` — хеширование, RPC и HTTP-защита.
+- `services/cabinet/internal/storage` — запросы к БД и транзакции; выделен согласно [ADR 0002](0002-service-storage-and-configuration.md). Срок сессии теперь настраивается; значение в поставляемом YAML — 7 суток.
 - `services/cabinet/migrations/00001_auth.sql` — пользователи и сессии.
 - `frontend/src/authProvider.ts` — адаптер React Admin.
 

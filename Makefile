@@ -9,10 +9,10 @@ db-stop:
 	$(COMPOSE) stop postgres
 
 migrate:
-	go run ./services/cabinet/cmd/cabinet migrate
+	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet migrate
 
 cabinet:
-	go run ./services/cabinet/cmd/cabinet serve
+	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet serve
 
 frontend:
 	npm --prefix frontend run dev
