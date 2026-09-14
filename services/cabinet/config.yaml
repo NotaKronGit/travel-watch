@@ -38,7 +38,10 @@ auth:
 catalog:
   cities_url: https://download.geonames.org/export/dump/cities500.zip
   countries_url: https://download.geonames.org/export/dump/countryInfo.txt
-  http_timeout: 2m
+  alternate_names_url: https://download.geonames.org/export/dump/alternateNamesV2.zip
+  max_alternate_download_bytes: 268435456
+  max_alternate_uncompressed_bytes: 2147483648
+  http_timeout: 5m
   sync_timeout: 10m
   max_download_bytes: 33554432
   max_uncompressed_bytes: 134217728

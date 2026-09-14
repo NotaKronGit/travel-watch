@@ -53,12 +53,15 @@ type Auth struct {
 
 // Catalog settings apply only to the explicit sync-cities command.
 type Catalog struct {
-	CitiesURL            string        `mapstructure:"cities_url"`
-	CountriesURL         string        `mapstructure:"countries_url"`
-	HTTPTimeout          time.Duration `mapstructure:"http_timeout"`
-	SyncTimeout          time.Duration `mapstructure:"sync_timeout"`
-	MaxDownloadBytes     int64         `mapstructure:"max_download_bytes"`
-	MaxUncompressedBytes int64         `mapstructure:"max_uncompressed_bytes"`
-	MinCities            int           `mapstructure:"min_cities"`
-	MaxCities            int           `mapstructure:"max_cities"`
+	AlternateNamesURL             string        `mapstructure:"alternate_names_url"`
+	MaxAlternateDownloadBytes     int64         `mapstructure:"max_alternate_download_bytes"`
+	MaxAlternateUncompressedBytes int64         `mapstructure:"max_alternate_uncompressed_bytes"`
+	CitiesURL                     string        `mapstructure:"cities_url"`
+	CountriesURL                  string        `mapstructure:"countries_url"`
+	HTTPTimeout                   time.Duration `mapstructure:"http_timeout"`
+	SyncTimeout                   time.Duration `mapstructure:"sync_timeout"`
+	MaxDownloadBytes              int64         `mapstructure:"max_download_bytes"`
+	MaxUncompressedBytes          int64         `mapstructure:"max_uncompressed_bytes"`
+	MinCities                     int           `mapstructure:"min_cities"`
+	MaxCities                     int           `mapstructure:"max_cities"`
 }

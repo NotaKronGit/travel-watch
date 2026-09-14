@@ -5,17 +5,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 	"unicode/utf8"
 )
 
-type Country struct{ Code, Name string }
+type Country struct {
+	Code, Name, NameRu string
+	SourceID           int64
+}
 type City struct {
-	SourceID                                int64
-	Name, CountryCode, RegionCode, Timezone string
-	Aliases                                 []string
-	Latitude, Longitude                     float64
-	Population                              int64
+	SourceID                                        int64
+	Name, NameRu, CountryCode, RegionCode, Timezone string
+	Aliases                                         []string
+	Latitude, Longitude                             float64
+	Population                                      int64
 }
 type Snapshot struct {
 	Source    string
@@ -48,6 +52,11 @@ func (i Importer) Run(ctx context.Context) (int, error) {
 	if err := Validate(snapshot, i.MinCities); err != nil {
 		return 0, err
 	}
+	// Validate the complete upstream snapshot before applying the product filter.
+	snapshot.Cities = slices.DeleteFunc(snapshot.Cities, func(c City) bool { return c.NameRu == "" })
+	if len(snapshot.Cities) == 0 {
+		return 0, errors.New("catalog contains no cities with Russian names")
+	}
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
@@ -65,6 +74,9 @@ func Validate(s Snapshot, minCities int) error {
 		if len(c.Code) != 2 || c.Code[0] < 'A' || c.Code[0] > 'Z' || c.Code[1] < 'A' || c.Code[1] > 'Z' || !validText(c.Name, 200) || countries[c.Code] {
 			return errors.New("invalid or duplicate country")
 		}
+		if c.NameRu != "" && !validText(c.NameRu, 400) {
+			return errors.New("invalid Russian country name")
+		}
 		countries[c.Code] = true
 	}
 	ids := make(map[int64]bool, len(s.Cities))
@@ -72,6 +84,9 @@ func Validate(s Snapshot, minCities int) error {
 	for _, c := range s.Cities {
 		if c.SourceID <= 0 || ids[c.SourceID] || !countries[c.CountryCode] || !validText(c.Name, 200) || c.Population < 0 || !(c.Latitude >= -90 && c.Latitude <= 90) || !(c.Longitude >= -180 && c.Longitude <= 180) {
 			return errors.New("invalid or duplicate city")
+		}
+		if c.NameRu != "" && !validText(c.NameRu, 400) {
+			return errors.New("invalid Russian city name")
 		}
 		if c.Timezone == "" || c.Timezone == "Local" {
 			return errors.New("invalid city timezone")

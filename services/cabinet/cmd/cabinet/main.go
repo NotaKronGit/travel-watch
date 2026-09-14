@@ -71,7 +71,7 @@ func run() error {
 		syncCtx, cancel := context.WithTimeout(ctx, cfg.Catalog.SyncTimeout)
 		defer cancel()
 		g := cfg.Catalog
-		source := catalog.GeoNamesSource{Client: &http.Client{Timeout: g.HTTPTimeout}, CitiesURL: g.CitiesURL, CountriesURL: g.CountriesURL, MaxDownloadBytes: g.MaxDownloadBytes, MaxUncompressedBytes: g.MaxUncompressedBytes, MaxCities: g.MaxCities}
+		source := catalog.GeoNamesSource{Client: &http.Client{Timeout: g.HTTPTimeout}, AlternateNamesURL: g.AlternateNamesURL, MaxAlternateDownloadBytes: g.MaxAlternateDownloadBytes, MaxAlternateUncompressedBytes: g.MaxAlternateUncompressedBytes, CitiesURL: g.CitiesURL, CountriesURL: g.CountriesURL, MaxDownloadBytes: g.MaxDownloadBytes, MaxUncompressedBytes: g.MaxUncompressedBytes, MaxCities: g.MaxCities}
 		count, err := (catalog.Importer{Source: source, Repository: store, MinCities: g.MinCities}).Run(syncCtx)
 		if err != nil {
 			slog.Error("city catalog import failed", "error_type", storage.ErrorKind(err))

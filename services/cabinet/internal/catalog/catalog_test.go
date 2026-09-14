@@ -26,7 +26,7 @@ func (r *fakeRepository) ReplaceCatalog(ctx context.Context, s Snapshot) error {
 	return r.err
 }
 func fixture() Snapshot {
-	return Snapshot{Source: "test", Version: "fixture-1", Countries: []Country{{Code: "RU", Name: "Test country"}}, Cities: []City{{SourceID: 1, Name: "Test city", CountryCode: "RU", Timezone: "Europe/Moscow"}}}
+	return Snapshot{Source: "test", Version: "fixture-1", Countries: []Country{{Code: "RU", Name: "Test country"}}, Cities: []City{{SourceID: 1, Name: "Test city", NameRu: "Тестовый город", CountryCode: "RU", Timezone: "Europe/Moscow"}}}
 }
 func TestImporter(t *testing.T) {
 	for _, tc := range []struct {
@@ -39,6 +39,7 @@ func TestImporter(t *testing.T) {
 	}{
 		{name: "success", min: 1, calls: 1},
 		{name: "source failure", min: 1, sourceErr: errors.New("offline"), wantErr: true},
+		{name: "no translations", min: 1, change: func(s *Snapshot) { s.Cities[0].NameRu = "" }, wantErr: true},
 		{name: "empty", min: 1, change: func(s *Snapshot) { s.Cities = nil }, wantErr: true},
 		{name: "too few", min: 2, wantErr: true},
 		{name: "duplicate", min: 1, change: func(s *Snapshot) { s.Cities = append(s.Cities, s.Cities[0]) }, wantErr: true},
@@ -68,5 +69,15 @@ func TestImporter(t *testing.T) {
 	_, err := (Importer{Source: fakeSource{snapshot: fixture()}, Repository: repo, MinCities: 1}).Run(ctx)
 	if !errors.Is(err, context.Canceled) || repo.calls != 0 {
 		t.Fatal("cancelled import wrote data")
+	}
+}
+
+func TestImporterSkipsUntranslatedCities(t *testing.T) {
+	s := fixture()
+	s.Cities = append(s.Cities, City{SourceID: 2, Name: "Untranslated", CountryCode: "RU", Timezone: "Europe/Moscow"})
+	repo := &fakeRepository{}
+	n, err := (Importer{Source: fakeSource{snapshot: s}, Repository: repo, MinCities: 2}).Run(context.Background())
+	if err != nil || n != 1 || len(repo.saved.Cities) != 1 || repo.saved.Cities[0].SourceID != 1 {
+		t.Fatalf("untranslated city reached storage: count=%d err=%v", n, err)
 	}
 }

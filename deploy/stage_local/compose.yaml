@@ -32,6 +32,19 @@ services:
     networks: [database]
     depends_on:
       postgres: { condition: service_healthy }
+  cities-sync:
+    <<: *cabinet-image
+    profiles: [tools]
+    command: [sync-cities]
+    restart: "no"
+    environment:
+      CABINET_DATABASE_HOST: postgres
+      CABINET_DATABASE_PORT: "5432"
+      CABINET_DATABASE_OWNER_PASSWORD: ${CABINET_DATABASE_OWNER_PASSWORD:?Set CABINET_DATABASE_OWNER_PASSWORD}
+    networks: [database, application]
+    depends_on:
+      postgres: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
   cabinet:
     <<: *cabinet-image
     restart: unless-stopped

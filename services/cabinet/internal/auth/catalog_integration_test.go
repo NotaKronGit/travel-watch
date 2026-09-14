@@ -18,8 +18,8 @@ func (s testCitySource) Load(context.Context) (catalog.Snapshot, error) { return
 func testCityCatalog(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 	t.Helper()
 	snapshot := catalog.Snapshot{Source: "test", Version: "v1", Countries: []catalog.Country{{Code: "RU", Name: "Test country"}}, Cities: []catalog.City{
-		{SourceID: 1, Name: "Test city", CountryCode: "RU", Timezone: "Europe/Moscow", Aliases: []string{"Тестовый город"}},
-		{SourceID: 2, Name: "Other test city", CountryCode: "RU", Timezone: "Europe/Moscow"},
+		{SourceID: 1, Name: "Test city", NameRu: "Тестовый город", CountryCode: "RU", Timezone: "Europe/Moscow", Aliases: []string{"Тестовый город"}},
+		{SourceID: 2, Name: "Other test city", NameRu: "Другой тестовый город", CountryCode: "RU", Timezone: "Europe/Moscow"},
 	}}
 	store := storage.New(owner)
 	run := func(s catalog.Snapshot) {
@@ -28,23 +28,30 @@ func testCityCatalog(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 			t.Fatal(err)
 		}
 	}
+	snapshot.Cities = append(snapshot.Cities, catalog.City{SourceID: 3, Name: "Untranslated", CountryCode: "RU", Timezone: "Europe/Moscow"})
 	run(snapshot)
+	var excluded int
+	if err := app.QueryRowContext(ctx, "SELECT count(*) FROM catalog_cities WHERE source_id=3 OR name_ru=''").Scan(&excluded); err != nil || excluded != 0 {
+		t.Fatal("untranslated city persisted", err)
+	}
 	var id string
 	if err := app.QueryRowContext(ctx, "SELECT id FROM catalog_cities WHERE source_id=1").Scan(&id); err != nil {
 		t.Fatal(err)
 	}
 	snapshot.Cities = snapshot.Cities[:1]
 	snapshot.Cities[0].Name = "Renamed test city"
+	snapshot.Cities[0].NameRu = "Тестовый город"
+	snapshot.Countries[0].NameRu = "Тестовая страна"
 	snapshot.Version = "v2"
 	run(snapshot)
 	run(snapshot)
-	var after, name string
+	var after, name, nameRu string
 	var active bool
 	var count int
-	if err := app.QueryRowContext(ctx, "SELECT id,name FROM catalog_cities WHERE source_id=1").Scan(&after, &name); err != nil {
+	if err := app.QueryRowContext(ctx, "SELECT id,name,name_ru FROM catalog_cities WHERE source_id=1").Scan(&after, &name, &nameRu); err != nil {
 		t.Fatal(err)
 	}
-	if after != id || name != "Renamed test city" {
+	if after != id || name != "Renamed test city" || nameRu != "Тестовый город" {
 		t.Fatal("identity or update lost")
 	}
 	if err := app.QueryRowContext(ctx, "SELECT active FROM catalog_cities WHERE source_id=2").Scan(&active); err != nil || active {
@@ -52,6 +59,9 @@ func testCityCatalog(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 	}
 	if err := app.QueryRowContext(ctx, "SELECT count(*) FROM catalog_cities").Scan(&count); err != nil || count != 2 {
 		t.Fatal("duplicate import", err)
+	}
+	if err := app.QueryRowContext(ctx, "SELECT name_ru FROM catalog_countries WHERE code='RU'").Scan(&nameRu); err != nil || nameRu != "Тестовая страна" {
+		t.Fatal("country translation missing", err)
 	}
 	// Force failure after the countries update, bypassing validation to exercise rollback.
 	snapshot.Countries[0].Name = "Must roll back"

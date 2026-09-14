@@ -18,10 +18,11 @@ import (
 // GeoNamesSource reads the official cities500 ZIP and countryInfo TSV formats.
 // URLs and resource limits are supplied by the application configuration.
 type GeoNamesSource struct {
-	Client                                 *http.Client
-	CitiesURL, CountriesURL                string
-	MaxDownloadBytes, MaxUncompressedBytes int64
-	MaxCities                              int
+	Client                                                   *http.Client
+	CitiesURL, CountriesURL, AlternateNamesURL               string
+	MaxDownloadBytes, MaxUncompressedBytes                   int64
+	MaxCities                                                int
+	MaxAlternateDownloadBytes, MaxAlternateUncompressedBytes int64
 }
 
 func (s GeoNamesSource) download(ctx context.Context, url string) ([]byte, error) {
@@ -67,7 +68,11 @@ func (s GeoNamesSource) Load(ctx context.Context) (Snapshot, error) {
 		if len(fields) < 19 {
 			return errors.New("invalid countryInfo record")
 		}
-		result.Countries = append(result.Countries, Country{Code: fields[0], Name: fields[4]})
+		id, err := strconv.ParseInt(fields[16], 10, 64)
+		if err != nil || id <= 0 {
+			return errors.New("invalid country GeoNames ID")
+		}
+		result.Countries = append(result.Countries, Country{Code: fields[0], Name: fields[4], SourceID: id})
 		return nil
 	})
 	if err != nil {
@@ -121,6 +126,10 @@ func (s GeoNamesSource) Load(ctx context.Context) (Snapshot, error) {
 	if limited.N <= 0 {
 		return Snapshot{}, errors.New("uncompressed catalog exceeds limit")
 	}
+	if err := s.localize(ctx, &result, digest); err != nil {
+		return Snapshot{}, err
+	}
+	result.Version = hex.EncodeToString(digest.Sum(nil))
 	return result, nil
 }
 func lines(ctx context.Context, r io.Reader, consume func([]string) error) error {

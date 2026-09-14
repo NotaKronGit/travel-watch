@@ -15,11 +15,12 @@ import (
 const countriesTSV = "# fixture\nRU\tRUS\t643\tRS\tTest country\tCapital\t1\t1\tEU\t.test\tTST\tTest\t0\t\t\tru\t1\t\t\n"
 const citiesTSV = "1\tTest city\tTest city\tТестовый город,Test alias\t55\t37\tP\tPPL\tRU\t\t01\t\t\t\t1000\t\t0\tEurope/Moscow\t2026-01-01\n"
 
-func zipData(t *testing.T, text string) []byte {
+func zipData(t *testing.T, text string) []byte { return namedZip(t, "cities500.txt", text) }
+func namedZip(t *testing.T, name, text string) []byte {
 	t.Helper()
 	var b bytes.Buffer
 	z := zip.NewWriter(&b)
-	f, err := z.Create("cities500.txt")
+	f, err := z.Create(name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,6 +52,7 @@ func TestGeoNamesSource(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			archive := zipData(t, tc.cityText)
+			translations := namedZip(t, "alternateNamesV2.txt", alternate("10", "1", "ru", "Тестовый город", "1", "", "", "", "", ""))
 			if tc.badZIP {
 				archive = []byte("not zip")
 			}
@@ -59,14 +61,16 @@ func TestGeoNamesSource(t *testing.T) {
 					w.WriteHeader(tc.status)
 					return
 				}
-				if r.URL.Path == "/countries" {
+				if r.URL.Path == "/names" {
+					w.Write(translations)
+				} else if r.URL.Path == "/countries" {
 					w.Write([]byte(countriesTSV))
 				} else {
 					w.Write(archive)
 				}
 			}))
 			defer server.Close()
-			source := GeoNamesSource{Client: server.Client(), CitiesURL: server.URL + "/cities", CountriesURL: server.URL + "/countries", MaxDownloadBytes: 100000, MaxUncompressedBytes: 100000, MaxCities: 10}
+			source := GeoNamesSource{AlternateNamesURL: server.URL + "/names", MaxAlternateDownloadBytes: 100000, MaxAlternateUncompressedBytes: 100000, Client: server.Client(), CitiesURL: server.URL + "/cities", CountriesURL: server.URL + "/countries", MaxDownloadBytes: 100000, MaxUncompressedBytes: 100000, MaxCities: 10}
 			if tc.maxDownload != 0 {
 				source.MaxDownloadBytes = tc.maxDownload
 			}
@@ -84,7 +88,7 @@ func TestGeoNamesSource(t *testing.T) {
 				if err := Validate(s, 1); err != nil {
 					t.Fatal(err)
 				}
-				if s.Cities[0].Aliases[0] != "Тестовый город" || len(s.Version) != 64 {
+				if s.Cities[0].NameRu != "Тестовый город" || s.Cities[0].Aliases[0] != "Тестовый город" || len(s.Version) != 64 {
 					t.Fatal("lost aliases or provenance")
 				}
 			}

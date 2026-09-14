@@ -10,6 +10,11 @@ import (
 )
 
 func (s *Store) ReplaceCatalog(ctx context.Context, snapshot catalog.Snapshot) error {
+	for _, c := range snapshot.Cities {
+		if c.NameRu == "" {
+			return errors.New("cannot store a city without a Russian name")
+		}
+	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -32,7 +37,7 @@ func (s *Store) ReplaceCatalog(ctx context.Context, snapshot catalog.Snapshot) e
 		return err
 	}
 	for _, c := range snapshot.Countries {
-		if err := exec(postgres.Insert("catalog_countries").Rows(goqu.Record{"code": c.Code, "name": c.Name}).OnConflict(goqu.DoUpdate("code", goqu.Record{"name": goqu.I("excluded.name")}))); err != nil {
+		if err := exec(postgres.Insert("catalog_countries").Rows(goqu.Record{"code": c.Code, "name": c.Name, "name_ru": c.NameRu}).OnConflict(goqu.DoUpdate("code", goqu.Record{"name": goqu.I("excluded.name"), "name_ru": goqu.I("excluded.name_ru")}))); err != nil {
 			return err
 		}
 	}
@@ -50,10 +55,10 @@ func (s *Store) ReplaceCatalog(ctx context.Context, snapshot catalog.Snapshot) e
 			if err != nil {
 				return err
 			}
-			rows = append(rows, goqu.Record{"source": snapshot.Source, "source_id": c.SourceID, "name": c.Name, "country_code": c.CountryCode, "region_code": c.RegionCode, "timezone": c.Timezone, "aliases": string(aliases), "latitude": c.Latitude, "longitude": c.Longitude, "population": c.Population, "active": true})
+			rows = append(rows, goqu.Record{"source": snapshot.Source, "source_id": c.SourceID, "name": c.Name, "name_ru": c.NameRu, "country_code": c.CountryCode, "region_code": c.RegionCode, "timezone": c.Timezone, "aliases": string(aliases), "latitude": c.Latitude, "longitude": c.Longitude, "population": c.Population, "active": true})
 		}
 		update := goqu.Record{}
-		for _, col := range []string{"name", "country_code", "region_code", "timezone", "aliases", "latitude", "longitude", "population", "active"} {
+		for _, col := range []string{"name", "name_ru", "country_code", "region_code", "timezone", "aliases", "latitude", "longitude", "population", "active"} {
 			update[col] = goqu.I("excluded." + col)
 		}
 		if err := exec(postgres.Insert("catalog_cities").Rows(rows).OnConflict(goqu.DoUpdate("source, source_id", update))); err != nil {

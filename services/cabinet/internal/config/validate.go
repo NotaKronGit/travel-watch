@@ -46,14 +46,14 @@ func (c Config) Validate(command string) error {
 		return nil
 	}
 	if command == "sync-cities" {
-		for _, raw := range []string{c.Catalog.CitiesURL, c.Catalog.CountriesURL} {
+		for _, raw := range []string{c.Catalog.CitiesURL, c.Catalog.CountriesURL, c.Catalog.AlternateNamesURL} {
 			u, err := url.Parse(raw)
 			if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.Fragment != "" {
 				return errors.New("catalog URLs must use HTTPS without credentials or fragments")
 			}
 		}
 		g := c.Catalog
-		if g.HTTPTimeout <= 0 || g.SyncTimeout <= 0 || g.MaxDownloadBytes <= 0 || g.MaxUncompressedBytes <= 0 || g.MinCities < 1 || g.MaxCities < g.MinCities {
+		if g.MaxAlternateDownloadBytes <= 0 || g.MaxAlternateUncompressedBytes <= 0 || g.HTTPTimeout <= 0 || g.SyncTimeout <= 0 || g.MaxDownloadBytes <= 0 || g.MaxUncompressedBytes <= 0 || g.MinCities < 1 || g.MaxCities < g.MinCities {
 			return errors.New("invalid catalog timeouts or size limits")
 		}
 		return nil
