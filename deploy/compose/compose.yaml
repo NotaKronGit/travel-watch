@@ -1,0 +1,20 @@
+name: travel-watch
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      CABINET_OWNER_PASSWORD: ${CABINET_OWNER_PASSWORD:?Set CABINET_OWNER_PASSWORD in .env}
+      CABINET_APP_PASSWORD: ${CABINET_APP_PASSWORD:?Set CABINET_APP_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-cabinet.sql:/docker-entrypoint-initdb.d/10-cabinet.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d cabinet"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres_data:

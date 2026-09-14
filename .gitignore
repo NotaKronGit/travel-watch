@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
+bin/
+*.tsbuildinfo
+.DS_Store
