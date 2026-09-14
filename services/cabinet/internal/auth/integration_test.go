@@ -87,6 +87,7 @@ func TestPostgresAuth(t *testing.T) {
 	if _, err := db.ExecContext(ctx, "CREATE TABLE forbidden(id int)"); err == nil {
 		t.Fatal("app role can perform DDL")
 	}
+	t.Run("city catalog", func(t *testing.T) { testCityCatalog(t, ctx, migrator, db) })
 	server := httptest.NewServer(Handler(storage.New(db), testConfig(t)))
 	defer server.Close()
 	jar, _ := cookiejar.New(nil)

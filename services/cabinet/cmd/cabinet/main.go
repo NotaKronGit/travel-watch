@@ -12,12 +12,14 @@ import (
 	"time"
 
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/auth"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/catalog"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
+	_ "time/tzdata"
 )
 
 func run() error {
@@ -28,8 +30,8 @@ func run() error {
 	if len(os.Args) > 1 {
 		command = os.Args[1]
 	}
-	if command != "serve" && command != "migrate" {
-		return errors.New("usage: cabinet [serve|migrate]")
+	if command != "serve" && command != "migrate" && command != "sync-cities" {
+		return errors.New("usage: cabinet [serve|migrate|sync-cities]")
 	}
 	configPath := os.Getenv("CABINET_CONFIG")
 	if configPath == "" {
@@ -39,7 +41,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	db, err := sql.Open("pgx", cfg.Database.URL(command == "migrate"))
+	db, err := sql.Open("pgx", cfg.Database.URL(command != "serve"))
 	if err != nil {
 		return errors.New("cannot initialize database connection")
 	}
@@ -65,6 +67,19 @@ func run() error {
 		return goose.UpContext(migrationCtx, db, ".")
 	}
 	store := storage.New(db)
+	if command == "sync-cities" {
+		syncCtx, cancel := context.WithTimeout(ctx, cfg.Catalog.SyncTimeout)
+		defer cancel()
+		g := cfg.Catalog
+		source := catalog.GeoNamesSource{Client: &http.Client{Timeout: g.HTTPTimeout}, AlternateNamesURL: g.AlternateNamesURL, MaxAlternateDownloadBytes: g.MaxAlternateDownloadBytes, MaxAlternateUncompressedBytes: g.MaxAlternateUncompressedBytes, CitiesURL: g.CitiesURL, CountriesURL: g.CountriesURL, MaxDownloadBytes: g.MaxDownloadBytes, MaxUncompressedBytes: g.MaxUncompressedBytes, MaxCities: g.MaxCities}
+		count, err := (catalog.Importer{Source: source, Repository: store, MinCities: g.MinCities}).Run(syncCtx)
+		if err != nil {
+			slog.Error("city catalog import failed", "error_type", storage.ErrorKind(err))
+			return errors.New("city catalog import failed; previous catalog preserved; check source, limits and database")
+		}
+		slog.Info("city catalog imported", "cities", count)
+		return nil
+	}
 	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
 	errCh := make(chan error, 1)
 	go func() { slog.Info("cabinet listening", "address", server.Addr); errCh <- server.ListenAndServe() }()

@@ -5,6 +5,7 @@ import "time"
 type Config struct {
 	Server   Server   `mapstructure:"server"`
 	Database Database `mapstructure:"database"`
+	Catalog  Catalog  `mapstructure:"catalog"`
 	Auth     Auth     `mapstructure:"auth"`
 }
 
@@ -48,4 +49,19 @@ type Auth struct {
 	LoginWindow         time.Duration `mapstructure:"login_window"`
 	MaxTrackedAddresses int           `mapstructure:"max_tracked_addresses"`
 	HashConcurrency     int           `mapstructure:"hash_concurrency"`
+}
+
+// Catalog settings apply only to the explicit sync-cities command.
+type Catalog struct {
+	AlternateNamesURL             string        `mapstructure:"alternate_names_url"`
+	MaxAlternateDownloadBytes     int64         `mapstructure:"max_alternate_download_bytes"`
+	MaxAlternateUncompressedBytes int64         `mapstructure:"max_alternate_uncompressed_bytes"`
+	CitiesURL                     string        `mapstructure:"cities_url"`
+	CountriesURL                  string        `mapstructure:"countries_url"`
+	HTTPTimeout                   time.Duration `mapstructure:"http_timeout"`
+	SyncTimeout                   time.Duration `mapstructure:"sync_timeout"`
+	MaxDownloadBytes              int64         `mapstructure:"max_download_bytes"`
+	MaxUncompressedBytes          int64         `mapstructure:"max_uncompressed_bytes"`
+	MinCities                     int           `mapstructure:"min_cities"`
+	MaxCities                     int           `mapstructure:"max_cities"`
 }

@@ -34,7 +34,10 @@ check:
 	npm --prefix frontend run build
 
 STAGE_LOCAL = docker compose --env-file .env.stage_local -f deploy/stage_local/compose.yaml
-.PHONY: stage-local-up stage-local-stop stage-local-restart stage-local-logs
+.PHONY: stage-local-up stage-local-stop stage-local-restart stage-local-logs stage-local-cities-sync
+
+stage-local-cities-sync:
+	$(STAGE_LOCAL) run --rm --build cities-sync
 
 stage-local-up:
 	$(STAGE_LOCAL) up --build -d --wait --wait-timeout 120
@@ -63,3 +66,7 @@ dev-restart:
 
 dev-logs:
 	$(DEV) logs --tail 100 -f migrate cabinet frontend
+
+.PHONY: cities-sync
+cities-sync:
+	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet sync-cities
