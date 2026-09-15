@@ -81,3 +81,7 @@ dev-logs:
 .PHONY: cities-sync
 cities-sync:
 	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet sync-cities
+
+.PHONY: publish-outbox
+publish-outbox:
+	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet publish-outbox

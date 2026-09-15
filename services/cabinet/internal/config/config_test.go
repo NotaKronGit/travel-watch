@@ -163,3 +163,33 @@ func TestCatalogCommandConfig(t *testing.T) {
 		t.Fatal("missing owner password accepted")
 	}
 }
+
+func TestOutboxConfiguration(t *testing.T) {
+	t.Setenv("CABINET_DATABASE_APP_PASSWORD", "test-app")
+	t.Setenv("CABINET_DATABASE_OWNER_PASSWORD", "")
+	t.Setenv("CABINET_OUTBOX_BROKERS", "broker-a:9092,broker-b:9093")
+	c, err := Load("../../config.yaml", "publish-outbox")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.Outbox.Brokers) != 2 || c.Outbox.Brokers[1] != "broker-b:9093" {
+		t.Fatal("broker env not decoded")
+	}
+	for _, tc := range []struct{ key, value string }{
+		{"CABINET_OUTBOX_BROKERS", ""}, {"CABINET_OUTBOX_BROKERS", "no-port"},
+		{"CABINET_OUTBOX_TOPIC", "bad topic"}, {"CABINET_OUTBOX_POLL_INTERVAL", "0s"},
+		{"CABINET_OUTBOX_LEASE_DURATION", "20s"}, {"CABINET_OUTBOX_RETRY_MAX", "1ms"},
+		{"CABINET_DATABASE_APP_PASSWORD", ""},
+	} {
+		t.Run(tc.key, func(t *testing.T) {
+			t.Setenv(tc.key, tc.value)
+			if _, err := Load("../../config.yaml", "publish-outbox"); err == nil {
+				t.Fatal("invalid configuration accepted")
+			}
+		})
+	}
+	t.Setenv("CABINET_OUTBOX_BROKERS", "")
+	if _, err := Load("../../config.yaml", "serve"); err != nil {
+		t.Fatal("serve depends on Kafka", err)
+	}
+}

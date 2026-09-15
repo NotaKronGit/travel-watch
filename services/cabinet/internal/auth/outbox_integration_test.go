@@ -112,3 +112,66 @@ func testTripOutbox(t *testing.T, ctx context.Context, owner, app *sql.DB, user,
 		}
 	})
 }
+
+func testOutboxLeases(t *testing.T, ctx context.Context, owner, app *sql.DB) {
+	t.Helper()
+	// Restrict this isolated schema to one pending event to exercise competing claimers.
+	if _, err := owner.ExecContext(ctx, "UPDATE outbox_events SET published_at=now() WHERE id<>(SELECT id FROM outbox_events ORDER BY id LIMIT 1)"); err != nil {
+		t.Fatal(err)
+	}
+	store := storage.New(app)
+	var wg sync.WaitGroup
+	messages := make([]storage.OutboxMessage, 2)
+	found := make([]bool, 2)
+	errs := make([]error, 2)
+	for i := range messages {
+		wg.Go(func() { messages[i], found[i], errs[i] = store.ClaimOutbox(ctx, time.Minute) })
+	}
+	wg.Wait()
+	var first storage.OutboxMessage
+	count := 0
+	for i := range messages {
+		if errs[i] != nil {
+			t.Fatal(errs[i])
+		}
+		if found[i] {
+			first = messages[i]
+			count++
+		}
+	}
+	if count != 1 {
+		t.Fatal("same event claimed concurrently", count)
+	}
+	if _, err := owner.ExecContext(ctx, "UPDATE outbox_events SET lease_until=now()-interval '1 second' WHERE id=$1", first.ID); err != nil {
+		t.Fatal(err)
+	}
+	second, ok, err := store.ClaimOutbox(ctx, time.Minute)
+	if err != nil || !ok || second.ID != first.ID || second.LeaseToken == first.LeaseToken || second.Attempts != first.Attempts+1 || !bytes.Equal(second.Payload, first.Payload) {
+		t.Fatal("expired lease not recovered", err)
+	}
+	if err := store.AckOutbox(ctx, first); err == nil {
+		t.Fatal("stale ack accepted")
+	}
+	if err := store.RetryOutbox(ctx, first, time.Second); err == nil {
+		t.Fatal("stale retry accepted")
+	}
+	if err := store.RetryOutbox(ctx, second, time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, err := store.ClaimOutbox(ctx, time.Minute); err != nil || ok {
+		t.Fatal("backoff ignored", err)
+	}
+	if _, err := owner.ExecContext(ctx, "UPDATE outbox_events SET available_at=now()-interval '1 second' WHERE id=$1", first.ID); err != nil {
+		t.Fatal(err)
+	}
+	third, ok, err := store.ClaimOutbox(ctx, time.Minute)
+	if err != nil || !ok {
+		t.Fatal("retry unavailable", err)
+	}
+	if err := store.AckOutbox(ctx, third); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, err := store.ClaimOutbox(ctx, time.Minute); err != nil || ok {
+		t.Fatal("confirmed event claimed", err)
+	}
+}

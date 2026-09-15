@@ -48,3 +48,12 @@ catalog:
   max_uncompressed_bytes: 134217728
   min_cities: 100000 # Reject an unexpectedly incomplete world snapshot.
   max_cities: 300000
+outbox:
+  brokers: [127.0.0.1:9092]
+  topic: travelwatch.trip-requests.v1
+  poll_interval: 1s
+  db_timeout: 5s
+  publish_timeout: 10s
+  lease_duration: 30s
+  retry_min: 1s
+  retry_max: 1m
