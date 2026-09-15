@@ -1,0 +1,29 @@
+syntax = "proto3";
+package travelwatch.cabinet.v1;
+option go_package = "github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1;cabinetv1";
+
+service TripService {
+  rpc SearchCities(SearchCitiesRequest) returns (SearchCitiesResponse);
+  rpc CreateTrip(CreateTripRequest) returns (CreateTripResponse);
+}
+message CityOption {
+  string id = 1;
+  string name = 2;
+  string country = 3;
+  string region = 4;
+  string timezone = 5;
+  // Optional code attached to this city by the catalog source.
+  string iata_code = 6;
+}
+message SearchCitiesRequest { string query = 1; }
+message SearchCitiesResponse { repeated CityOption cities = 1; }
+message CreateTripRequest {
+  string request_id = 1;
+  string origin_id = 2;
+  string destination_id = 3;
+  // Inclusive calendar dates in the origin city's timezone: YYYY-MM-DD.
+  string departure_from = 4;
+  string departure_to = 5;
+  int32 adults = 6;
+}
+message CreateTripResponse { string id = 1; }

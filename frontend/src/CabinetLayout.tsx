@@ -22,23 +22,28 @@ function LogoutItem() {
 }
 
 const CabinetAppBar = () => <AppBar userMenu={<UserMenu><LogoutItem /></UserMenu>} />;
-const CabinetMenu = () => <Menu><Menu.Item to="/account" primaryText="Личный кабинет" leftIcon={<PersonOutlineIcon />} /></Menu>;
+const CabinetMenu = () => <Menu><Menu.Item to="/account" primaryText="Личный кабинет" leftIcon={<PersonOutlineIcon />} /><Menu.Item to="/trips/create" primaryText="Создать заявку" /></Menu>;
 
 // Guard all routes with a layout, without treating a failed request as a logout.
 export function CabinetLayout(props: ComponentProps<typeof Layout>) {
-  const { authenticated, error, isPending, isFetching, refetch } = useAuthState(undefined, false);
-  if (isPending || isFetching) {
+  const { authenticated, data: previouslyAuthenticated, error, isPending, isFetching, refetch } = useAuthState(undefined, false);
+  if (isPending) {
     return <Box sx={{ p: 4 }} role="status">Проверяем сессию…</Box>;
   }
   if (error instanceof ConnectError && error.code === Code.Unauthenticated) {
     return <Navigate to="/login" replace />;
   }
-  if (error || !authenticated) {
+  if (!previouslyAuthenticated && (error || !authenticated)) {
     return <Stack spacing={3} sx={{ maxWidth: 520, mx: 'auto', p: 4, mt: 8 }}>
       <Typography variant="h4" component="h1">Кабинет временно недоступен</Typography>
       <Alert severity="warning">Не удалось проверить сессию. Проверьте соединение и попробуйте ещё раз.</Alert>
       <Button variant="contained" onClick={() => { void refetch(); }}>Повторить проверку</Button>
     </Stack>;
   }
-  return <Layout {...props} menu={CabinetMenu} appBar={CabinetAppBar} />;
+  // Keep the same mounted layout during refetches, including transient failures.
+  // Every API operation still validates the session; an explicit 401 redirects above.
+  return <>
+    {error && <Alert severity="warning" action={<Button disabled={isFetching} onClick={() => { void refetch(); }}>Повторить проверку</Button>}>Не удалось проверить сессию. Введённые данные сохранены; проверьте соединение.</Alert>}
+    <Layout {...props} menu={CabinetMenu} appBar={CabinetAppBar} />
+  </>;
 }

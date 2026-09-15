@@ -15,6 +15,7 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/catalog"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/trips"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
@@ -71,7 +72,7 @@ func run() error {
 		syncCtx, cancel := context.WithTimeout(ctx, cfg.Catalog.SyncTimeout)
 		defer cancel()
 		g := cfg.Catalog
-		source := catalog.GeoNamesSource{Client: &http.Client{Timeout: g.HTTPTimeout}, AlternateNamesURL: g.AlternateNamesURL, MaxAlternateDownloadBytes: g.MaxAlternateDownloadBytes, MaxAlternateUncompressedBytes: g.MaxAlternateUncompressedBytes, CitiesURL: g.CitiesURL, CountriesURL: g.CountriesURL, MaxDownloadBytes: g.MaxDownloadBytes, MaxUncompressedBytes: g.MaxUncompressedBytes, MaxCities: g.MaxCities}
+		source := catalog.GeoNamesSource{Client: &http.Client{Timeout: g.HTTPTimeout}, AlternateNamesURL: g.AlternateNamesURL, MaxAlternateDownloadBytes: g.MaxAlternateDownloadBytes, MaxAlternateUncompressedBytes: g.MaxAlternateUncompressedBytes, CitiesURL: g.CitiesURL, CountriesURL: g.CountriesURL, RegionsURL: g.RegionsURL, MaxDownloadBytes: g.MaxDownloadBytes, MaxUncompressedBytes: g.MaxUncompressedBytes, MaxCities: g.MaxCities}
 		count, err := (catalog.Importer{Source: source, Repository: store, MinCities: g.MinCities}).Run(syncCtx)
 		if err != nil {
 			slog.Error("city catalog import failed", "error_type", storage.ErrorKind(err))
@@ -80,7 +81,7 @@ func run() error {
 		slog.Info("city catalog imported", "cities", count)
 		return nil
 	}
-	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
+	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg, trips.Handler(store)), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
 	errCh := make(chan error, 1)
 	go func() { slog.Info("cabinet listening", "address", server.Addr); errCh <- server.ListenAndServe() }()
 	ticker := time.NewTicker(cfg.Auth.CleanupInterval)

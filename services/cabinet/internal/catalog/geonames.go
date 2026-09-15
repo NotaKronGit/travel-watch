@@ -19,7 +19,7 @@ import (
 // URLs and resource limits are supplied by the application configuration.
 type GeoNamesSource struct {
 	Client                                                   *http.Client
-	CitiesURL, CountriesURL, AlternateNamesURL               string
+	CitiesURL, CountriesURL, RegionsURL, AlternateNamesURL   string
 	MaxDownloadBytes, MaxUncompressedBytes                   int64
 	MaxCities                                                int
 	MaxAlternateDownloadBytes, MaxAlternateUncompressedBytes int64
@@ -60,10 +60,31 @@ func (s GeoNamesSource) Load(ctx context.Context) (Snapshot, error) {
 	if err != nil {
 		return Snapshot{}, err
 	}
+	regions, err := s.download(ctx, s.RegionsURL)
+	if err != nil {
+		return Snapshot{}, err
+	}
 	digest := sha256.New()
 	digest.Write(countries)
 	digest.Write(cities)
+	digest.Write(regions)
 	result := Snapshot{Source: "geonames", Version: hex.EncodeToString(digest.Sum(nil))}
+	regionCodes := map[string]bool{}
+	err = lines(ctx, bytes.NewReader(regions), func(f []string) error {
+		if len(f) != 4 || !validText(f[0], 100) || !validText(f[1], 400) || regionCodes[f[0]] {
+			return errors.New("invalid region record")
+		}
+		id, err := strconv.ParseInt(f[3], 10, 64)
+		if err != nil || id <= 0 {
+			return errors.New("invalid region GeoNames ID")
+		}
+		regionCodes[f[0]] = true
+		result.Regions = append(result.Regions, Region{Code: f[0], Name: f[1], SourceID: id})
+		return nil
+	})
+	if err != nil {
+		return Snapshot{}, err
+	}
 	err = lines(ctx, bytes.NewReader(countries), func(fields []string) error {
 		if len(fields) < 19 {
 			return errors.New("invalid countryInfo record")
@@ -128,6 +149,18 @@ func (s GeoNamesSource) Load(ctx context.Context) (Snapshot, error) {
 	}
 	if err := s.localize(ctx, &result, digest); err != nil {
 		return Snapshot{}, err
+	}
+	regionNames := map[string]string{}
+	for _, r := range result.Regions {
+		name := r.NameRu
+		if name == "" {
+			name = r.Name
+		}
+		regionNames[r.Code] = name
+	}
+	for i := range result.Cities {
+		c := &result.Cities[i]
+		c.RegionName = regionNames[c.CountryCode+"."+c.RegionCode]
 	}
 	result.Version = hex.EncodeToString(digest.Sum(nil))
 	return result, nil

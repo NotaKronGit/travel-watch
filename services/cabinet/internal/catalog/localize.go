@@ -109,13 +109,19 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 			countries[c.SourceID] = i
 		}
 	}
+	regions := map[int64]int{}
+	for i, r := range snapshot.Regions {
+		regions[r.SourceID] = i
+	}
 	chosen := make(map[int64]localizedName)
+	codes := make(map[int64]string)
+	ambiguous := make(map[int64]bool)
 	matches := 0
 	err := lines(ctx, reader, func(f []string) error {
 		if len(f) != 10 {
 			return errors.New("invalid alternateNamesV2 record")
 		}
-		if f[2] != "ru" {
+		if f[2] != "ru" && f[2] != "iata" {
 			return nil
 		}
 		id, err := strconv.ParseInt(f[1], 10, 64)
@@ -124,7 +130,8 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 		}
 		ci, city := cities[id]
 		_, country := countries[id]
-		if !city && !country {
+		_, region := regions[id]
+		if !city && !country && !region {
 			return nil
 		}
 		alternateID, err := strconv.ParseInt(f[0], 10, 64)
@@ -138,6 +145,15 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 		}
 		// Dated, historic and colloquial names are not display-name candidates.
 		if f[6] == "1" || f[7] == "1" || f[8] != "" || f[9] != "" {
+			return nil
+		}
+		if f[2] == "iata" {
+			if city && validIATA(f[3]) {
+				if old := codes[id]; old != "" && old != f[3] {
+					ambiguous[id] = true
+				}
+				codes[id] = f[3]
+			}
 			return nil
 		}
 		candidate := localizedName{name: f[3], preferred: f[4] == "1", short: f[5] == "1", id: alternateID}
@@ -156,7 +172,16 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 	if matches == 0 {
 		return errors.New("alternate names contain no matching Russian names")
 	}
+	for id, index := range cities {
+		snapshot.Cities[index].IATACode = ""
+		if !ambiguous[id] {
+			snapshot.Cities[index].IATACode = codes[id]
+		}
+	}
 	for id, n := range chosen {
+		if i, ok := regions[id]; ok {
+			snapshot.Regions[i].NameRu = n.name
+		}
 		if i, ok := cities[id]; ok {
 			snapshot.Cities[i].NameRu = n.name
 		}
