@@ -41,6 +41,11 @@ jobs:
           make db-up
           make migrate
           make test-int
+      - name: Kafka outbox delivery and recovery
+        run: make test-kafka
+      - name: Stop test Kafka
+        if: always()
+        run: docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml down -v
       - name: Browser tests
         run: |
           npx --prefix frontend playwright install --with-deps chromium

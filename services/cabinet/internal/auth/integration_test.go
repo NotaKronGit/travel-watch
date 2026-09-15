@@ -29,61 +29,9 @@ import (
 )
 
 func TestPostgresAuth(t *testing.T) {
-	env, err := godotenv.Read(filepath.Join("..", "..", "..", "..", ".env"))
-	if err != nil {
-		t.Fatal("integration test requires root .env and make db-up:", err)
-	}
-	port := env["CABINET_DATABASE_PORT"]
-	if port == "" {
-		port = "55432"
-	}
-	dsn := func(user, password, schema string) string {
-		u := url.URL{Scheme: "postgres", Host: "127.0.0.1:" + port, Path: "cabinet", User: url.UserPassword(user, password)}
-		q := url.Values{"sslmode": {"disable"}, "connect_timeout": {"5"}}
-		if schema != "" {
-			q.Set("search_path", schema)
-		}
-		u.RawQuery = q.Encode()
-		return u.String()
-	}
-	open := func(user, password, schema string) *sql.DB {
-		t.Helper()
-		db, err := sql.Open("pgx", dsn(user, password, schema))
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Cleanup(func() { _ = db.Close() })
-		return db
-	}
-	owner := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], "")
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
-	if err := owner.PingContext(ctx); err != nil {
-		t.Fatal("PostgreSQL unavailable; run make db-up")
-	}
-	schema := "test_auth_" + hex.EncodeToString(randBytes(8))
-	if _, err := owner.ExecContext(ctx, "CREATE SCHEMA "+schema); err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if _, err := owner.ExecContext(context.Background(), "DROP SCHEMA "+schema+" CASCADE"); err != nil {
-			t.Error(err)
-		}
-	}()
-	if _, err := owner.ExecContext(ctx, "GRANT USAGE ON SCHEMA "+schema+" TO cabinet_app"); err != nil {
-		t.Fatal(err)
-	}
-	migrator := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], schema)
-	goose.SetBaseFS(migrations.Files)
-	if err := goose.SetDialect("postgres"); err != nil {
-		t.Fatal(err)
-	}
-	for i := 0; i < 2; i++ {
-		if err := goose.UpContext(ctx, migrator, "."); err != nil {
-			t.Fatal(err)
-		}
-	}
-	db := open("cabinet_app", env["CABINET_DATABASE_APP_PASSWORD"], schema)
+	migrator, db := integrationDB(t, ctx)
 	if _, err := db.ExecContext(ctx, "CREATE TABLE forbidden(id int)"); err == nil {
 		t.Fatal("app role can perform DDL")
 	}
@@ -270,3 +218,64 @@ func TestPostgresAuth(t *testing.T) {
 	}
 }
 func randBytes(n int) []byte { b := make([]byte, n); _, _ = rand.Read(b); return b }
+
+func integrationDB(t *testing.T, ctx context.Context) (*sql.DB, *sql.DB) {
+	t.Helper()
+	env, err := godotenv.Read(filepath.Join("..", "..", "..", "..", ".env"))
+	if err != nil {
+		t.Fatal("integration test requires root .env and make db-up:", err)
+	}
+	port := env["CABINET_DATABASE_PORT"]
+	if port == "" {
+		port = "55432"
+	}
+	dsn := func(user, password, schema string) string {
+		u := url.URL{Scheme: "postgres", Host: "127.0.0.1:" + port, Path: "cabinet", User: url.UserPassword(user, password)}
+		q := url.Values{"sslmode": {"disable"}, "connect_timeout": {"5"}}
+		if schema != "" {
+			q.Set("search_path", schema)
+		}
+		u.RawQuery = q.Encode()
+		return u.String()
+	}
+	open := func(user, password, schema string) *sql.DB {
+		t.Helper()
+		db, err := sql.Open("pgx", dsn(user, password, schema))
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = db.Close() })
+		return db
+	}
+	owner := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], "")
+	if err := owner.PingContext(ctx); err != nil {
+		t.Fatal("PostgreSQL unavailable; run make db-up")
+	}
+	schema := "test_auth_" + hex.EncodeToString(randBytes(8))
+	if _, err := owner.ExecContext(ctx, "CREATE SCHEMA "+schema); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+		defer cancel()
+		if _, err := owner.ExecContext(cleanup, "DROP SCHEMA "+schema+" CASCADE"); err != nil {
+			t.Error(err)
+		}
+	})
+	if _, err := owner.ExecContext(ctx, "GRANT USAGE ON SCHEMA "+schema+" TO cabinet_app"); err != nil {
+		t.Fatal(err)
+	}
+	migrator := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], schema)
+	goose.SetBaseFS(migrations.Files)
+	if err := goose.SetDialect("postgres"); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 2; i++ {
+		if err := goose.UpContext(ctx, migrator, "."); err != nil {
+			t.Fatal(err)
+		}
+	}
+	db := open("cabinet_app", env["CABINET_DATABASE_APP_PASSWORD"], schema)
+
+	return migrator, db
+}

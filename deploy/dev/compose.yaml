@@ -48,6 +48,27 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
+  kafka:
+    extends: {file: ../compose/kafka.yaml, service: kafka}
+    networks: [events]
+  kafka-init:
+    extends: {file: ../compose/kafka.yaml, service: kafka-init}
+    networks: [events]
+  outbox:
+    <<: *cabinet-image
+    command: [publish-outbox]
+    restart: unless-stopped
+    environment:
+      CABINET_DATABASE_HOST: postgres
+      CABINET_DATABASE_PORT: "5432"
+      CABINET_DATABASE_APP_PASSWORD: ${CABINET_DATABASE_APP_PASSWORD:?Set CABINET_DATABASE_APP_PASSWORD}
+      CABINET_OUTBOX_BROKERS: kafka:9092
+      CABINET_OUTBOX_TOPIC: ${CABINET_OUTBOX_TOPIC:-travelwatch.trip-requests.v1}
+    networks: [database, events]
+    depends_on:
+      postgres: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
+      kafka-init: {condition: service_completed_successfully}
   frontend:
     image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/frontend:${IMAGE_TAG:-dev-latest}
     restart: unless-stopped
@@ -62,6 +83,8 @@ services:
       retries: 12
 networks:
   database: { internal: true }
+  events: { internal: true }
   application: {}
 volumes:
   postgres_data:
+  kafka_data:
