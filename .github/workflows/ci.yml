@@ -49,6 +49,8 @@ jobs:
           POSTGRES_PASSWORD: ci-postgres
           CABINET_DATABASE_OWNER_PASSWORD: ci-owner
           CABINET_DATABASE_APP_PASSWORD: ci-app
+          SEARCH_DATABASE_OWNER_PASSWORD: ci-search-owner
+          SEARCH_DATABASE_APP_PASSWORD: ci-search-app
         run: |
           docker compose -f deploy/compose/compose.yaml config --quiet
           docker compose -f deploy/stage_local/compose.yaml --profile tools config --quiet
@@ -70,6 +72,8 @@ jobs:
           cp .env.example .env
           make db-up
           make migrate
+          make search-db-init
+          make search-migrate
       - name: PostgreSQL integration tests
         run: make test-int
       - name: Kafka outbox delivery and recovery
@@ -174,10 +178,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Promote both built images to dev-latest
+      - name: Promote all built images to dev-latest
         shell: bash
         run: |
-          for service in cabinet frontend; do
+          for service in cabinet search frontend; do
             image="ghcr.io/${GITHUB_REPOSITORY,,}/${service}"
             docker buildx imagetools create --tag "${image}:dev-latest" "${image}:${GITHUB_SHA}"
           done

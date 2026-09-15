@@ -2,6 +2,46 @@ name: travel-watch-dev
 x-cabinet: &cabinet-image
   image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/cabinet:${IMAGE_TAG:-dev-latest}
 services:
+  search-db-init:
+    image: postgres:17-alpine
+    restart: "no"
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      SEARCH_DATABASE_OWNER_PASSWORD: ${SEARCH_DATABASE_OWNER_PASSWORD:?Set SEARCH_DATABASE_OWNER_PASSWORD}
+      SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
+    volumes:
+      - ../compose/init-search.sql:/init-search.sql:ro
+    command: [psql, -h, postgres, -U, postgres, -d, postgres, -v, ON_ERROR_STOP=1, -f, /init-search.sql]
+    depends_on:
+      postgres: {condition: service_healthy}
+    networks: [database]
+  search-migrate:
+    image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/search:${IMAGE_TAG:-dev-latest}
+    command: [migrate]
+    restart: "no"
+    environment:
+      SEARCH_DATABASE_HOST: postgres
+      SEARCH_DATABASE_PORT: "5432"
+      SEARCH_DATABASE_OWNER_PASSWORD: ${SEARCH_DATABASE_OWNER_PASSWORD:?Set SEARCH_DATABASE_OWNER_PASSWORD}
+      SEARCH_CONSUMER_BROKERS: kafka:9092
+      SEARCH_CONSUMER_TOPIC: ${CABINET_OUTBOX_TOPIC:-travelwatch.trip-requests.v1}
+    networks: [database]
+    depends_on:
+      search-db-init: {condition: service_completed_successfully}
+  search:
+    image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/search:${IMAGE_TAG:-dev-latest}
+    command: [consume]
+    restart: unless-stopped
+    environment:
+      SEARCH_DATABASE_HOST: postgres
+      SEARCH_DATABASE_PORT: "5432"
+      SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
+      SEARCH_CONSUMER_BROKERS: kafka:9092
+      SEARCH_CONSUMER_TOPIC: ${CABINET_OUTBOX_TOPIC:-travelwatch.trip-requests.v1}
+    networks: [database, events]
+    depends_on:
+      search-migrate: {condition: service_completed_successfully}
+      kafka-init: {condition: service_completed_successfully}
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped

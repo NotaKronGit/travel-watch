@@ -1,0 +1,22 @@
+database:
+  host: 127.0.0.1
+  port: 55432
+  name: search
+  sslmode: disable
+  app_user: search_app
+  app_password: ""
+  owner_user: search_owner
+  owner_password: ""
+  connect_timeout: 5s
+  ping_timeout: 5s
+  max_open_conns: 5
+  max_idle_conns: 2
+  conn_max_lifetime: 30m
+  migration_timeout: 1m
+consumer:
+  brokers: [127.0.0.1:9092]
+  topic: travelwatch.trip-requests.v1
+  group_id: travelwatch-search-v1
+  db_timeout: 5s
+  commit_timeout: 10s
+  dial_timeout: 5s

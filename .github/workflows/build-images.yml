@@ -14,6 +14,8 @@ jobs:
         include:
           - service: cabinet
             dockerfile: services/cabinet/Dockerfile
+          - service: search
+            dockerfile: services/search/Dockerfile
           - service: frontend
             dockerfile: frontend/Dockerfile
     steps:
@@ -21,16 +23,16 @@ jobs:
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - name: Restore Docker Go compiler cache
-        if: matrix.service == 'cabinet'
+        if: matrix.service != 'frontend'
         id: go-cache
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/docker-go-build
-          key: docker-go-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.mod', 'go.sum', 'services/cabinet/Dockerfile') }}-${{ github.sha }}
+          key: docker-go-build-v1-${{ matrix.service }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.mod', 'go.sum', matrix.dockerfile) }}-${{ github.sha }}
           restore-keys: |
-            docker-go-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.mod', 'go.sum', 'services/cabinet/Dockerfile') }}-
+            docker-go-build-v1-${{ matrix.service }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.mod', 'go.sum', matrix.dockerfile) }}-
       - name: Restore and save BuildKit cache mount
-        if: matrix.service == 'cabinet'
+        if: matrix.service != 'frontend'
         uses: reproducible-containers/buildkit-cache-dance@4b2444fec0c0fb9dbf175a96c094720a692ef810 # v2.1.4
         with:
           cache-source: ${{ runner.temp }}/docker-go-build
