@@ -62,13 +62,13 @@ func TestGeoNamesSource(t *testing.T) {
 					return
 				}
 				if r.URL.Path == "/names" {
-					w.Write(translations)
+					_, _ = w.Write(translations)
 				} else if r.URL.Path == "/regions" {
-					w.Write([]byte("RU.01\tTest region\tTest region\t2\n"))
+					_, _ = w.Write([]byte("RU.01\tTest region\tTest region\t2\n"))
 				} else if r.URL.Path == "/countries" {
-					w.Write([]byte(countriesTSV))
+					_, _ = w.Write([]byte(countriesTSV))
 				} else {
-					w.Write(archive)
+					_, _ = w.Write(archive)
 				}
 			}))
 			defer server.Close()

@@ -74,7 +74,7 @@ func TestAlternateNamesFailuresAndCleanup(t *testing.T) {
 					w.WriteHeader(tc.status)
 					return
 				}
-				w.Write(data)
+				_, _ = w.Write(data)
 			}))
 			defer server.Close()
 			src := GeoNamesSource{Client: server.Client(), AlternateNamesURL: server.URL, MaxAlternateDownloadBytes: 100000, MaxAlternateUncompressedBytes: 100000}

@@ -28,7 +28,7 @@ jobs:
           npm --prefix frontend ci
           go mod download
           go install github.com/bufbuild/buf/cmd/buf@v1.61.0
-      - name: Format, contracts and build
+      - name: Format, contracts, Go lint (including gosec) and build
         run: |
           test -z "$(gofmt -l services gen)"
           make generate

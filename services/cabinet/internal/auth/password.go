@@ -10,6 +10,9 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// Format marker and public Argon2 parameters, not a credential.
+//
+//nolint:gosec // G101: this constant contains no password or secret.
 const passwordPrefix = "$argon2id$v=19$m=19456,t=2,p=1$"
 
 func hashPassword(password string) string {

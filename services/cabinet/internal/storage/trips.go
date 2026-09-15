@@ -44,7 +44,7 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	// Serialize retries for the same user and request, including concurrent requests.
 	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", trip.UserID+":"+trip.RequestID); err != nil {
 		return "", err
@@ -69,12 +69,12 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer rows.Close()
 	count := 0
 	zone := ""
 	for rows.Next() {
 		var id, tz string
 		if err := rows.Scan(&id, &tz); err != nil {
-			rows.Close()
 			return "", err
 		}
 		count++
@@ -83,7 +83,10 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 		}
 	}
 	err = rows.Err()
-	rows.Close()
+	closeErr := rows.Close()
+	if err == nil {
+		err = closeErr
+	}
 	if err != nil {
 		return "", err
 	}

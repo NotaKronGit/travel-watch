@@ -72,7 +72,7 @@ func (s *Store) RegisterWithSession(ctx context.Context, email, passwordHash str
 	if err != nil {
 		return User{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	query, args, err := postgres.Insert("users").Rows(goqu.Record{"email": email, "password_hash": passwordHash}).Returning("id", "created_at").Prepared(true).ToSQL()
 	if err != nil {
 		return User{}, err
@@ -98,7 +98,7 @@ func (s *Store) ReplaceSession(ctx context.Context, userID string, session Sessi
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = replaceSession(ctx, tx, userID, session, oldHash); err != nil {
 		return err
 	}

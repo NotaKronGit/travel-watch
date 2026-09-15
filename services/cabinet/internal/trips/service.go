@@ -137,10 +137,11 @@ func (s *Service) ListTrips(ctx context.Context, req *connect.Request[v1.ListTri
 	if err != nil {
 		return nil, err
 	}
-	if req.Msg.Offset < 0 {
+	offset := req.Msg.Offset
+	if offset < 0 {
 		return nil, invalid("Некорректная страница")
 	}
-	trips, more, err := s.store.ListTrips(ctx, user, uint(req.Msg.Offset))
+	trips, more, err := s.store.ListTrips(ctx, user, uint(offset))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnavailable, errors.New("Не удалось загрузить заявки"))
 	}

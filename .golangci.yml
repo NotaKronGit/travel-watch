@@ -1,0 +1,31 @@
+version: "2"
+run:
+  timeout: 5m
+  tests: true
+  build-tags: [integration]
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - errcheck
+    - gosec
+    - bodyclose
+    - contextcheck
+    - rowserrcheck
+    - sqlclosecheck
+    - nilerr
+    - errorlint
+    - nolintlint
+  exclusions:
+    generated: strict
+    presets: [comments, common-false-positives, std-error-handling]
+  settings:
+    staticcheck:
+      # RPC errors are user-facing Russian sentences; switch rewrites are optional.
+      checks: [all, "-ST1005", "-QF1003"]
+    nolintlint:
+      require-explanation: true
+      require-specific: true
