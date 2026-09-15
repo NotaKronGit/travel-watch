@@ -3,6 +3,7 @@ package config
 import "time"
 
 type Config struct {
+	Outbox   Outbox   `mapstructure:"outbox"`
 	Server   Server   `mapstructure:"server"`
 	Database Database `mapstructure:"database"`
 	Catalog  Catalog  `mapstructure:"catalog"`
@@ -65,4 +66,16 @@ type Catalog struct {
 	MaxUncompressedBytes          int64         `mapstructure:"max_uncompressed_bytes"`
 	MinCities                     int           `mapstructure:"min_cities"`
 	MaxCities                     int           `mapstructure:"max_cities"`
+}
+
+// Outbox settings apply only to publish-outbox.
+type Outbox struct {
+	Brokers        []string      `mapstructure:"brokers"`
+	Topic          string        `mapstructure:"topic"`
+	PollInterval   time.Duration `mapstructure:"poll_interval"`
+	DBTimeout      time.Duration `mapstructure:"db_timeout"`
+	PublishTimeout time.Duration `mapstructure:"publish_timeout"`
+	LeaseDuration  time.Duration `mapstructure:"lease_duration"`
+	RetryMin       time.Duration `mapstructure:"retry_min"`
+	RetryMax       time.Duration `mapstructure:"retry_max"`
 }

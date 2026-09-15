@@ -113,4 +113,7 @@ func testTripStorage(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 		}
 	}
 
+	testTripOutbox(t, ctx, owner, app, user, ids[0], ids[1])
+	testOutboxLeases(t, ctx, owner, app)
+
 }

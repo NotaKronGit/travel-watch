@@ -10,11 +10,13 @@ Stage_local позволяет проверить собранное прило�
 make stage-local-up
 ```
 
-Команда собирает Cabinet и frontend, запускает PostgreSQL, применяет миграции и ждёт готовности приложения. Откройте [http://localhost:18080](http://localhost:18080).
+Команда собирает Cabinet и frontend, запускает PostgreSQL и Kafka, применяет миграции, создаёт топик и запускает отправитель outbox. Команда ждёт готовности приложения. Откройте [http://localhost:18080](http://localhost:18080).
 
 Порядок запуска задаёт `depends_on` в Compose: миграции ждут готовности PostgreSQL (`service_healthy`), Cabinet — успешного завершения миграций (`service_completed_successfully`), frontend — готовности Cabinet. Makefile вызывает одну команду `docker compose up --build -d --wait --wait-timeout 120`. Флаг `--wait` ждёт готовности стенда перед завершением команды.
 
 Frontend раздаётся Nginx и проксирует API к Cabinet. Наружу опубликован только порт frontend, привязанный к 127.0.0.1. База не публикует порт и работает в отдельной внутренней Docker-сети. Роль приложения не имеет прав миграций; миграция запускается отдельным одноразовым контейнером.
+
+Контейнер `kafka-init` создаёт топик и также штатно завершается с кодом 0. Отправитель ждёт его и миграции; HTTP Cabinet не зависит от брокера. Kafka хранится в отдельном томе `travel-watch-stage-local_kafka_data` и не публикует порт наружу. [Команды проверки очереди и гарантии](outbox.md).
 
 После успешных миграций контейнер `migrate` остаётся в состоянии `Exited (0)` — это нормально. При следующем `stage-local-up` он запускается снова; Goose применяет только новые миграции.
 
@@ -26,7 +28,7 @@ make stage-local-restart
 make stage-local-logs
 ```
 
-`make stage-local-stop` останавливает стенд, `make stage-local-restart` перезапускает существующие контейнеры PostgreSQL, Cabinet и frontend, а `make stage-local-logs` показывает логи приложения. Перезапуск не пересобирает образы и не применяет изменения конфигурации.
+`make stage-local-stop` останавливает стенд, `make stage-local-restart` перезапускает существующие контейнеры PostgreSQL, Kafka, outbox, Cabinet и frontend, а `make stage-local-logs` показывает логи приложения. Перезапуск не пересобирает образы и не применяет изменения конфигурации.
 
 Для обновления после изменения кода или конфигурации снова выполните `make stage-local-up`. Если миграция не проходит, команда прекращается до запуска новой версии приложения. Автоматического отката миграций нет.
 
@@ -58,7 +60,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:18080 npm --prefix frontend run test:e2e
 
 `.github/workflows/ci.yml` выполняется для PR и push в main:
 
-- Проверяет Go (включая golangci-lint и gosec через `make check`), frontend, контракт API, миграции и браузерный сценарий.
+- Проверяет Go (включая golangci-lint и gosec через `make check`), frontend, контракт API, миграции, доставку outbox с отказами Kafka и браузерный сценарий.
 - После тестов собирает образы Cabinet и frontend для linux/amd64 и linux/arm64.
 - Стадии Go и Node/Vite выполняются на `BUILDPLATFORM`: Go кросс-компилирует через `TARGETOS`/`TARGETARCH`, frontend собирается в общую статику. Компиляция не требует QEMU; финальные образы остаются для целевой архитектуры. QEMU в workflow оставлен для команд в финальном Alpine-образе, например установки сертификатов.
 - При push в main публикует образы `ghcr.io/<owner>/<repo>/cabinet:<commit-sha>` и `frontend:<commit-sha>`. Используется встроенный GITHUB_TOKEN с packages:write; личный токен в репозиторий не нужен.

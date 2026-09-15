@@ -14,6 +14,7 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/auth"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/catalog"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/outbox"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/trips"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
@@ -31,8 +32,8 @@ func run() error {
 	if len(os.Args) > 1 {
 		command = os.Args[1]
 	}
-	if command != "serve" && command != "migrate" && command != "sync-cities" {
-		return errors.New("usage: cabinet [serve|migrate|sync-cities]")
+	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" {
+		return errors.New("usage: cabinet [serve|migrate|sync-cities|publish-outbox]")
 	}
 	configPath := os.Getenv("CABINET_CONFIG")
 	if configPath == "" {
@@ -42,7 +43,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	db, err := sql.Open("pgx", cfg.Database.URL(command != "serve"))
+	db, err := sql.Open("pgx", cfg.Database.URL(command == "migrate" || command == "sync-cities"))
 	if err != nil {
 		return errors.New("cannot initialize database connection")
 	}
@@ -68,6 +69,19 @@ func run() error {
 		return goose.UpContext(migrationCtx, db, ".")
 	}
 	store := storage.New(db)
+	if command == "publish-outbox" {
+		publisher := outbox.NewKafkaPublisher(cfg.Outbox)
+		defer func() {
+			if err := publisher.Close(); err != nil {
+				slog.Warn("outbox publisher close failed")
+			}
+		}()
+		err := (outbox.Relay{Repository: store, Publisher: publisher, Config: cfg.Outbox}).Run(ctx)
+		if errors.Is(err, context.Canceled) {
+			return nil
+		}
+		return err
+	}
 	if command == "sync-cities" {
 		syncCtx, cancel := context.WithTimeout(ctx, cfg.Catalog.SyncTimeout)
 		defer cancel()

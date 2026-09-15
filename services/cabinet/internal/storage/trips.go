@@ -7,7 +7,10 @@ import (
 	"strings"
 	"time"
 
+	eventsv1 "github.com/NotaKronGit/travel-watch/gen/travelwatch/events/v1"
 	"github.com/doug-martin/goqu/v9"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type CityOption struct{ ID, Name, Country, Region, Timezone, IATACode string }
@@ -65,21 +68,23 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 		return "", err
 	}
 	// Read both cities in one snapshot; the application only has SELECT on the catalog.
-	rows, err := tx.QueryContext(ctx, "SELECT id, timezone FROM catalog_cities WHERE id IN ($1,$2) AND active AND name_ru<>'' ORDER BY id", trip.OriginID, trip.DestinationID)
+	rows, err := tx.QueryContext(ctx, "SELECT id, source, source_id, name_ru, country_code, latitude, longitude, timezone, iata_code FROM catalog_cities WHERE id IN ($1,$2) AND active AND name_ru<>'' ORDER BY id", trip.OriginID, trip.DestinationID)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
 	count := 0
 	zone := ""
+	cities := map[string]*eventsv1.TripCity{}
 	for rows.Next() {
-		var id, tz string
-		if err := rows.Scan(&id, &tz); err != nil {
+		var city eventsv1.TripCity
+		if err := rows.Scan(&city.Id, &city.Source, &city.SourceId, &city.Name, &city.CountryCode, &city.Latitude, &city.Longitude, &city.Timezone, &city.IataCode); err != nil {
 			return "", err
 		}
 		count++
-		if id == trip.OriginID {
-			zone = tz
+		cities[city.Id] = &city
+		if city.Id == trip.OriginID {
+			zone = city.Timezone
 		}
 	}
 	err = rows.Err()
@@ -100,12 +105,25 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 	if trip.DepartureFrom < time.Now().In(location).Format(time.DateOnly) {
 		return "", ErrPastDeparture
 	}
-	q, args, err = postgres.Insert("trip_requests").Rows(goqu.Record{"user_id": trip.UserID, "request_id": trip.RequestID, "origin_id": trip.OriginID, "destination_id": trip.DestinationID, "departure_from": trip.DepartureFrom, "departure_to": trip.DepartureTo, "adults": trip.Adults}).Returning("id").Prepared(true).ToSQL()
+	q, args, err = postgres.Insert("trip_requests").Rows(goqu.Record{"user_id": trip.UserID, "request_id": trip.RequestID, "origin_id": trip.OriginID, "destination_id": trip.DestinationID, "departure_from": trip.DepartureFrom, "departure_to": trip.DepartureTo, "adults": trip.Adults}).Returning("id", "created_at", goqu.L("gen_random_uuid()")).Prepared(true).ToSQL()
 	if err != nil {
 		return "", err
 	}
-	var id string
-	if err := tx.QueryRowContext(ctx, q, args...).Scan(&id); err != nil {
+	var id, eventID string
+	var created time.Time
+	if err := tx.QueryRowContext(ctx, q, args...).Scan(&id, &created, &eventID); err != nil {
+		return "", err
+	}
+	event := &eventsv1.TripRequestCreated{EventId: eventID, SchemaVersion: 1, RequestId: id, OccurredAt: timestamppb.New(created), Origin: cities[trip.OriginID], Destination: cities[trip.DestinationID], DepartureFrom: trip.DepartureFrom, DepartureTo: trip.DepartureTo, Adults: trip.Adults}
+	payload, err := proto.Marshal(event)
+	if err != nil {
+		return "", err
+	}
+	q, args, err = postgres.Insert("outbox_events").Rows(goqu.Record{"id": eventID, "request_id": id, "event_type": "travelwatch.events.v1.TripRequestCreated", "payload": payload}).Prepared(true).ToSQL()
+	if err != nil {
+		return "", err
+	}
+	if _, err := tx.ExecContext(ctx, q, args...); err != nil {
 		return "", err
 	}
 	return id, tx.Commit()

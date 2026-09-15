@@ -57,10 +57,10 @@ stage-local-stop:
 	$(STAGE_LOCAL) stop
 
 stage-local-restart:
-	$(STAGE_LOCAL) restart postgres cabinet frontend
+	$(STAGE_LOCAL) restart postgres kafka outbox cabinet frontend
 
 stage-local-logs:
-	$(STAGE_LOCAL) logs --tail 100 -f cabinet frontend
+	$(STAGE_LOCAL) logs --tail 100 -f cabinet frontend outbox kafka
 
 DEV = docker compose --env-file .env.dev -f deploy/dev/compose.yaml
 .PHONY: dev-up dev-stop dev-restart dev-logs
@@ -73,11 +73,27 @@ dev-stop:
 	$(DEV) stop
 
 dev-restart:
-	$(DEV) restart postgres cabinet frontend
+	$(DEV) restart postgres kafka outbox cabinet frontend
 
 dev-logs:
-	$(DEV) logs --tail 100 -f migrate cabinet frontend
+	$(DEV) logs --tail 100 -f migrate cabinet frontend outbox kafka
 
 .PHONY: cities-sync
 cities-sync:
 	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet sync-cities
+
+.PHONY: publish-outbox
+publish-outbox:
+	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet publish-outbox
+
+.PHONY: kafka-up kafka-stop test-kafka
+kafka-up:
+	$(COMPOSE) up -d --wait --wait-timeout 180 kafka
+	$(COMPOSE) run --rm kafka-init
+
+kafka-stop:
+	$(COMPOSE) stop kafka
+
+test-kafka:
+	docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml up -d --wait --wait-timeout 180 kafka
+	go test -race -tags=integration,kafka ./services/cabinet/internal/auth -run '^TestKafkaOutbox$$' -count=1 -timeout=3m
