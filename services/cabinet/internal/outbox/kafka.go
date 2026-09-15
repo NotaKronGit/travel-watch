@@ -22,7 +22,7 @@ func NewKafkaPublisher(c config.Outbox) *KafkaPublisher {
 	}}
 }
 func (p *KafkaPublisher) Publish(ctx context.Context, m storage.OutboxMessage) error {
-	return p.writer.WriteMessages(ctx, kafka.Message{Key: []byte(m.RequestID), Value: m.Payload})
+	return p.writer.WriteMessages(ctx, kafka.Message{Key: []byte(m.RequestID), Value: m.Payload, Headers: []kafka.Header{{Key: "event_type", Value: []byte(m.EventType)}}})
 }
 func (p *KafkaPublisher) Close() error {
 	err := p.writer.Close()

@@ -7,6 +7,8 @@ service TripService {
   rpc SearchCities(SearchCitiesRequest) returns (SearchCitiesResponse);
   rpc ListTrips(ListTripsRequest) returns (ListTripsResponse);
   rpc GetTrip(GetTripRequest) returns (GetTripResponse);
+  rpc CancelTrip(CancelTripRequest) returns (CancelTripResponse);
+  rpc UpdateTripComment(UpdateTripCommentRequest) returns (UpdateTripCommentResponse);
   rpc CreateTrip(CreateTripRequest) returns (CreateTripResponse);
 }
 message CityOption {
@@ -31,6 +33,17 @@ message CreateTripRequest {
 }
 message CreateTripResponse { string id = 1; }
 
+enum TripStatus {
+  TRIP_STATUS_UNSPECIFIED = 0;
+  TRIP_STATUS_SAVED = 1;
+  TRIP_STATUS_RUNNING = 2;
+  TRIP_STATUS_CANCELLED = 3;
+  TRIP_STATUS_COMPLETED = 4;
+}
+message CancelTripRequest { string id = 1; }
+message CancelTripResponse {}
+message UpdateTripCommentRequest { string id = 1; string comment = 2; }
+message UpdateTripCommentResponse {}
 message TripDetails {
   string id = 1;
   CityOption origin = 2;
@@ -39,6 +52,9 @@ message TripDetails {
   string departure_to = 5;
   int32 adults = 6;
   google.protobuf.Timestamp created_at = 7;
+  TripStatus status = 8;
+  string comment = 9;
+  google.protobuf.Timestamp cancelled_at = 10;
 }
 message ListTripsRequest { int32 offset = 1; }
 message ListTripsResponse {

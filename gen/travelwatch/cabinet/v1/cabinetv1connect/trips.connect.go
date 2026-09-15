@@ -40,6 +40,11 @@ const (
 	TripServiceListTripsProcedure = "/travelwatch.cabinet.v1.TripService/ListTrips"
 	// TripServiceGetTripProcedure is the fully-qualified name of the TripService's GetTrip RPC.
 	TripServiceGetTripProcedure = "/travelwatch.cabinet.v1.TripService/GetTrip"
+	// TripServiceCancelTripProcedure is the fully-qualified name of the TripService's CancelTrip RPC.
+	TripServiceCancelTripProcedure = "/travelwatch.cabinet.v1.TripService/CancelTrip"
+	// TripServiceUpdateTripCommentProcedure is the fully-qualified name of the TripService's
+	// UpdateTripComment RPC.
+	TripServiceUpdateTripCommentProcedure = "/travelwatch.cabinet.v1.TripService/UpdateTripComment"
 	// TripServiceCreateTripProcedure is the fully-qualified name of the TripService's CreateTrip RPC.
 	TripServiceCreateTripProcedure = "/travelwatch.cabinet.v1.TripService/CreateTrip"
 )
@@ -49,6 +54,8 @@ type TripServiceClient interface {
 	SearchCities(context.Context, *connect.Request[v1.SearchCitiesRequest]) (*connect.Response[v1.SearchCitiesResponse], error)
 	ListTrips(context.Context, *connect.Request[v1.ListTripsRequest]) (*connect.Response[v1.ListTripsResponse], error)
 	GetTrip(context.Context, *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error)
+	CancelTrip(context.Context, *connect.Request[v1.CancelTripRequest]) (*connect.Response[v1.CancelTripResponse], error)
+	UpdateTripComment(context.Context, *connect.Request[v1.UpdateTripCommentRequest]) (*connect.Response[v1.UpdateTripCommentResponse], error)
 	CreateTrip(context.Context, *connect.Request[v1.CreateTripRequest]) (*connect.Response[v1.CreateTripResponse], error)
 }
 
@@ -81,6 +88,18 @@ func NewTripServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(tripServiceMethods.ByName("GetTrip")),
 			connect.WithClientOptions(opts...),
 		),
+		cancelTrip: connect.NewClient[v1.CancelTripRequest, v1.CancelTripResponse](
+			httpClient,
+			baseURL+TripServiceCancelTripProcedure,
+			connect.WithSchema(tripServiceMethods.ByName("CancelTrip")),
+			connect.WithClientOptions(opts...),
+		),
+		updateTripComment: connect.NewClient[v1.UpdateTripCommentRequest, v1.UpdateTripCommentResponse](
+			httpClient,
+			baseURL+TripServiceUpdateTripCommentProcedure,
+			connect.WithSchema(tripServiceMethods.ByName("UpdateTripComment")),
+			connect.WithClientOptions(opts...),
+		),
 		createTrip: connect.NewClient[v1.CreateTripRequest, v1.CreateTripResponse](
 			httpClient,
 			baseURL+TripServiceCreateTripProcedure,
@@ -92,10 +111,12 @@ func NewTripServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // tripServiceClient implements TripServiceClient.
 type tripServiceClient struct {
-	searchCities *connect.Client[v1.SearchCitiesRequest, v1.SearchCitiesResponse]
-	listTrips    *connect.Client[v1.ListTripsRequest, v1.ListTripsResponse]
-	getTrip      *connect.Client[v1.GetTripRequest, v1.GetTripResponse]
-	createTrip   *connect.Client[v1.CreateTripRequest, v1.CreateTripResponse]
+	searchCities      *connect.Client[v1.SearchCitiesRequest, v1.SearchCitiesResponse]
+	listTrips         *connect.Client[v1.ListTripsRequest, v1.ListTripsResponse]
+	getTrip           *connect.Client[v1.GetTripRequest, v1.GetTripResponse]
+	cancelTrip        *connect.Client[v1.CancelTripRequest, v1.CancelTripResponse]
+	updateTripComment *connect.Client[v1.UpdateTripCommentRequest, v1.UpdateTripCommentResponse]
+	createTrip        *connect.Client[v1.CreateTripRequest, v1.CreateTripResponse]
 }
 
 // SearchCities calls travelwatch.cabinet.v1.TripService.SearchCities.
@@ -113,6 +134,16 @@ func (c *tripServiceClient) GetTrip(ctx context.Context, req *connect.Request[v1
 	return c.getTrip.CallUnary(ctx, req)
 }
 
+// CancelTrip calls travelwatch.cabinet.v1.TripService.CancelTrip.
+func (c *tripServiceClient) CancelTrip(ctx context.Context, req *connect.Request[v1.CancelTripRequest]) (*connect.Response[v1.CancelTripResponse], error) {
+	return c.cancelTrip.CallUnary(ctx, req)
+}
+
+// UpdateTripComment calls travelwatch.cabinet.v1.TripService.UpdateTripComment.
+func (c *tripServiceClient) UpdateTripComment(ctx context.Context, req *connect.Request[v1.UpdateTripCommentRequest]) (*connect.Response[v1.UpdateTripCommentResponse], error) {
+	return c.updateTripComment.CallUnary(ctx, req)
+}
+
 // CreateTrip calls travelwatch.cabinet.v1.TripService.CreateTrip.
 func (c *tripServiceClient) CreateTrip(ctx context.Context, req *connect.Request[v1.CreateTripRequest]) (*connect.Response[v1.CreateTripResponse], error) {
 	return c.createTrip.CallUnary(ctx, req)
@@ -123,6 +154,8 @@ type TripServiceHandler interface {
 	SearchCities(context.Context, *connect.Request[v1.SearchCitiesRequest]) (*connect.Response[v1.SearchCitiesResponse], error)
 	ListTrips(context.Context, *connect.Request[v1.ListTripsRequest]) (*connect.Response[v1.ListTripsResponse], error)
 	GetTrip(context.Context, *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error)
+	CancelTrip(context.Context, *connect.Request[v1.CancelTripRequest]) (*connect.Response[v1.CancelTripResponse], error)
+	UpdateTripComment(context.Context, *connect.Request[v1.UpdateTripCommentRequest]) (*connect.Response[v1.UpdateTripCommentResponse], error)
 	CreateTrip(context.Context, *connect.Request[v1.CreateTripRequest]) (*connect.Response[v1.CreateTripResponse], error)
 }
 
@@ -151,6 +184,18 @@ func NewTripServiceHandler(svc TripServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(tripServiceMethods.ByName("GetTrip")),
 		connect.WithHandlerOptions(opts...),
 	)
+	tripServiceCancelTripHandler := connect.NewUnaryHandler(
+		TripServiceCancelTripProcedure,
+		svc.CancelTrip,
+		connect.WithSchema(tripServiceMethods.ByName("CancelTrip")),
+		connect.WithHandlerOptions(opts...),
+	)
+	tripServiceUpdateTripCommentHandler := connect.NewUnaryHandler(
+		TripServiceUpdateTripCommentProcedure,
+		svc.UpdateTripComment,
+		connect.WithSchema(tripServiceMethods.ByName("UpdateTripComment")),
+		connect.WithHandlerOptions(opts...),
+	)
 	tripServiceCreateTripHandler := connect.NewUnaryHandler(
 		TripServiceCreateTripProcedure,
 		svc.CreateTrip,
@@ -165,6 +210,10 @@ func NewTripServiceHandler(svc TripServiceHandler, opts ...connect.HandlerOption
 			tripServiceListTripsHandler.ServeHTTP(w, r)
 		case TripServiceGetTripProcedure:
 			tripServiceGetTripHandler.ServeHTTP(w, r)
+		case TripServiceCancelTripProcedure:
+			tripServiceCancelTripHandler.ServeHTTP(w, r)
+		case TripServiceUpdateTripCommentProcedure:
+			tripServiceUpdateTripCommentHandler.ServeHTTP(w, r)
 		case TripServiceCreateTripProcedure:
 			tripServiceCreateTripHandler.ServeHTTP(w, r)
 		default:
@@ -186,6 +235,14 @@ func (UnimplementedTripServiceHandler) ListTrips(context.Context, *connect.Reque
 
 func (UnimplementedTripServiceHandler) GetTrip(context.Context, *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("travelwatch.cabinet.v1.TripService.GetTrip is not implemented"))
+}
+
+func (UnimplementedTripServiceHandler) CancelTrip(context.Context, *connect.Request[v1.CancelTripRequest]) (*connect.Response[v1.CancelTripResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("travelwatch.cabinet.v1.TripService.CancelTrip is not implemented"))
+}
+
+func (UnimplementedTripServiceHandler) UpdateTripComment(context.Context, *connect.Request[v1.UpdateTripCommentRequest]) (*connect.Response[v1.UpdateTripCommentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("travelwatch.cabinet.v1.TripService.UpdateTripComment is not implemented"))
 }
 
 func (UnimplementedTripServiceHandler) CreateTrip(context.Context, *connect.Request[v1.CreateTripRequest]) (*connect.Response[v1.CreateTripResponse], error) {

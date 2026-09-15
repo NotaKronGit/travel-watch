@@ -32,3 +32,12 @@ message TripRequestCreated {
   string departure_to = 8;
   int32 adults = 9;
 }
+
+// Terminal cancellation. Consumers must retain it even if creation arrives later.
+// Kafka header event_type selects the Protobuf message type.
+message TripRequestCancelled {
+  string event_id = 1;
+  uint32 schema_version = 2;
+  string request_id = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}

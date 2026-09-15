@@ -4,16 +4,22 @@ import { Alert, Box, Button, Chip, Paper, Stack, Typography } from '@mui/materia
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Code, ConnectError } from '@connectrpc/connect';
 import { tripClient } from './api';
-import type { TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
+import { TripStatus, type TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
 
-const status = 'Сохранена, поиск ещё не запущен';
+import { TripActions } from './TripActions';
+const statuses: Record<number,string> = {
+  [TripStatus.SAVED]: 'Сохранена, поиск ещё не запущен',
+  [TripStatus.RUNNING]: 'Выполняется',
+  [TripStatus.CANCELLED]: 'Отменена',
+  [TripStatus.COMPLETED]: 'Завершена',
+};
 const date = (s: string) => s.split('-').reverse().join('.');
 function TripSummary({trip}: {trip: TripDetails}) {
   return <Stack spacing={2}>
     <Typography variant="h6" sx={{overflowWrap:'anywhere'}}>{trip.origin?.name} → {trip.destination?.name}</Typography>
     <Typography color="text.secondary">{[trip.origin?.country,trip.origin?.region].filter(Boolean).join(', ')} → {[trip.destination?.country,trip.destination?.region].filter(Boolean).join(', ')}</Typography>
     <Typography>Выезд с {date(trip.departureFrom)} по {date(trip.departureTo)} включительно · Взрослых: {trip.adults}</Typography>
-    <Chip label={status} sx={{alignSelf:'flex-start',maxWidth:'100%',height:'auto', '& .MuiChip-label':{whiteSpace:'normal',py:1},bgcolor:'#eef2e5',color:'#183e38'}}/>
+    <Chip label={statuses[trip.status] || 'Статус неизвестен'} sx={{alignSelf:'flex-start',maxWidth:'100%',height:'auto', '& .MuiChip-label':{whiteSpace:'normal',py:1},bgcolor:'#eef2e5',color:'#183e38'}}/>
   </Stack>;
 }
 export function TripsPage({detail = false}: {detail?: boolean}) {
@@ -55,8 +61,10 @@ function TripContent({id}: {id?: string}) {
       {result.trips.map(trip => <Paper key={trip.id} variant="outlined" sx={{p:{xs:2,md:3},borderRadius:4}}>
         <TripSummary trip={trip}/>
         {id === undefined ? <Button component={Link} to={`/trips/${trip.id}`} sx={{mt:2}}>Открыть заявку</Button> : <Stack spacing={2} sx={{mt:3}}>
+          <TripActions trip={trip} onChange={updated=>setResult(current=>current ? {...current,trips:current.trips.map(item=>item.id===updated.id ? updated : item)} : current)}/>
           <Typography>Поездка в одну сторону. Диапазон относится к выезду, обратный билет не включён.</Typography>
           <Alert severity="info">Поиск билетов и уведомления ещё не подключены.</Alert>
+          {trip.cancelledAt && <Typography variant="body2" color="text.secondary">Отменена: {new Date(Number(trip.cancelledAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           {trip.createdAt && <Typography variant="body2" color="text.secondary">Создана: {new Date(Number(trip.createdAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           <Typography variant="caption" sx={{overflowWrap:'anywhere'}}>Номер заявки: {trip.id}</Typography>
         </Stack>}

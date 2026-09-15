@@ -10,9 +10,9 @@ import (
 )
 
 type OutboxMessage struct {
-	ID, RequestID, LeaseToken string
-	Payload                   []byte
-	Attempts                  int
+	ID, RequestID, LeaseToken, EventType string
+	Payload                              []byte
+	Attempts                             int
 }
 
 // ClaimOutbox commits a short row lease before any network publication.
@@ -24,7 +24,7 @@ func (s *Store) ClaimOutbox(ctx context.Context, lease time.Duration) (OutboxMes
  ORDER BY available_at, created_at, id FOR UPDATE SKIP LOCKED LIMIT 1
  ) UPDATE outbox_events e SET lease_until=now()+($1 * interval '1 millisecond'),
  lease_token=gen_random_uuid(), attempts=CASE WHEN attempts<2147483647 THEN attempts+1 ELSE attempts END
- FROM candidate c WHERE e.id=c.id RETURNING e.id,e.request_id,e.payload,e.lease_token,e.attempts`, lease.Milliseconds()).Scan(&m.ID, &m.RequestID, &m.Payload, &m.LeaseToken, &m.Attempts)
+ FROM candidate c WHERE e.id=c.id RETURNING e.id,e.request_id,e.payload,e.lease_token,e.attempts,e.event_type`, lease.Milliseconds()).Scan(&m.ID, &m.RequestID, &m.Payload, &m.LeaseToken, &m.Attempts, &m.EventType)
 	if errors.Is(err, sql.ErrNoRows) {
 		return OutboxMessage{}, false, nil
 	}

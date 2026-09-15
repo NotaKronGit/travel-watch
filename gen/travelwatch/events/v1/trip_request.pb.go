@@ -242,6 +242,76 @@ func (x *TripRequestCreated) GetAdults() int32 {
 	return 0
 }
 
+// Terminal cancellation. Consumers must retain it even if creation arrives later.
+// Kafka header event_type selects the Protobuf message type.
+type TripRequestCancelled struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	SchemaVersion uint32                 `protobuf:"varint,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	RequestId     string                 `protobuf:"bytes,3,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripRequestCancelled) Reset() {
+	*x = TripRequestCancelled{}
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripRequestCancelled) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripRequestCancelled) ProtoMessage() {}
+
+func (x *TripRequestCancelled) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripRequestCancelled.ProtoReflect.Descriptor instead.
+func (*TripRequestCancelled) Descriptor() ([]byte, []int) {
+	return file_travelwatch_events_v1_trip_request_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TripRequestCancelled) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *TripRequestCancelled) GetSchemaVersion() uint32 {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return 0
+}
+
+func (x *TripRequestCancelled) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *TripRequestCancelled) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
 var File_travelwatch_events_v1_trip_request_proto protoreflect.FileDescriptor
 
 const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
@@ -268,7 +338,14 @@ const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
 	"\vdestination\x18\x06 \x01(\v2\x1f.travelwatch.events.v1.TripCityR\vdestination\x12%\n" +
 	"\x0edeparture_from\x18\a \x01(\tR\rdepartureFrom\x12!\n" +
 	"\fdeparture_to\x18\b \x01(\tR\vdepartureTo\x12\x16\n" +
-	"\x06adults\x18\t \x01(\x05R\x06adultsBHZFgithub.com/NotaKronGit/travel-watch/gen/travelwatch/events/v1;eventsv1b\x06proto3"
+	"\x06adults\x18\t \x01(\x05R\x06adults\"\xb4\x01\n" +
+	"\x14TripRequestCancelled\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12%\n" +
+	"\x0eschema_version\x18\x02 \x01(\rR\rschemaVersion\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x03 \x01(\tR\trequestId\x12;\n" +
+	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"occurredAtBHZFgithub.com/NotaKronGit/travel-watch/gen/travelwatch/events/v1;eventsv1b\x06proto3"
 
 var (
 	file_travelwatch_events_v1_trip_request_proto_rawDescOnce sync.Once
@@ -282,21 +359,23 @@ func file_travelwatch_events_v1_trip_request_proto_rawDescGZIP() []byte {
 	return file_travelwatch_events_v1_trip_request_proto_rawDescData
 }
 
-var file_travelwatch_events_v1_trip_request_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_travelwatch_events_v1_trip_request_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_travelwatch_events_v1_trip_request_proto_goTypes = []any{
 	(*TripCity)(nil),              // 0: travelwatch.events.v1.TripCity
 	(*TripRequestCreated)(nil),    // 1: travelwatch.events.v1.TripRequestCreated
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(*TripRequestCancelled)(nil),  // 2: travelwatch.events.v1.TripRequestCancelled
+	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 }
 var file_travelwatch_events_v1_trip_request_proto_depIdxs = []int32{
-	2, // 0: travelwatch.events.v1.TripRequestCreated.occurred_at:type_name -> google.protobuf.Timestamp
+	3, // 0: travelwatch.events.v1.TripRequestCreated.occurred_at:type_name -> google.protobuf.Timestamp
 	0, // 1: travelwatch.events.v1.TripRequestCreated.origin:type_name -> travelwatch.events.v1.TripCity
 	0, // 2: travelwatch.events.v1.TripRequestCreated.destination:type_name -> travelwatch.events.v1.TripCity
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	3, // 3: travelwatch.events.v1.TripRequestCancelled.occurred_at:type_name -> google.protobuf.Timestamp
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_events_v1_trip_request_proto_init() }
@@ -310,7 +389,7 @@ func file_travelwatch_events_v1_trip_request_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_travelwatch_events_v1_trip_request_proto_rawDesc), len(file_travelwatch_events_v1_trip_request_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
