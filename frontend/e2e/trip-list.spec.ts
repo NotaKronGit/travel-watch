@@ -37,11 +37,11 @@ test('empty list, retry and unavailable detail are explicit',async ({page})=>{
 
 test('cancel keeps history and private comment, supports retry after lost response', async ({page}) => {
   await page.route('**/travelwatch.cabinet.v1.AuthService/*', route=>route.fulfill({json:{user:{id:'test-user',email:'test@example.com'}}}));
-  const trip = {id:'cancel-test',origin:{name:'Курск'},destination:{name:'Москва'},departureFrom:'2027-01-01',departureTo:'2027-01-02',adults:1,status:'TRIP_STATUS_SAVED',comment:''};
+  const trip = {id:'cancel-test',origin:{name:'Курск'},destination:{name:'Москва'},departureFrom:'2027-01-01',departureTo:'2027-01-02',adults:1,status:'TRIP_STATUS_SAVED',comment:'',cancelledAt:undefined as string|undefined};
   let attempts=0;let comments=0;
   await page.route('**/travelwatch.cabinet.v1.TripService/*', async route=>{
     const method=route.request().url().split('/').pop();
-    if(method==='CancelTrip'){trip.status='TRIP_STATUS_CANCELLED';attempts++;await route.fulfill(attempts===1 ? {status:503,json:{code:'unavailable',message:'Повторите отмену'}} : {json:{}});}
+    if(method==='CancelTrip'){trip.status='TRIP_STATUS_CANCELLED';trip.cancelledAt='2027-01-01T12:30:00Z';attempts++;await route.fulfill(attempts===1 ? {status:503,json:{code:'unavailable',message:'Повторите отмену'}} : {json:{}});}
     else if(method==='UpdateTripComment'){comments++;if(comments===1){await route.fulfill({status:503,json:{code:'unavailable',message:'Повторите сохранение'}});return;}trip.comment=route.request().postDataJSON().comment;await route.fulfill({json:{}});}
     else if(method==='ListTrips')await route.fulfill({json:{trips:[trip]}});
     else await route.fulfill({json:{trip}});
@@ -54,6 +54,7 @@ test('cancel keeps history and private comment, supports retry after lost respon
   await expect(note).toHaveValue('Личная заметка <script>');
   await page.getByRole('button',{name:'Сохранить комментарий'}).click();
   await expect(page.getByText('Комментарий сохранён')).toBeVisible();
+  await note.fill('Несохранённый черновик');
   await page.getByRole('button',{name:'Отменить заявку',exact:true}).click();
   await page.getByRole('button',{name:'Оставить заявку'}).click();expect(attempts).toBe(0);
   await page.getByRole('button',{name:'Отменить заявку',exact:true}).click();
@@ -61,9 +62,36 @@ test('cancel keeps history and private comment, supports retry after lost respon
   await expect(page.getByRole('dialog')).toContainText('Повторите отмену');
   await page.getByRole('button',{name:'Подтвердить отмену'}).click();
   await expect(page.getByText('Отменена',{exact:true})).toBeVisible();
+  await expect(page.getByText(/^Отменена:/)).toBeVisible();
+  await expect(note).toHaveValue('Несохранённый черновик');
   await expect(page.getByRole('button',{name:'Отменить заявку',exact:true})).toHaveCount(0);
   await page.reload();await expect(note).toHaveValue('Личная заметка <script>');
   await page.getByRole('link',{name:'← Мои заявки'}).click();
   await expect(page.getByText('Отменена',{exact:true})).toBeVisible();
   await expect(page.getByRole('link',{name:'Открыть заявку'})).toBeVisible();
+});
+
+test('failed refresh after cancellation can be retried without cancelling again or losing draft', async ({page}) => {
+  const trip={id:'refresh-test',origin:{name:'Курск'},destination:{name:'Москва'},departureFrom:'2027-01-01',departureTo:'2027-01-02',adults:1,status:'TRIP_STATUS_SAVED',comment:'Сохранённая заметка',cancelledAt:undefined as string|undefined};
+  let cancellations=0;let failRefresh=true;
+  await page.route('**/travelwatch.cabinet.v1.TripService/*',async route=>{
+    if(route.request().url().endsWith('/CancelTrip')){
+      cancellations++;trip.status='TRIP_STATUS_CANCELLED';trip.cancelledAt='2027-01-01T12:30:00Z';await route.fulfill({json:{}});
+    } else if(cancellations && failRefresh){
+      failRefresh=false;await route.fulfill({status:503,json:{code:'unavailable'}});
+    } else await route.fulfill({json:{trip}});
+  });
+  await page.goto('/#/trips/refresh-test');
+  const note=page.getByRole('textbox',{name:'Комментарий к заявке'});
+  await note.fill('Черновик');
+  await page.getByRole('button',{name:'Отменить заявку',exact:true}).click();
+  await page.getByRole('button',{name:'Подтвердить отмену'}).click();
+  await expect(page.getByText('Отменена',{exact:true})).toBeVisible();
+  await expect(page.getByText(/Заявка отменена, но не удалось обновить/)).toBeVisible();
+  await expect(note).toHaveValue('Черновик');
+  await page.getByRole('button',{name:'Повторить обновление заявки'}).click();
+  await expect(page.getByText(/^Отменена:/)).toBeVisible();
+  await expect(note).toHaveValue('Черновик');
+  await expect(page.getByRole('button',{name:'Повторить обновление заявки'})).toHaveCount(0);
+  expect(cancellations).toBe(1);
 });
