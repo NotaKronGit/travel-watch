@@ -60,12 +60,12 @@ PLAYWRIGHT_BASE_URL=http://localhost:18080 npm --prefix frontend run test:e2e
 
 `.github/workflows/ci.yml` выполняется для PR и push в main:
 
-- Проверяет Go (включая golangci-lint и gosec через `make check`), frontend, контракт API, миграции, доставку outbox с отказами Kafka и браузерный сценарий.
-- После тестов собирает образы Cabinet и frontend для linux/amd64 и linux/arm64.
+- Проверяет Go (включая golangci-lint и gosec), frontend, контракт API, миграции, доставку outbox с отказами Kafka и браузерный сценарий.
+- В PR собирает образы Cabinet и frontend для linux/amd64 и linux/arm64 параллельно с проверками. В main сборка и публикация начинаются после тестов.
 - Стадии Go и Node/Vite выполняются на `BUILDPLATFORM`: Go кросс-компилирует через `TARGETOS`/`TARGETARCH`, frontend собирается в общую статику. Компиляция не требует QEMU; финальные образы остаются для целевой архитектуры. QEMU в workflow оставлен для команд в финальном Alpine-образе, например установки сертификатов.
 - При push в main публикует образы `ghcr.io/<owner>/<repo>/cabinet:<commit-sha>` и `frontend:<commit-sha>`. Используется встроенный GITHUB_TOKEN с packages:write; личный токен в репозиторий не нужен.
 - После публикации обоих образов обновляет их тег `dev-latest`. Запуск готовой версии описан в [инструкции dev](dev-images.md).
 
 Stage_local собирает образы из текущих локальных файлов. GitHub-hosted runner не имеет доступа к вашему компьютеру и не обновляет его автоматически. На этом этапе локальный деплой запускается командой Make; workflow удалённого деплоя, SSH, Ansible и Kubernetes не добавлены.
 
-Публикация образов фактически ещё не выполнялась: файлы нужно закоммитить, открыть PR и пройти проверки. В настройках репозитория рекомендуется сделать job `test` обязательным для merge.
+Подробная [структура CI, кэши и обязательный статус `test`](ci.md). Изменения workflow нужно проверить реальным прогоном GitHub; локальная сборка не подтверждает публикацию.

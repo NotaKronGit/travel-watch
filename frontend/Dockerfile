@@ -3,7 +3,8 @@ FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
-COPY frontend ./
+COPY frontend/index.html frontend/tsconfig.json frontend/vite.config.ts ./
+COPY frontend/src ./src
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:stable-alpine
