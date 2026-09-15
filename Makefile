@@ -37,7 +37,7 @@ test:
 	go test -race ./...
 
 test-int:
-	go test -race -tags=integration ./services/cabinet/internal/auth -count=1
+	go test -race -tags=integration ./services/cabinet/internal/auth ./services/search/internal/storage -count=1
 
 check: lint
 	buf lint
@@ -57,10 +57,10 @@ stage-local-stop:
 	$(STAGE_LOCAL) stop
 
 stage-local-restart:
-	$(STAGE_LOCAL) restart postgres kafka outbox cabinet frontend
+	$(STAGE_LOCAL) restart postgres kafka outbox search cabinet frontend
 
 stage-local-logs:
-	$(STAGE_LOCAL) logs --tail 100 -f cabinet frontend outbox kafka
+	$(STAGE_LOCAL) logs --tail 100 -f cabinet frontend outbox search kafka
 
 DEV = docker compose --env-file .env.dev -f deploy/dev/compose.yaml
 .PHONY: dev-up dev-stop dev-restart dev-logs
@@ -73,10 +73,10 @@ dev-stop:
 	$(DEV) stop
 
 dev-restart:
-	$(DEV) restart postgres kafka outbox cabinet frontend
+	$(DEV) restart postgres kafka outbox search cabinet frontend
 
 dev-logs:
-	$(DEV) logs --tail 100 -f migrate cabinet frontend outbox kafka
+	$(DEV) logs --tail 100 -f migrate search-migrate cabinet frontend outbox search kafka
 
 .PHONY: cities-sync
 cities-sync:
@@ -97,3 +97,14 @@ kafka-stop:
 test-kafka:
 	docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml up -d --wait --wait-timeout 180 kafka
 	go test -race -tags=integration,kafka ./services/cabinet/internal/auth -run '^TestKafkaOutbox$$' -count=1 -timeout=3m
+	go test -race -tags=integration,kafka ./services/search/internal/storage -run '^TestKafkaInbox$$' -count=1 -timeout=2m
+
+.PHONY: search-db-init search-migrate search
+search-db-init:
+	$(COMPOSE) run --rm search-db-init
+
+search-migrate:
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search migrate
+
+search:
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search consume
