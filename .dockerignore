@@ -6,3 +6,9 @@
 **/test-results
 **/playwright-report
 bin
+
+# Tests run in CI on the checkout, not during production image builds.
+**/*_test.go
+frontend/e2e
+frontend/src/**/*.test.ts
+frontend/src/**/*.test.tsx

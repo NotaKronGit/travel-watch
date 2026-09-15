@@ -7,7 +7,7 @@ COPY gen ./gen
 COPY services/cabinet ./services/cabinet
 ARG TARGETOS
 ARG TARGETARCH
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/cabinet ./services/cabinet/cmd/cabinet
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/cabinet ./services/cabinet/cmd/cabinet
 
 FROM alpine:3.23
 RUN apk add --no-cache ca-certificates

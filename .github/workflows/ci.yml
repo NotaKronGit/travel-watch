@@ -9,9 +9,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
-  test:
+  checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -23,93 +23,142 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
-        run: |
-          npm --prefix frontend ci
-          go mod download
-          go install github.com/bufbuild/buf/cmd/buf@v1.61.0
-      - name: Format, contracts, Go lint (including gosec) and build
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          version: '1.61.0'
+          github_token: ${{ github.token }}
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+      - name: Download Go modules
+        run: go mod download
+      - name: Format and reproduce contracts
         run: |
           test -z "$(gofmt -l services gen)"
           make generate
           git diff --exit-code -- gen frontend/src/gen
-          make check
-          npm --prefix frontend test
-      - name: Start PostgreSQL and test migrations
-        run: |
-          cp .env.example .env
-          make db-up
-          make migrate
-          make test-int
-      - name: Kafka outbox delivery and recovery
-        run: make test-kafka
-      - name: Stop test Kafka
-        if: always()
-        run: docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml down -v
-      - name: Browser tests
-        run: |
-          npx --prefix frontend playwright install --with-deps chromium
-          make cabinet > "$RUNNER_TEMP/cabinet.log" 2>&1 &
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:8080/healthz; then break; fi
-            sleep 1
-          done
-          curl -fsS http://127.0.0.1:8080/healthz
-          npm --prefix frontend run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: browser-test-results
-          path: frontend/test-results
-          retention-days: 7
+      - name: Go lint including gosec
+        run: make lint
+      - name: Go unit tests
+        run: make test
+      - name: Frontend typecheck and build
+        run: npm --prefix frontend run build
+      - name: Frontend unit tests
+        run: npm --prefix frontend test
       - name: Validate Compose configurations
         env:
           POSTGRES_PASSWORD: ci-postgres
           CABINET_DATABASE_OWNER_PASSWORD: ci-owner
           CABINET_DATABASE_APP_PASSWORD: ci-app
         run: |
-          docker compose -f deploy/stage_local/compose.yaml config --quiet
+          docker compose -f deploy/compose/compose.yaml config --quiet
+          docker compose -f deploy/stage_local/compose.yaml --profile tools config --quiet
           docker compose -f deploy/dev/compose.yaml config --quiet
+          docker compose -f deploy/test/compose.yaml config --quiet
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Download Go modules
+        run: go mod download
+      - name: Start PostgreSQL and migrate
+        run: |
+          cp .env.example .env
+          make db-up
+          make migrate
+      - name: PostgreSQL integration tests
+        run: make test-int
+      - name: Kafka outbox delivery and recovery
+        run: make test-kafka
+      - name: Stop test Kafka
+        if: always()
+        run: docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml down -v
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+      - name: Install headless Chromium
+        run: npx --prefix frontend playwright install --with-deps --only-shell chromium
+      - name: Download Go modules
+        run: go mod download
+      - name: Start PostgreSQL and migrate
+        run: |
+          cp .env.example .env
+          make db-up
+          make migrate
+      - name: Start Cabinet
+        run: |
+          make cabinet > "$RUNNER_TEMP/cabinet.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/healthz; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8080/healthz
+      - name: Browser tests
+        run: npm --prefix frontend run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results
+          path: |
+            frontend/test-results
+            ${{ runner.temp }}/cabinet.log
+          retention-days: 7
+  images-pr:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build-images.yml
+    with:
+      publish: false
+  # Keep the required check name and fail on any failed/cancelled/skipped prerequisite.
+  test:
+    needs: [checks, integration, browser, images-pr]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require successful checks
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          INTEGRATION: ${{ needs.integration.result }}
+          BROWSER: ${{ needs.browser.result }}
+          IMAGES: ${{ needs.images-pr.result }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          test "$CHECKS" = success
+          test "$INTEGRATION" = success
+          test "$BROWSER" = success
+          if [ "$EVENT" = pull_request ]; then
+            test "$IMAGES" = success
+          else
+            test "$IMAGES" = skipped
+          fi
   images:
     needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        include:
-          - service: cabinet
-            dockerfile: services/cabinet/Dockerfile
-          - service: frontend
-            dockerfile: frontend/Dockerfile
-    steps:
-      - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - name: Image name
-        id: image
-        shell: bash
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/${SERVICE}" >> "$GITHUB_OUTPUT"
-        env:
-          SERVICE: ${{ matrix.service }}
-      - uses: docker/login-action@v3
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: ${{ steps.image.outputs.name }}:${{ github.sha }}
-          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+    uses: ./.github/workflows/build-images.yml
+    with:
+      publish: true
   dev-latest:
     needs: images
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
