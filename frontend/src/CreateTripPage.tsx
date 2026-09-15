@@ -52,7 +52,7 @@ export function CreateTripPage() {
   const [destination, setDestination] = useState<CityOption | null>(null);
   const [from, setFrom] = useState(''); const [to, setTo] = useState('');
   const [adults, setAdults] = useState('1');
-  const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [saved, setSaved] = useState('');
+  const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   // Retain the key for retries after a lost response; edits create a new operation.
   const operation = useRef<{payload: string; id: string} | null>(null);
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ export function CreateTripPage() {
     const key = JSON.stringify(payload);
     if (operation.current?.payload !== key) operation.current = {payload: key, id: crypto.randomUUID()};
     setBusy(true);
-    try { const result = await tripClient.createTrip({...payload, requestId: operation.current.id}); setSaved(result.id); }
+    try { const result = await tripClient.createTrip({...payload, requestId: operation.current.id}); navigate(`/trips/${result.id}`, {replace:true}); }
     catch (err) {
       if (err instanceof ConnectError && err.code === Code.Unauthenticated) navigate('/login');
       else setError(err instanceof ConnectError ? err.rawMessage : 'Не удалось подтвердить сохранение. Повторите попытку.');
@@ -84,16 +84,8 @@ export function CreateTripPage() {
       </Stack>
       <Box sx={{p: {xs: 3, md: 5}, minWidth: 0}}>
         <Typography variant="overline" color="text.secondary">НОВАЯ ПОЕЗДКА</Typography>
-        <Typography component="h1" variant="h4" sx={{fontWeight: 650, mt: 1, mb: 1}}>{saved ? 'Заявка сохранена' : 'Создать заявку'}</Typography>
-        {saved ? <Stack spacing={3} sx={{mt: 3}}>
-          <Alert severity="success">Параметры поездки сохранены в вашем аккаунте.</Alert>
-          <Typography>{origin?.name} → {destination?.name}</Typography>
-          <Typography>Выезд в любой день с {from} по {to} · Взрослых: {adults}</Typography>
-          <Alert severity="info">Поиск ещё не запущен. Подбор маршрутов и отслеживание цен появятся позже.</Alert>
-          <Typography variant="caption" sx={{overflowWrap: 'anywhere'}}>Номер заявки: {saved}</Typography>
-          <Button variant="contained" onClick={() => {setSaved(''); operation.current = null;}}>Создать ещё одну</Button>
-          <Button onClick={() => navigate('/account')}>В личный кабинет</Button>
-        </Stack> : <Box component="form" onSubmit={submit} sx={{mt: 3}}>
+        <Typography component="h1" variant="h4" sx={{fontWeight: 650, mt: 1, mb: 1}}>Создать заявку</Typography>
+        <Box component="form" onSubmit={submit} sx={{mt: 3}}>
           <Stack spacing={2.5}>
             <Typography color="text.secondary">Поездка в одну сторону. Укажите удобные даты отправления.</Typography>
             {error && <Alert severity="error">{error}</Alert>}
@@ -110,7 +102,7 @@ export function CreateTripPage() {
             <Button type="submit" size="large" variant="contained" disabled={busy} sx={{py:1.5}}>{busy ? 'Сохраняем…' : 'Сохранить заявку'}</Button>
             <Typography variant="caption" color="text.secondary">Справочник: <Link href="https://www.geonames.org/" target="_blank" rel="noreferrer">GeoNames</Link>, <Link href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</Link>. Наличие города не гарантирует доступность билетов.</Typography>
           </Stack>
-        </Box>}
+        </Box>
       </Box>
     </Paper>
   </Box>;

@@ -9,6 +9,7 @@ package cabinetv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -323,11 +324,287 @@ func (x *CreateTripResponse) GetId() string {
 	return ""
 }
 
+type TripDetails struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Origin        *CityOption            `protobuf:"bytes,2,opt,name=origin,proto3" json:"origin,omitempty"`
+	Destination   *CityOption            `protobuf:"bytes,3,opt,name=destination,proto3" json:"destination,omitempty"`
+	DepartureFrom string                 `protobuf:"bytes,4,opt,name=departure_from,json=departureFrom,proto3" json:"departure_from,omitempty"`
+	DepartureTo   string                 `protobuf:"bytes,5,opt,name=departure_to,json=departureTo,proto3" json:"departure_to,omitempty"`
+	Adults        int32                  `protobuf:"varint,6,opt,name=adults,proto3" json:"adults,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripDetails) Reset() {
+	*x = TripDetails{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripDetails) ProtoMessage() {}
+
+func (x *TripDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripDetails.ProtoReflect.Descriptor instead.
+func (*TripDetails) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *TripDetails) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *TripDetails) GetOrigin() *CityOption {
+	if x != nil {
+		return x.Origin
+	}
+	return nil
+}
+
+func (x *TripDetails) GetDestination() *CityOption {
+	if x != nil {
+		return x.Destination
+	}
+	return nil
+}
+
+func (x *TripDetails) GetDepartureFrom() string {
+	if x != nil {
+		return x.DepartureFrom
+	}
+	return ""
+}
+
+func (x *TripDetails) GetDepartureTo() string {
+	if x != nil {
+		return x.DepartureTo
+	}
+	return ""
+}
+
+func (x *TripDetails) GetAdults() int32 {
+	if x != nil {
+		return x.Adults
+	}
+	return 0
+}
+
+func (x *TripDetails) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type ListTripsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Offset        int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTripsRequest) Reset() {
+	*x = ListTripsRequest{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTripsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTripsRequest) ProtoMessage() {}
+
+func (x *ListTripsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTripsRequest.ProtoReflect.Descriptor instead.
+func (*ListTripsRequest) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListTripsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type ListTripsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Trips         []*TripDetails         `protobuf:"bytes,1,rep,name=trips,proto3" json:"trips,omitempty"`
+	HasMore       bool                   `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTripsResponse) Reset() {
+	*x = ListTripsResponse{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTripsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTripsResponse) ProtoMessage() {}
+
+func (x *ListTripsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTripsResponse.ProtoReflect.Descriptor instead.
+func (*ListTripsResponse) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ListTripsResponse) GetTrips() []*TripDetails {
+	if x != nil {
+		return x.Trips
+	}
+	return nil
+}
+
+func (x *ListTripsResponse) GetHasMore() bool {
+	if x != nil {
+		return x.HasMore
+	}
+	return false
+}
+
+type GetTripRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTripRequest) Reset() {
+	*x = GetTripRequest{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTripRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTripRequest) ProtoMessage() {}
+
+func (x *GetTripRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTripRequest.ProtoReflect.Descriptor instead.
+func (*GetTripRequest) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetTripRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetTripResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Trip          *TripDetails           `protobuf:"bytes,1,opt,name=trip,proto3" json:"trip,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTripResponse) Reset() {
+	*x = GetTripResponse{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTripResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTripResponse) ProtoMessage() {}
+
+func (x *GetTripResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTripResponse.ProtoReflect.Descriptor instead.
+func (*GetTripResponse) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetTripResponse) GetTrip() *TripDetails {
+	if x != nil {
+		return x.Trip
+	}
+	return nil
+}
+
 var File_travelwatch_cabinet_v1_trips_proto protoreflect.FileDescriptor
 
 const file_travelwatch_cabinet_v1_trips_proto_rawDesc = "" +
 	"\n" +
-	"\"travelwatch/cabinet/v1/trips.proto\x12\x16travelwatch.cabinet.v1\"\x9b\x01\n" +
+	"\"travelwatch/cabinet/v1/trips.proto\x12\x16travelwatch.cabinet.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9b\x01\n" +
 	"\n" +
 	"CityOption\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -349,9 +626,29 @@ const file_travelwatch_cabinet_v1_trips_proto_rawDesc = "" +
 	"\fdeparture_to\x18\x05 \x01(\tR\vdepartureTo\x12\x16\n" +
 	"\x06adults\x18\x06 \x01(\x05R\x06adults\"$\n" +
 	"\x12CreateTripResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id2\xdd\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xbc\x02\n" +
+	"\vTripDetails\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12:\n" +
+	"\x06origin\x18\x02 \x01(\v2\".travelwatch.cabinet.v1.CityOptionR\x06origin\x12D\n" +
+	"\vdestination\x18\x03 \x01(\v2\".travelwatch.cabinet.v1.CityOptionR\vdestination\x12%\n" +
+	"\x0edeparture_from\x18\x04 \x01(\tR\rdepartureFrom\x12!\n" +
+	"\fdeparture_to\x18\x05 \x01(\tR\vdepartureTo\x12\x16\n" +
+	"\x06adults\x18\x06 \x01(\x05R\x06adults\x129\n" +
+	"\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"*\n" +
+	"\x10ListTripsRequest\x12\x16\n" +
+	"\x06offset\x18\x01 \x01(\x05R\x06offset\"i\n" +
+	"\x11ListTripsResponse\x129\n" +
+	"\x05trips\x18\x01 \x03(\v2#.travelwatch.cabinet.v1.TripDetailsR\x05trips\x12\x19\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\" \n" +
+	"\x0eGetTripRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"J\n" +
+	"\x0fGetTripResponse\x127\n" +
+	"\x04trip\x18\x01 \x01(\v2#.travelwatch.cabinet.v1.TripDetailsR\x04trip2\x9b\x03\n" +
 	"\vTripService\x12i\n" +
-	"\fSearchCities\x12+.travelwatch.cabinet.v1.SearchCitiesRequest\x1a,.travelwatch.cabinet.v1.SearchCitiesResponse\x12c\n" +
+	"\fSearchCities\x12+.travelwatch.cabinet.v1.SearchCitiesRequest\x1a,.travelwatch.cabinet.v1.SearchCitiesResponse\x12`\n" +
+	"\tListTrips\x12(.travelwatch.cabinet.v1.ListTripsRequest\x1a).travelwatch.cabinet.v1.ListTripsResponse\x12Z\n" +
+	"\aGetTrip\x12&.travelwatch.cabinet.v1.GetTripRequest\x1a'.travelwatch.cabinet.v1.GetTripResponse\x12c\n" +
 	"\n" +
 	"CreateTrip\x12).travelwatch.cabinet.v1.CreateTripRequest\x1a*.travelwatch.cabinet.v1.CreateTripResponseBJZHgithub.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1;cabinetv1b\x06proto3"
 
@@ -367,25 +664,40 @@ func file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP() []byte {
 	return file_travelwatch_cabinet_v1_trips_proto_rawDescData
 }
 
-var file_travelwatch_cabinet_v1_trips_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_travelwatch_cabinet_v1_trips_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_travelwatch_cabinet_v1_trips_proto_goTypes = []any{
-	(*CityOption)(nil),           // 0: travelwatch.cabinet.v1.CityOption
-	(*SearchCitiesRequest)(nil),  // 1: travelwatch.cabinet.v1.SearchCitiesRequest
-	(*SearchCitiesResponse)(nil), // 2: travelwatch.cabinet.v1.SearchCitiesResponse
-	(*CreateTripRequest)(nil),    // 3: travelwatch.cabinet.v1.CreateTripRequest
-	(*CreateTripResponse)(nil),   // 4: travelwatch.cabinet.v1.CreateTripResponse
+	(*CityOption)(nil),            // 0: travelwatch.cabinet.v1.CityOption
+	(*SearchCitiesRequest)(nil),   // 1: travelwatch.cabinet.v1.SearchCitiesRequest
+	(*SearchCitiesResponse)(nil),  // 2: travelwatch.cabinet.v1.SearchCitiesResponse
+	(*CreateTripRequest)(nil),     // 3: travelwatch.cabinet.v1.CreateTripRequest
+	(*CreateTripResponse)(nil),    // 4: travelwatch.cabinet.v1.CreateTripResponse
+	(*TripDetails)(nil),           // 5: travelwatch.cabinet.v1.TripDetails
+	(*ListTripsRequest)(nil),      // 6: travelwatch.cabinet.v1.ListTripsRequest
+	(*ListTripsResponse)(nil),     // 7: travelwatch.cabinet.v1.ListTripsResponse
+	(*GetTripRequest)(nil),        // 8: travelwatch.cabinet.v1.GetTripRequest
+	(*GetTripResponse)(nil),       // 9: travelwatch.cabinet.v1.GetTripResponse
+	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
 }
 var file_travelwatch_cabinet_v1_trips_proto_depIdxs = []int32{
-	0, // 0: travelwatch.cabinet.v1.SearchCitiesResponse.cities:type_name -> travelwatch.cabinet.v1.CityOption
-	1, // 1: travelwatch.cabinet.v1.TripService.SearchCities:input_type -> travelwatch.cabinet.v1.SearchCitiesRequest
-	3, // 2: travelwatch.cabinet.v1.TripService.CreateTrip:input_type -> travelwatch.cabinet.v1.CreateTripRequest
-	2, // 3: travelwatch.cabinet.v1.TripService.SearchCities:output_type -> travelwatch.cabinet.v1.SearchCitiesResponse
-	4, // 4: travelwatch.cabinet.v1.TripService.CreateTrip:output_type -> travelwatch.cabinet.v1.CreateTripResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0,  // 0: travelwatch.cabinet.v1.SearchCitiesResponse.cities:type_name -> travelwatch.cabinet.v1.CityOption
+	0,  // 1: travelwatch.cabinet.v1.TripDetails.origin:type_name -> travelwatch.cabinet.v1.CityOption
+	0,  // 2: travelwatch.cabinet.v1.TripDetails.destination:type_name -> travelwatch.cabinet.v1.CityOption
+	10, // 3: travelwatch.cabinet.v1.TripDetails.created_at:type_name -> google.protobuf.Timestamp
+	5,  // 4: travelwatch.cabinet.v1.ListTripsResponse.trips:type_name -> travelwatch.cabinet.v1.TripDetails
+	5,  // 5: travelwatch.cabinet.v1.GetTripResponse.trip:type_name -> travelwatch.cabinet.v1.TripDetails
+	1,  // 6: travelwatch.cabinet.v1.TripService.SearchCities:input_type -> travelwatch.cabinet.v1.SearchCitiesRequest
+	6,  // 7: travelwatch.cabinet.v1.TripService.ListTrips:input_type -> travelwatch.cabinet.v1.ListTripsRequest
+	8,  // 8: travelwatch.cabinet.v1.TripService.GetTrip:input_type -> travelwatch.cabinet.v1.GetTripRequest
+	3,  // 9: travelwatch.cabinet.v1.TripService.CreateTrip:input_type -> travelwatch.cabinet.v1.CreateTripRequest
+	2,  // 10: travelwatch.cabinet.v1.TripService.SearchCities:output_type -> travelwatch.cabinet.v1.SearchCitiesResponse
+	7,  // 11: travelwatch.cabinet.v1.TripService.ListTrips:output_type -> travelwatch.cabinet.v1.ListTripsResponse
+	9,  // 12: travelwatch.cabinet.v1.TripService.GetTrip:output_type -> travelwatch.cabinet.v1.GetTripResponse
+	4,  // 13: travelwatch.cabinet.v1.TripService.CreateTrip:output_type -> travelwatch.cabinet.v1.CreateTripResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_cabinet_v1_trips_proto_init() }
@@ -399,7 +711,7 @@ func file_travelwatch_cabinet_v1_trips_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_travelwatch_cabinet_v1_trips_proto_rawDesc), len(file_travelwatch_cabinet_v1_trips_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

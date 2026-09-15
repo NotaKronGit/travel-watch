@@ -4,6 +4,7 @@ import { Admin, CustomRoutes, defaultTheme } from 'react-admin';
 import polyglotI18nProvider from 'ra-i18n-polyglot';
 import russianMessages from 'ra-language-russian';
 import { authProvider } from './authProvider';
+import { TripsPage } from './TripsPage';
 import { CreateTripPage } from './CreateTripPage';
 import { Dashboard } from './Dashboard';
 import { LoginPage } from './LoginPage';
@@ -19,5 +20,5 @@ const theme = {
 };
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode><Admin title="Travel Watch" authProvider={authProvider} i18nProvider={i18nProvider} layout={CabinetLayout} loginPage={LoginPage} theme={theme} darkTheme={null} disableTelemetry><CustomRoutes><Route path="/" element={<Navigate to="/account" replace />} /><Route path="/trips/create" element={<CreateTripPage />} /><Route path="/account" element={<Dashboard />} /></CustomRoutes></Admin></StrictMode>,
+  <StrictMode><Admin title="Travel Watch" authProvider={authProvider} i18nProvider={i18nProvider} layout={CabinetLayout} loginPage={LoginPage} theme={theme} darkTheme={null} disableTelemetry><CustomRoutes><Route path="/" element={<Navigate to="/account" replace />} /><Route path="/trips" element={<TripsPage />} /><Route path="/trips/:id" element={<TripsPage detail />} /><Route path="/trips/create" element={<CreateTripPage />} /><Route path="/account" element={<Dashboard />} /></CustomRoutes></Admin></StrictMode>,
 );

@@ -13,6 +13,7 @@ test('create trip uses selected IDs, preserves retry key and reports saved state
   const submissions: Record<string, unknown>[] = [];
   await page.route('**/travelwatch.cabinet.v1.TripService/*', async route => {
     const body = route.request().postDataJSON();
+    if (route.request().url().endsWith('/GetTrip')) { await route.fulfill({json:{trip:{id:'saved-trip',origin,destination,departureFrom:'2027-01-10',departureTo:'2027-01-12',adults:1}}}); return; }
     if (route.request().url().endsWith('/SearchCities')) await route.fulfill({json:{cities: body.query.startsWith('Ку') ? [origin] : [destination]}});
     else { submissions.push(body); await route.fulfill(submissions.length === 1 ? {status:503,json:{code:'unavailable',message:'Не удалось подтвердить сохранение'}} : {json:{id:'saved-trip'}}); }
   });
@@ -50,11 +51,12 @@ test('create trip uses selected IDs, preserves retry key and reports saved state
   await page.getByRole('button',{name:'Повторить проверку',exact:true}).click();
   await expect(page.getByText(/Введённые данные сохранены/)).toHaveCount(0);
   await page.getByRole('button',{name:'Сохранить заявку',exact:true}).click();
-  await expect(page.getByRole('heading',{name:'Заявка сохранена'})).toBeVisible();
+  await expect(page).toHaveURL(/trips\/saved-trip$/);
+  await expect(page.getByRole('heading',{name:'Заявка',exact:true,level:1})).toBeVisible();
   expect(submissions).toHaveLength(2);
   expect(submissions[0]).toEqual(submissions[1]);
   expect(submissions[1].originId).toBe(origin.id);
-  await expect(page.getByText(/Поиск ещё не запущен/)).toBeVisible();
+  await expect(page.getByText(/Сохранена, поиск ещё не запущен/)).toBeVisible();
 });
 
 test('city errors can be retried and editing a selection invalidates its ID on mobile', async ({page}, testInfo) => {

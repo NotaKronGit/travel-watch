@@ -109,3 +109,70 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 }
 
 var ErrPastDeparture = errors.New("departure in the past")
+
+type TripDetails struct {
+	ID                         string
+	Origin, Destination        CityOption
+	DepartureFrom, DepartureTo string
+	Adults                     int32
+	CreatedAt                  time.Time
+}
+
+func tripReadQuery(user string) *goqu.SelectDataset {
+	q := postgres.From(goqu.T("trip_requests").As("t"))
+	for _, side := range []struct{ alias, column string }{{"o", "origin_id"}, {"d", "destination_id"}} {
+		q = q.Join(goqu.T("catalog_cities").As(side.alias), goqu.On(goqu.I(side.alias+".id").Eq(goqu.I("t."+side.column))))
+		q = q.Join(goqu.T("catalog_countries").As(side.alias+"n"), goqu.On(goqu.I(side.alias+"n.code").Eq(goqu.I(side.alias+".country_code"))))
+	}
+	columns := []interface{}{goqu.I("t.id"), goqu.L("t.departure_from::text"), goqu.L("t.departure_to::text"), goqu.I("t.adults"), goqu.I("t.created_at")}
+	for _, alias := range []string{"o", "d"} {
+		columns = append(columns, goqu.I(alias+".id"), goqu.I(alias+".name_ru"), goqu.L("COALESCE(NULLIF(?, ''), ?)", goqu.I(alias+"n.name_ru"), goqu.I(alias+"n.name")), goqu.I(alias+".region_name"), goqu.I(alias+".timezone"), goqu.I(alias+".iata_code"))
+	}
+	// Inactive catalog entries remain readable for existing requests.
+	return q.Select(columns...).Where(goqu.I("t.user_id").Eq(user))
+}
+func scanTrip(row interface{ Scan(...any) error }) (TripDetails, error) {
+	var t TripDetails
+	err := row.Scan(&t.ID, &t.DepartureFrom, &t.DepartureTo, &t.Adults, &t.CreatedAt,
+		&t.Origin.ID, &t.Origin.Name, &t.Origin.Country, &t.Origin.Region, &t.Origin.Timezone, &t.Origin.IATACode,
+		&t.Destination.ID, &t.Destination.Name, &t.Destination.Country, &t.Destination.Region, &t.Destination.Timezone, &t.Destination.IATACode)
+	return t, err
+}
+func (s *Store) GetTrip(ctx context.Context, user, id string) (TripDetails, error) {
+	q, args, err := tripReadQuery(user).Where(goqu.I("t.id").Eq(id)).Prepared(true).ToSQL()
+	if err != nil {
+		return TripDetails{}, err
+	}
+	t, err := scanTrip(s.db.QueryRowContext(ctx, q, args...))
+	if errors.Is(err, sql.ErrNoRows) {
+		err = ErrNotFound
+	}
+	return t, err
+}
+func (s *Store) ListTrips(ctx context.Context, user string, offset uint) ([]TripDetails, bool, error) {
+	q, args, err := tripReadQuery(user).Order(goqu.I("t.created_at").Desc(), goqu.I("t.id").Desc()).Limit(21).Offset(offset).Prepared(true).ToSQL()
+	if err != nil {
+		return nil, false, err
+	}
+	rows, err := s.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, false, err
+	}
+	defer rows.Close()
+	result := []TripDetails{}
+	for rows.Next() {
+		t, err := scanTrip(rows)
+		if err != nil {
+			return nil, false, err
+		}
+		result = append(result, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, false, err
+	}
+	more := len(result) > 20
+	if more {
+		result = result[:20]
+	}
+	return result, more, nil
+}
