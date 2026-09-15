@@ -22,7 +22,7 @@ function LogoutItem() {
 }
 
 const CabinetAppBar = () => <AppBar userMenu={<UserMenu><LogoutItem /></UserMenu>} />;
-const CabinetMenu = () => <Menu><Menu.Item to="/account" primaryText="Личный кабинет" leftIcon={<PersonOutlineIcon />} /></Menu>;
+const CabinetMenu = () => <Menu><Menu.Item to="/account" primaryText="Личный кабинет" leftIcon={<PersonOutlineIcon />} /><Menu.Item to="/trips/create" primaryText="Создать заявку" /></Menu>;
 
 // Guard all routes with a layout, without treating a failed request as a logout.
 export function CabinetLayout(props: ComponentProps<typeof Layout>) {

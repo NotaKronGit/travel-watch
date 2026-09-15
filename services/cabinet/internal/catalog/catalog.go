@@ -15,11 +15,11 @@ type Country struct {
 	SourceID           int64
 }
 type City struct {
-	SourceID                                        int64
-	Name, NameRu, CountryCode, RegionCode, Timezone string
-	Aliases                                         []string
-	Latitude, Longitude                             float64
-	Population                                      int64
+	SourceID                                                  int64
+	Name, NameRu, CountryCode, RegionCode, Timezone, IATACode string
+	Aliases                                                   []string
+	Latitude, Longitude                                       float64
+	Population                                                int64
 }
 type Snapshot struct {
 	Source    string
@@ -85,6 +85,9 @@ func Validate(s Snapshot, minCities int) error {
 		if c.SourceID <= 0 || ids[c.SourceID] || !countries[c.CountryCode] || !validText(c.Name, 200) || c.Population < 0 || !(c.Latitude >= -90 && c.Latitude <= 90) || !(c.Longitude >= -180 && c.Longitude <= 180) {
 			return errors.New("invalid or duplicate city")
 		}
+		if c.IATACode != "" && !validIATA(c.IATACode) {
+			return errors.New("invalid IATA code")
+		}
 		if c.NameRu != "" && !validText(c.NameRu, 400) {
 			return errors.New("invalid Russian city name")
 		}
@@ -115,6 +118,18 @@ func validText(s string, max int) bool {
 	}
 	for _, r := range s {
 		if r < 32 {
+			return false
+		}
+	}
+	return true
+}
+
+func validIATA(s string) bool {
+	if len(s) != 3 {
+		return false
+	}
+	for _, c := range s {
+		if c < 'A' || c > 'Z' {
 			return false
 		}
 	}

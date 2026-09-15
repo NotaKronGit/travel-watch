@@ -1,5 +1,6 @@
 import { Title, useGetIdentity } from 'react-admin';
-import { Alert, Box, Card, CardContent, Chip, Skeleton, Stack, Typography } from '@mui/material';
+import { Alert, Button, Box, Card, CardContent, Chip, Skeleton, Stack, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 import RouteIcon from '@mui/icons-material/Route';
 
 export function Dashboard() {
@@ -16,9 +17,9 @@ export function Dashboard() {
       </CardContent></Card>
       <Card variant="outlined" sx={{ bgcolor: '#eef3e8' }}><CardContent sx={{ p: 4 }}>
         <RouteIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }}/>
-        <Typography variant="h5" sx={{ mb: 1 }}>Маршруты — следующий шаг</Typography>
-        <Typography color="text.secondary" sx={{ maxWidth: 580 }}>Кабинет уже доступен. Создание заявок, поиск поездок и уведомления появятся позже.</Typography>
-      </CardContent></Card>
+        <Typography variant="h5" sx={{ mb: 1 }}>Спланируйте поездку</Typography>
+        <Typography color="text.secondary" sx={{ maxWidth: 580 }}>Сохраните маршрут и удобные даты. Поиск билетов и уведомления появятся позже.</Typography>
+      <Button component={Link} to="/trips/create" variant="contained" sx={{mt:3}}>Создать заявку</Button></CardContent></Card>
     </Stack>
   </Box>;
 }
