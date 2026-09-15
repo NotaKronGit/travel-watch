@@ -1,9 +1,12 @@
 syntax = "proto3";
 package travelwatch.cabinet.v1;
+import "google/protobuf/timestamp.proto";
 option go_package = "github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1;cabinetv1";
 
 service TripService {
   rpc SearchCities(SearchCitiesRequest) returns (SearchCitiesResponse);
+  rpc ListTrips(ListTripsRequest) returns (ListTripsResponse);
+  rpc GetTrip(GetTripRequest) returns (GetTripResponse);
   rpc CreateTrip(CreateTripRequest) returns (CreateTripResponse);
 }
 message CityOption {
@@ -27,3 +30,20 @@ message CreateTripRequest {
   int32 adults = 6;
 }
 message CreateTripResponse { string id = 1; }
+
+message TripDetails {
+  string id = 1;
+  CityOption origin = 2;
+  CityOption destination = 3;
+  string departure_from = 4;
+  string departure_to = 5;
+  int32 adults = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+message ListTripsRequest { int32 offset = 1; }
+message ListTripsResponse {
+  repeated TripDetails trips = 1;
+  bool has_more = 2;
+}
+message GetTripRequest { string id = 1; }
+message GetTripResponse { TripDetails trip = 1; }

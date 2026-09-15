@@ -44,6 +44,34 @@ func testTripStorage(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	got, err := store.GetTrip(ctx, user, id)
+	if err != nil || got.ID != id || got.Adults != 2 || got.Origin.ID != ids[0] {
+		t.Fatal("cannot read own trip", err)
+	}
+	var otherUser string
+	if err := owner.QueryRowContext(ctx, "INSERT INTO users(email,password_hash) VALUES('other-trip-fixture@example.com','test-only') RETURNING id").Scan(&otherUser); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.GetTrip(ctx, otherUser, id); !errors.Is(err, storage.ErrNotFound) {
+		t.Fatal("foreign trip exposed", err)
+	}
+	if _, err := store.GetTrip(ctx, user, "99999999-9999-9999-9999-999999999999"); !errors.Is(err, storage.ErrNotFound) {
+		t.Fatal("missing trip not handled", err)
+	}
+	otherTrips, _, err := store.ListTrips(ctx, otherUser, 0)
+	if err != nil || len(otherTrips) != 0 {
+		t.Fatal("foreign trips listed", err)
+	}
+	if _, err := owner.ExecContext(ctx, "UPDATE catalog_cities SET active=false WHERE id=$1", ids[0]); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.GetTrip(ctx, user, id); err != nil {
+		t.Fatal("inactive city hides saved trip", err)
+	}
+	if _, err := owner.ExecContext(ctx, "UPDATE catalog_cities SET active=true WHERE id=$1", ids[0]); err != nil {
+		t.Fatal(err)
+	}
 	again, err := store.CreateTrip(ctx, trip)
 	if err != nil || again != id {
 		t.Fatal("retry duplicated trip", err)
@@ -66,4 +94,23 @@ func testTripStorage(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 	if err := app.QueryRowContext(ctx, "SELECT count(*) FROM trip_requests WHERE user_id=$1", user).Scan(&count); err != nil || count != 1 {
 		t.Fatal("invalid request persisted", err)
 	}
+	// Enough records for two pages; identical dates exercise the ID tiebreaker.
+	if _, err := owner.ExecContext(ctx, `INSERT INTO trip_requests(user_id,request_id,origin_id,destination_id,departure_from,departure_to,adults)
+ SELECT $1,gen_random_uuid(),$2,$3,'2027-01-01','2027-01-02',1 FROM generate_series(1,20)`, user, ids[0], ids[1]); err != nil {
+		t.Fatal(err)
+	}
+	first, more, err := store.ListTrips(ctx, user, 0)
+	if err != nil || len(first) != 20 || !more {
+		t.Fatal("first page", err)
+	}
+	second, more, err := store.ListTrips(ctx, user, 20)
+	if err != nil || len(second) != 1 || more {
+		t.Fatal("second page", err)
+	}
+	for _, item := range first {
+		if item.ID == second[0].ID {
+			t.Fatal("overlapping pages")
+		}
+	}
+
 }

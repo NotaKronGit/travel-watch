@@ -3,6 +3,7 @@ package trips
 import (
 	"context"
 	"errors"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"net/http"
 	"regexp"
 	"strings"
@@ -17,6 +18,8 @@ import (
 )
 
 type Repository interface {
+	GetTrip(context.Context, string, string) (storage.TripDetails, error)
+	ListTrips(context.Context, string, uint) ([]storage.TripDetails, bool, error)
 	SearchCities(context.Context, string) ([]storage.CityOption, error)
 	CreateTrip(context.Context, storage.Trip) (string, error)
 }
@@ -104,4 +107,46 @@ func (s *Service) CreateTrip(ctx context.Context, req *connect.Request[v1.Create
 		return nil, connect.NewError(connect.CodeUnavailable, errors.New("Не удалось подтвердить сохранение. Повторите попытку"))
 	}
 	return connect.NewResponse(&v1.CreateTripResponse{Id: id}), nil
+}
+
+func cityView(c storage.CityOption) *v1.CityOption {
+	return &v1.CityOption{Id: c.ID, Name: c.Name, Country: c.Country, Region: c.Region, Timezone: c.Timezone, IataCode: c.IATACode}
+}
+func tripView(t storage.TripDetails) *v1.TripDetails {
+	return &v1.TripDetails{Id: t.ID, Origin: cityView(t.Origin), Destination: cityView(t.Destination), DepartureFrom: t.DepartureFrom, DepartureTo: t.DepartureTo, Adults: t.Adults, CreatedAt: timestamppb.New(t.CreatedAt)}
+}
+func (s *Service) GetTrip(ctx context.Context, req *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error) {
+	user, err := s.user(ctx, req.Header())
+	if err != nil {
+		return nil, err
+	}
+	if !uuid.MatchString(req.Msg.Id) {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("Заявка не найдена"))
+	}
+	t, err := s.store.GetTrip(ctx, user, req.Msg.Id)
+	if errors.Is(err, storage.ErrNotFound) {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("Заявка не найдена"))
+	}
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnavailable, errors.New("Не удалось загрузить заявку"))
+	}
+	return connect.NewResponse(&v1.GetTripResponse{Trip: tripView(t)}), nil
+}
+func (s *Service) ListTrips(ctx context.Context, req *connect.Request[v1.ListTripsRequest]) (*connect.Response[v1.ListTripsResponse], error) {
+	user, err := s.user(ctx, req.Header())
+	if err != nil {
+		return nil, err
+	}
+	if req.Msg.Offset < 0 {
+		return nil, invalid("Некорректная страница")
+	}
+	trips, more, err := s.store.ListTrips(ctx, user, uint(req.Msg.Offset))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnavailable, errors.New("Не удалось загрузить заявки"))
+	}
+	res := &v1.ListTripsResponse{HasMore: more}
+	for _, t := range trips {
+		res.Trips = append(res.Trips, tripView(t))
+	}
+	return connect.NewResponse(res), nil
 }

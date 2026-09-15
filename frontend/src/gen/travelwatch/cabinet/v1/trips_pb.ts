@@ -4,13 +4,15 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file travelwatch/cabinet/v1/trips.proto.
  */
 export const file_travelwatch_cabinet_v1_trips: GenFile = /*@__PURE__*/
-  fileDesc("CiJ0cmF2ZWx3YXRjaC9jYWJpbmV0L3YxL3RyaXBzLnByb3RvEhZ0cmF2ZWx3YXRjaC5jYWJpbmV0LnYxImwKCkNpdHlPcHRpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdjb3VudHJ5GAMgASgJEg4KBnJlZ2lvbhgEIAEoCRIQCgh0aW1lem9uZRgFIAEoCRIRCglpYXRhX2NvZGUYBiABKAkiJAoTU2VhcmNoQ2l0aWVzUmVxdWVzdBINCgVxdWVyeRgBIAEoCSJKChRTZWFyY2hDaXRpZXNSZXNwb25zZRIyCgZjaXRpZXMYASADKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24ikAEKEUNyZWF0ZVRyaXBSZXF1ZXN0EhIKCnJlcXVlc3RfaWQYASABKAkSEQoJb3JpZ2luX2lkGAIgASgJEhYKDmRlc3RpbmF0aW9uX2lkGAMgASgJEhYKDmRlcGFydHVyZV9mcm9tGAQgASgJEhQKDGRlcGFydHVyZV90bxgFIAEoCRIOCgZhZHVsdHMYBiABKAUiIAoSQ3JlYXRlVHJpcFJlc3BvbnNlEgoKAmlkGAEgASgJMt0BCgtUcmlwU2VydmljZRJpCgxTZWFyY2hDaXRpZXMSKy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlNlYXJjaENpdGllc1JlcXVlc3QaLC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlNlYXJjaENpdGllc1Jlc3BvbnNlEmMKCkNyZWF0ZVRyaXASKS50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNyZWF0ZVRyaXBSZXF1ZXN0GioudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DcmVhdGVUcmlwUmVzcG9uc2VCSlpIZ2l0aHViLmNvbS9Ob3RhS3JvbkdpdC90cmF2ZWwtd2F0Y2gvZ2VuL3RyYXZlbHdhdGNoL2NhYmluZXQvdjE7Y2FiaW5ldHYxYgZwcm90bzM");
+  fileDesc("CiJ0cmF2ZWx3YXRjaC9jYWJpbmV0L3YxL3RyaXBzLnByb3RvEhZ0cmF2ZWx3YXRjaC5jYWJpbmV0LnYxImwKCkNpdHlPcHRpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdjb3VudHJ5GAMgASgJEg4KBnJlZ2lvbhgEIAEoCRIQCgh0aW1lem9uZRgFIAEoCRIRCglpYXRhX2NvZGUYBiABKAkiJAoTU2VhcmNoQ2l0aWVzUmVxdWVzdBINCgVxdWVyeRgBIAEoCSJKChRTZWFyY2hDaXRpZXNSZXNwb25zZRIyCgZjaXRpZXMYASADKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24ikAEKEUNyZWF0ZVRyaXBSZXF1ZXN0EhIKCnJlcXVlc3RfaWQYASABKAkSEQoJb3JpZ2luX2lkGAIgASgJEhYKDmRlc3RpbmF0aW9uX2lkGAMgASgJEhYKDmRlcGFydHVyZV9mcm9tGAQgASgJEhQKDGRlcGFydHVyZV90bxgFIAEoCRIOCgZhZHVsdHMYBiABKAUiIAoSQ3JlYXRlVHJpcFJlc3BvbnNlEgoKAmlkGAEgASgJIvQBCgtUcmlwRGV0YWlscxIKCgJpZBgBIAEoCRIyCgZvcmlnaW4YAiABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SNwoLZGVzdGluYXRpb24YAyABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SFgoOZGVwYXJ0dXJlX2Zyb20YBCABKAkSFAoMZGVwYXJ0dXJlX3RvGAUgASgJEg4KBmFkdWx0cxgGIAEoBRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIiChBMaXN0VHJpcHNSZXF1ZXN0Eg4KBm9mZnNldBgBIAEoBSJZChFMaXN0VHJpcHNSZXNwb25zZRIyCgV0cmlwcxgBIAMoCzIjLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVHJpcERldGFpbHMSEAoIaGFzX21vcmUYAiABKAgiHAoOR2V0VHJpcFJlcXVlc3QSCgoCaWQYASABKAkiRAoPR2V0VHJpcFJlc3BvbnNlEjEKBHRyaXAYASABKAsyIy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBEZXRhaWxzMpsDCgtUcmlwU2VydmljZRJpCgxTZWFyY2hDaXRpZXMSKy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlNlYXJjaENpdGllc1JlcXVlc3QaLC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlNlYXJjaENpdGllc1Jlc3BvbnNlEmAKCUxpc3RUcmlwcxIoLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuTGlzdFRyaXBzUmVxdWVzdBopLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuTGlzdFRyaXBzUmVzcG9uc2USWgoHR2V0VHJpcBImLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuR2V0VHJpcFJlcXVlc3QaJy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkdldFRyaXBSZXNwb25zZRJjCgpDcmVhdGVUcmlwEikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DcmVhdGVUcmlwUmVxdWVzdBoqLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuQ3JlYXRlVHJpcFJlc3BvbnNlQkpaSGdpdGh1Yi5jb20vTm90YUtyb25HaXQvdHJhdmVsLXdhdGNoL2dlbi90cmF2ZWx3YXRjaC9jYWJpbmV0L3YxO2NhYmluZXR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message travelwatch.cabinet.v1.CityOption
@@ -152,6 +154,126 @@ export const CreateTripResponseSchema: GenMessage<CreateTripResponse> = /*@__PUR
   messageDesc(file_travelwatch_cabinet_v1_trips, 4);
 
 /**
+ * @generated from message travelwatch.cabinet.v1.TripDetails
+ */
+export type TripDetails = Message<"travelwatch.cabinet.v1.TripDetails"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: travelwatch.cabinet.v1.CityOption origin = 2;
+   */
+  origin?: CityOption | undefined;
+
+  /**
+   * @generated from field: travelwatch.cabinet.v1.CityOption destination = 3;
+   */
+  destination?: CityOption | undefined;
+
+  /**
+   * @generated from field: string departure_from = 4;
+   */
+  departureFrom: string;
+
+  /**
+   * @generated from field: string departure_to = 5;
+   */
+  departureTo: string;
+
+  /**
+   * @generated from field: int32 adults = 6;
+   */
+  adults: number;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 7;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.TripDetails.
+ * Use `create(TripDetailsSchema)` to create a new message.
+ */
+export const TripDetailsSchema: GenMessage<TripDetails> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 5);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.ListTripsRequest
+ */
+export type ListTripsRequest = Message<"travelwatch.cabinet.v1.ListTripsRequest"> & {
+  /**
+   * @generated from field: int32 offset = 1;
+   */
+  offset: number;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.ListTripsRequest.
+ * Use `create(ListTripsRequestSchema)` to create a new message.
+ */
+export const ListTripsRequestSchema: GenMessage<ListTripsRequest> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 6);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.ListTripsResponse
+ */
+export type ListTripsResponse = Message<"travelwatch.cabinet.v1.ListTripsResponse"> & {
+  /**
+   * @generated from field: repeated travelwatch.cabinet.v1.TripDetails trips = 1;
+   */
+  trips: TripDetails[];
+
+  /**
+   * @generated from field: bool has_more = 2;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.ListTripsResponse.
+ * Use `create(ListTripsResponseSchema)` to create a new message.
+ */
+export const ListTripsResponseSchema: GenMessage<ListTripsResponse> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 7);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.GetTripRequest
+ */
+export type GetTripRequest = Message<"travelwatch.cabinet.v1.GetTripRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.GetTripRequest.
+ * Use `create(GetTripRequestSchema)` to create a new message.
+ */
+export const GetTripRequestSchema: GenMessage<GetTripRequest> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 8);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.GetTripResponse
+ */
+export type GetTripResponse = Message<"travelwatch.cabinet.v1.GetTripResponse"> & {
+  /**
+   * @generated from field: travelwatch.cabinet.v1.TripDetails trip = 1;
+   */
+  trip?: TripDetails | undefined;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.GetTripResponse.
+ * Use `create(GetTripResponseSchema)` to create a new message.
+ */
+export const GetTripResponseSchema: GenMessage<GetTripResponse> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 9);
+
+/**
  * @generated from service travelwatch.cabinet.v1.TripService
  */
 export const TripService: GenService<{
@@ -162,6 +284,22 @@ export const TripService: GenService<{
     methodKind: "unary";
     input: typeof SearchCitiesRequestSchema;
     output: typeof SearchCitiesResponseSchema;
+  },
+  /**
+   * @generated from rpc travelwatch.cabinet.v1.TripService.ListTrips
+   */
+  listTrips: {
+    methodKind: "unary";
+    input: typeof ListTripsRequestSchema;
+    output: typeof ListTripsResponseSchema;
+  },
+  /**
+   * @generated from rpc travelwatch.cabinet.v1.TripService.GetTrip
+   */
+  getTrip: {
+    methodKind: "unary";
+    input: typeof GetTripRequestSchema;
+    output: typeof GetTripResponseSchema;
   },
   /**
    * @generated from rpc travelwatch.cabinet.v1.TripService.CreateTrip
