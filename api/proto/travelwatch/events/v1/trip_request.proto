@@ -1,0 +1,34 @@
+syntax = "proto3";
+package travelwatch.events.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/NotaKronGit/travel-watch/gen/travelwatch/events/v1;eventsv1";
+
+// Geographic snapshot, not a promise of transport availability.
+message TripCity {
+  string id = 1;
+  string source = 2;
+  int64 source_id = 3;
+  string name = 4;
+  string country_code = 5;
+  double latitude = 6;
+  double longitude = 7;
+  string timezone = 8;
+  string iata_code = 9;
+}
+
+// Kafka value: binary Protobuf. Kafka key: request_id UTF-8.
+// Consumers deduplicate by event_id; delivery is at least once.
+message TripRequestCreated {
+  string event_id = 1;
+  uint32 schema_version = 2;
+  string request_id = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+  TripCity origin = 5;
+  TripCity destination = 6;
+  // Inclusive YYYY-MM-DD calendar dates in the origin timezone.
+  string departure_from = 7;
+  string departure_to = 8;
+  int32 adults = 9;
+}
