@@ -19,7 +19,7 @@ func (s *Store) ReplaceCatalog(ctx context.Context, snapshot catalog.Snapshot) e
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	var locked bool
 	// Transaction-scoped lock serializes catalog publications across processes.
 	if err := tx.QueryRowContext(ctx, "SELECT pg_try_advisory_xact_lock(742019, 1)").Scan(&locked); err != nil {

@@ -128,7 +128,11 @@ func TestReadRPC(t *testing.T) {
 				if tc.method == "get" && repo.id != id {
 					t.Fatal("incorrect ID passed to storage")
 				}
-				if tc.method == "list" && repo.offset != uint(tc.offset) {
+				expectedOffset := tc.offset
+				if expectedOffset < 0 {
+					t.Fatal("negative offset reached storage")
+				}
+				if tc.method == "list" && repo.offset != uint(expectedOffset) {
 					t.Fatal("incorrect offset passed to storage")
 				}
 			}

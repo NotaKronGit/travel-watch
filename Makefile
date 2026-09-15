@@ -1,3 +1,15 @@
+.DEFAULT_GOAL := db-up
+
+GOLANGCI_LINT_VERSION = v2.8.0
+GOLANGCI_LINT = go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+
+.PHONY: lint gosec
+lint:
+	$(GOLANGCI_LINT) run --config .golangci.yml ./...
+
+gosec:
+	$(GOLANGCI_LINT) run --config .golangci.yml --enable-only gosec ./...
+
 COMPOSE = docker compose --env-file .env -f deploy/compose/compose.yaml
 
 .PHONY: db-up db-stop migrate cabinet frontend generate test test-int check
@@ -27,9 +39,8 @@ test:
 test-int:
 	go test -race -tags=integration ./services/cabinet/internal/auth -count=1
 
-check:
+check: lint
 	buf lint
-	go vet ./...
 	go test -race ./...
 	npm --prefix frontend run build
 

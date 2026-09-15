@@ -52,7 +52,7 @@ func TestPostgresAuth(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Cleanup(func() { db.Close() })
+		t.Cleanup(func() { _ = db.Close() })
 		return db
 	}
 	owner := open("cabinet_owner", env["CABINET_DATABASE_OWNER_PASSWORD"], "")
