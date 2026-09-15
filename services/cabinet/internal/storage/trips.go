@@ -132,6 +132,8 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 var ErrPastDeparture = errors.New("departure in the past")
 
 type TripDetails struct {
+	Status, Comment            string
+	CancelledAt                sql.NullTime
 	ID                         string
 	Origin, Destination        CityOption
 	DepartureFrom, DepartureTo string
@@ -145,7 +147,7 @@ func tripReadQuery(user string) *goqu.SelectDataset {
 		q = q.Join(goqu.T("catalog_cities").As(side.alias), goqu.On(goqu.I(side.alias+".id").Eq(goqu.I("t."+side.column))))
 		q = q.Join(goqu.T("catalog_countries").As(side.alias+"n"), goqu.On(goqu.I(side.alias+"n.code").Eq(goqu.I(side.alias+".country_code"))))
 	}
-	columns := []interface{}{goqu.I("t.id"), goqu.L("t.departure_from::text"), goqu.L("t.departure_to::text"), goqu.I("t.adults"), goqu.I("t.created_at")}
+	columns := []interface{}{goqu.I("t.id"), goqu.L("t.departure_from::text"), goqu.L("t.departure_to::text"), goqu.I("t.adults"), goqu.I("t.created_at"), goqu.I("t.status"), goqu.I("t.comment"), goqu.I("t.cancelled_at")}
 	for _, alias := range []string{"o", "d"} {
 		columns = append(columns, goqu.I(alias+".id"), goqu.I(alias+".name_ru"), goqu.L("COALESCE(NULLIF(?, ''), ?)", goqu.I(alias+"n.name_ru"), goqu.I(alias+"n.name")), goqu.I(alias+".region_name"), goqu.I(alias+".timezone"), goqu.I(alias+".iata_code"))
 	}
@@ -154,7 +156,7 @@ func tripReadQuery(user string) *goqu.SelectDataset {
 }
 func scanTrip(row interface{ Scan(...any) error }) (TripDetails, error) {
 	var t TripDetails
-	err := row.Scan(&t.ID, &t.DepartureFrom, &t.DepartureTo, &t.Adults, &t.CreatedAt,
+	err := row.Scan(&t.ID, &t.DepartureFrom, &t.DepartureTo, &t.Adults, &t.CreatedAt, &t.Status, &t.Comment, &t.CancelledAt,
 		&t.Origin.ID, &t.Origin.Name, &t.Origin.Country, &t.Origin.Region, &t.Origin.Timezone, &t.Origin.IATACode,
 		&t.Destination.ID, &t.Destination.Name, &t.Destination.Country, &t.Destination.Region, &t.Destination.Timezone, &t.Destination.IATACode)
 	return t, err

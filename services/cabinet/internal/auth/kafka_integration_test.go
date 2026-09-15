@@ -170,6 +170,27 @@ func TestKafkaOutbox(t *testing.T) {
 	if found, err := relay.Step(ctx); err != nil || found {
 		t.Fatal("published event claimed again", err)
 	}
+	// Creation and cancellation share a key but carry explicit Protobuf type headers.
+	eventType := func(m kafka.Message) string {
+		for _, h := range m.Headers {
+			if h.Key == "event_type" {
+				return string(h.Value)
+			}
+		}
+		return ""
+	}
+	if eventType(first) != "travelwatch.events.v1.TripRequestCreated" {
+		t.Fatal("missing creation type")
+	}
+	if err := store.CancelTrip(ctx, user, id); err != nil {
+		t.Fatal(err)
+	}
+	step()
+	cancelled := read()
+	var cancellation eventsv1.TripRequestCancelled
+	if err := proto.Unmarshal(cancelled.Value, &cancellation); err != nil || eventType(cancelled) != "travelwatch.events.v1.TripRequestCancelled" || string(cancelled.Key) != id || cancellation.RequestId != id || cancellation.EventId == event.EventId {
+		t.Fatal("invalid cancellation delivery", err)
+	}
 	// Kafka data survives a container restart on the named volume.
 	compose(ctx, "restart", "kafka")
 	compose(ctx, "up", "-d", "--wait", "--wait-timeout", "40", "kafka")

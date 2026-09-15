@@ -18,6 +18,8 @@ import (
 )
 
 type Repository interface {
+	CancelTrip(context.Context, string, string) error
+	UpdateTripComment(context.Context, string, string, string) error
 	GetTrip(context.Context, string, string) (storage.TripDetails, error)
 	ListTrips(context.Context, string, uint) ([]storage.TripDetails, bool, error)
 	SearchCities(context.Context, string) ([]storage.CityOption, error)
@@ -113,7 +115,12 @@ func cityView(c storage.CityOption) *v1.CityOption {
 	return &v1.CityOption{Id: c.ID, Name: c.Name, Country: c.Country, Region: c.Region, Timezone: c.Timezone, IataCode: c.IATACode}
 }
 func tripView(t storage.TripDetails) *v1.TripDetails {
-	return &v1.TripDetails{Id: t.ID, Origin: cityView(t.Origin), Destination: cityView(t.Destination), DepartureFrom: t.DepartureFrom, DepartureTo: t.DepartureTo, Adults: t.Adults, CreatedAt: timestamppb.New(t.CreatedAt)}
+	status := map[string]v1.TripStatus{"saved": v1.TripStatus_TRIP_STATUS_SAVED, "running": v1.TripStatus_TRIP_STATUS_RUNNING, "cancelled": v1.TripStatus_TRIP_STATUS_CANCELLED, "completed": v1.TripStatus_TRIP_STATUS_COMPLETED}[t.Status]
+	var cancelled *timestamppb.Timestamp
+	if t.CancelledAt.Valid {
+		cancelled = timestamppb.New(t.CancelledAt.Time)
+	}
+	return &v1.TripDetails{Status: status, Comment: t.Comment, CancelledAt: cancelled, Id: t.ID, Origin: cityView(t.Origin), Destination: cityView(t.Destination), DepartureFrom: t.DepartureFrom, DepartureTo: t.DepartureTo, Adults: t.Adults, CreatedAt: timestamppb.New(t.CreatedAt)}
 }
 func (s *Service) GetTrip(ctx context.Context, req *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error) {
 	user, err := s.user(ctx, req.Header())
@@ -150,4 +157,47 @@ func (s *Service) ListTrips(ctx context.Context, req *connect.Request[v1.ListTri
 		res.Trips = append(res.Trips, tripView(t))
 	}
 	return connect.NewResponse(res), nil
+}
+
+func lifecycleError(err error) error {
+	switch {
+	case errors.Is(err, storage.ErrNotFound):
+		return connect.NewError(connect.CodeNotFound, errors.New("Заявка не найдена"))
+	case errors.Is(err, storage.ErrTripTerminal):
+		return connect.NewError(connect.CodeFailedPrecondition, errors.New("Завершённую заявку нельзя отменить"))
+	case err != nil:
+		return connect.NewError(connect.CodeUnavailable, errors.New("Не удалось подтвердить изменение. Повторите попытку"))
+	default:
+		return nil
+	}
+}
+func (s *Service) CancelTrip(ctx context.Context, req *connect.Request[v1.CancelTripRequest]) (*connect.Response[v1.CancelTripResponse], error) {
+	user, err := s.user(ctx, req.Header())
+	if err != nil {
+		return nil, err
+	}
+	if !uuid.MatchString(req.Msg.Id) {
+		return nil, lifecycleError(storage.ErrNotFound)
+	}
+	if err := s.store.CancelTrip(ctx, user, req.Msg.Id); err != nil {
+		return nil, lifecycleError(err)
+	}
+	return connect.NewResponse(&v1.CancelTripResponse{}), nil
+}
+func (s *Service) UpdateTripComment(ctx context.Context, req *connect.Request[v1.UpdateTripCommentRequest]) (*connect.Response[v1.UpdateTripCommentResponse], error) {
+	user, err := s.user(ctx, req.Header())
+	if err != nil {
+		return nil, err
+	}
+	if !uuid.MatchString(req.Msg.Id) {
+		return nil, lifecycleError(storage.ErrNotFound)
+	}
+	comment := req.Msg.Comment
+	if !utf8.ValidString(comment) || utf8.RuneCountInString(comment) > 2000 || strings.ContainsRune(comment, 0) {
+		return nil, invalid("Комментарий должен содержать не более 2000 символов без нулевого символа")
+	}
+	if err := s.store.UpdateTripComment(ctx, user, req.Msg.Id, comment); err != nil {
+		return nil, lifecycleError(err)
+	}
+	return connect.NewResponse(&v1.UpdateTripCommentResponse{}), nil
 }

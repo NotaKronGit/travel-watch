@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file travelwatch/events/v1/trip_request.proto.
  */
 export const file_travelwatch_events_v1_trip_request: GenFile = /*@__PURE__*/
-  fileDesc("Cih0cmF2ZWx3YXRjaC9ldmVudHMvdjEvdHJpcF9yZXF1ZXN0LnByb3RvEhV0cmF2ZWx3YXRjaC5ldmVudHMudjEipwEKCFRyaXBDaXR5EgoKAmlkGAEgASgJEg4KBnNvdXJjZRgCIAEoCRIRCglzb3VyY2VfaWQYAyABKAMSDAoEbmFtZRgEIAEoCRIUCgxjb3VudHJ5X2NvZGUYBSABKAkSEAoIbGF0aXR1ZGUYBiABKAESEQoJbG9uZ2l0dWRlGAcgASgBEhAKCHRpbWV6b25lGAggASgJEhEKCWlhdGFfY29kZRgJIAEoCSKoAgoSVHJpcFJlcXVlc3RDcmVhdGVkEhAKCGV2ZW50X2lkGAEgASgJEhYKDnNjaGVtYV92ZXJzaW9uGAIgASgNEhIKCnJlcXVlc3RfaWQYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KBm9yaWdpbhgFIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRI0CgtkZXN0aW5hdGlvbhgGIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRIWCg5kZXBhcnR1cmVfZnJvbRgHIAEoCRIUCgxkZXBhcnR1cmVfdG8YCCABKAkSDgoGYWR1bHRzGAkgASgFQkhaRmdpdGh1Yi5jb20vTm90YUtyb25HaXQvdHJhdmVsLXdhdGNoL2dlbi90cmF2ZWx3YXRjaC9ldmVudHMvdjE7ZXZlbnRzdjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("Cih0cmF2ZWx3YXRjaC9ldmVudHMvdjEvdHJpcF9yZXF1ZXN0LnByb3RvEhV0cmF2ZWx3YXRjaC5ldmVudHMudjEipwEKCFRyaXBDaXR5EgoKAmlkGAEgASgJEg4KBnNvdXJjZRgCIAEoCRIRCglzb3VyY2VfaWQYAyABKAMSDAoEbmFtZRgEIAEoCRIUCgxjb3VudHJ5X2NvZGUYBSABKAkSEAoIbGF0aXR1ZGUYBiABKAESEQoJbG9uZ2l0dWRlGAcgASgBEhAKCHRpbWV6b25lGAggASgJEhEKCWlhdGFfY29kZRgJIAEoCSKoAgoSVHJpcFJlcXVlc3RDcmVhdGVkEhAKCGV2ZW50X2lkGAEgASgJEhYKDnNjaGVtYV92ZXJzaW9uGAIgASgNEhIKCnJlcXVlc3RfaWQYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KBm9yaWdpbhgFIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRI0CgtkZXN0aW5hdGlvbhgGIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRIWCg5kZXBhcnR1cmVfZnJvbRgHIAEoCRIUCgxkZXBhcnR1cmVfdG8YCCABKAkSDgoGYWR1bHRzGAkgASgFIoUBChRUcmlwUmVxdWVzdENhbmNlbGxlZBIQCghldmVudF9pZBgBIAEoCRIWCg5zY2hlbWFfdmVyc2lvbhgCIAEoDRISCgpyZXF1ZXN0X2lkGAMgASgJEi8KC29jY3VycmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEJIWkZnaXRodWIuY29tL05vdGFLcm9uR2l0L3RyYXZlbC13YXRjaC9nZW4vdHJhdmVsd2F0Y2gvZXZlbnRzL3YxO2V2ZW50c3YxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * Geographic snapshot, not a promise of transport availability.
@@ -134,4 +134,39 @@ export type TripRequestCreated = Message<"travelwatch.events.v1.TripRequestCreat
  */
 export const TripRequestCreatedSchema: GenMessage<TripRequestCreated> = /*@__PURE__*/
   messageDesc(file_travelwatch_events_v1_trip_request, 1);
+
+/**
+ * Terminal cancellation. Consumers must retain it even if creation arrives later.
+ * Kafka header event_type selects the Protobuf message type.
+ *
+ * @generated from message travelwatch.events.v1.TripRequestCancelled
+ */
+export type TripRequestCancelled = Message<"travelwatch.events.v1.TripRequestCancelled"> & {
+  /**
+   * @generated from field: string event_id = 1;
+   */
+  eventId: string;
+
+  /**
+   * @generated from field: uint32 schema_version = 2;
+   */
+  schemaVersion: number;
+
+  /**
+   * @generated from field: string request_id = 3;
+   */
+  requestId: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp occurred_at = 4;
+   */
+  occurredAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message travelwatch.events.v1.TripRequestCancelled.
+ * Use `create(TripRequestCancelledSchema)` to create a new message.
+ */
+export const TripRequestCancelledSchema: GenMessage<TripRequestCancelled> = /*@__PURE__*/
+  messageDesc(file_travelwatch_events_v1_trip_request, 2);
 
