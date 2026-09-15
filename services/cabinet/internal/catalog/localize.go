@@ -109,6 +109,10 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 			countries[c.SourceID] = i
 		}
 	}
+	regions := map[int64]int{}
+	for i, r := range snapshot.Regions {
+		regions[r.SourceID] = i
+	}
 	chosen := make(map[int64]localizedName)
 	codes := make(map[int64]string)
 	ambiguous := make(map[int64]bool)
@@ -126,7 +130,8 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 		}
 		ci, city := cities[id]
 		_, country := countries[id]
-		if !city && !country {
+		_, region := regions[id]
+		if !city && !country && !region {
 			return nil
 		}
 		alternateID, err := strconv.ParseInt(f[0], 10, 64)
@@ -174,6 +179,9 @@ func applyRussianNames(ctx context.Context, snapshot *Snapshot, reader io.Reader
 		}
 	}
 	for id, n := range chosen {
+		if i, ok := regions[id]; ok {
+			snapshot.Regions[i].NameRu = n.name
+		}
 		if i, ok := cities[id]; ok {
 			snapshot.Cities[i].NameRu = n.name
 		}

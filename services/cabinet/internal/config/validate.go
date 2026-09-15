@@ -46,7 +46,7 @@ func (c Config) Validate(command string) error {
 		return nil
 	}
 	if command == "sync-cities" {
-		for _, raw := range []string{c.Catalog.CitiesURL, c.Catalog.CountriesURL, c.Catalog.AlternateNamesURL} {
+		for _, raw := range []string{c.Catalog.CitiesURL, c.Catalog.CountriesURL, c.Catalog.RegionsURL, c.Catalog.AlternateNamesURL} {
 			u, err := url.Parse(raw)
 			if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.Fragment != "" {
 				return errors.New("catalog URLs must use HTTPS without credentials or fragments")

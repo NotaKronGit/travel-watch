@@ -20,7 +20,7 @@ var ErrRequestConflict = errors.New("request id reused with different trip")
 
 func (s *Store) SearchCities(ctx context.Context, prefix string) ([]CityOption, error) {
 	pattern := strings.NewReplacer("\\", "\\\\", "%", "\\%", "_", "\\_").Replace(strings.ToLower(prefix)) + "%"
-	q, args, err := postgres.From(goqu.T("catalog_cities").As("c")).Join(goqu.T("catalog_countries").As("n"), goqu.On(goqu.I("n.code").Eq(goqu.I("c.country_code")))).Select(goqu.I("c.id"), goqu.I("c.name_ru"), goqu.L("COALESCE(NULLIF(n.name_ru, ''), n.name)"), goqu.I("c.region_code"), goqu.I("c.timezone"), goqu.I("c.iata_code")).Where(goqu.I("c.active").IsTrue(), goqu.I("c.name_ru").Neq(""), goqu.L("lower(c.name_ru) LIKE ?", pattern)).Order(goqu.I("c.population").Desc(), goqu.I("c.id").Asc()).Limit(10).Prepared(true).ToSQL()
+	q, args, err := postgres.From(goqu.T("catalog_cities").As("c")).Join(goqu.T("catalog_countries").As("n"), goqu.On(goqu.I("n.code").Eq(goqu.I("c.country_code")))).Select(goqu.I("c.id"), goqu.I("c.name_ru"), goqu.L("COALESCE(NULLIF(n.name_ru, ''), n.name)"), goqu.I("c.region_name"), goqu.I("c.timezone"), goqu.I("c.iata_code")).Where(goqu.I("c.active").IsTrue(), goqu.I("c.name_ru").Neq(""), goqu.L("lower(c.name_ru) LIKE ?", pattern)).Order(goqu.I("c.population").Desc(), goqu.I("c.id").Asc()).Limit(10).Prepared(true).ToSQL()
 	if err != nil {
 		return nil, err
 	}

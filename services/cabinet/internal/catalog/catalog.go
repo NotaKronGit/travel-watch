@@ -15,13 +15,18 @@ type Country struct {
 	SourceID           int64
 }
 type City struct {
-	SourceID                                                  int64
-	Name, NameRu, CountryCode, RegionCode, Timezone, IATACode string
-	Aliases                                                   []string
-	Latitude, Longitude                                       float64
-	Population                                                int64
+	SourceID                                                              int64
+	Name, NameRu, CountryCode, RegionCode, Timezone, IATACode, RegionName string
+	Aliases                                                               []string
+	Latitude, Longitude                                                   float64
+	Population                                                            int64
+}
+type Region struct {
+	Code, Name, NameRu string
+	SourceID           int64
 }
 type Snapshot struct {
+	Regions   []Region
 	Source    string
 	Version   string // Content digest, not a claim about the source's publication date.
 	Countries []Country
@@ -99,6 +104,9 @@ func Validate(s Snapshot, minCities int) error {
 				return errors.New("invalid city timezone")
 			}
 			zones[c.Timezone] = true
+		}
+		if c.RegionName != "" && !validText(c.RegionName, 400) {
+			return errors.New("invalid region name")
 		}
 		if len(c.RegionCode) > 100 || !utf8.ValidString(c.RegionCode) {
 			return errors.New("invalid city region")

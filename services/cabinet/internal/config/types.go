@@ -57,6 +57,7 @@ type Catalog struct {
 	MaxAlternateDownloadBytes     int64         `mapstructure:"max_alternate_download_bytes"`
 	MaxAlternateUncompressedBytes int64         `mapstructure:"max_alternate_uncompressed_bytes"`
 	CitiesURL                     string        `mapstructure:"cities_url"`
+	RegionsURL                    string        `mapstructure:"regions_url"`
 	CountriesURL                  string        `mapstructure:"countries_url"`
 	HTTPTimeout                   time.Duration `mapstructure:"http_timeout"`
 	SyncTimeout                   time.Duration `mapstructure:"sync_timeout"`

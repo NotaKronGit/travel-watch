@@ -37,6 +37,7 @@ auth:
   hash_concurrency: 4
 catalog:
   cities_url: https://download.geonames.org/export/dump/cities500.zip
+  regions_url: https://download.geonames.org/export/dump/admin1CodesASCII.txt
   countries_url: https://download.geonames.org/export/dump/countryInfo.txt
   alternate_names_url: https://download.geonames.org/export/dump/alternateNamesV2.zip
   max_alternate_download_bytes: 268435456

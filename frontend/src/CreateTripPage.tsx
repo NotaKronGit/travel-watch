@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { tripClient } from './api';
 import type { CityOption } from './gen/travelwatch/cabinet/v1/trips_pb';
 
-const cityLabel = (c: CityOption) => `${c.name}, ${c.country}${c.iataCode ? ` (${c.iataCode})` : ''}`;
+const cityLabel = (c: CityOption) => `${c.name}, ${c.country}${c.region ? `, ${c.region}` : ''}${c.iataCode ? ` (${c.iataCode})` : ''}`;
 function CityField({ label, value, onChange, disabled }: {label: string; value: CityOption | null; onChange: (city: CityOption | null) => void; disabled: boolean}) {
   const [input, setInput] = useState(value ? cityLabel(value) : '');
   const [options, setOptions] = useState<CityOption[]>([]);
@@ -39,7 +39,7 @@ function CityField({ label, value, onChange, disabled }: {label: string; value: 
     renderOption={(props, city) => {
       const {key, ...optionProps} = props;
       return <Box component="li" key={key} {...optionProps} aria-label={cityLabel(city)} sx={{gap: 2}}>
-        <Box sx={{flex: 1, minWidth: 0}}><Typography component="span">{city.name}, </Typography><Typography component="span" sx={{color: '#767676'}}>{city.country}</Typography></Box>
+        <Box sx={{flex: 1, minWidth: 0}}><Typography component="span">{city.name}, </Typography><Typography component="span" sx={{color: '#767676'}}>{city.country}{city.region ? `, ${city.region}` : ''}</Typography></Box>
         {city.iataCode && <Typography variant="body2" sx={{color: 'text.secondary', letterSpacing: 1}}>{city.iataCode}</Typography>}
       </Box>;
     }}
