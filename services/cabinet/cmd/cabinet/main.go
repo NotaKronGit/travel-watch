@@ -15,6 +15,7 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/catalog"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/trips"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
@@ -80,7 +81,7 @@ func run() error {
 		slog.Info("city catalog imported", "cities", count)
 		return nil
 	}
-	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
+	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg, trips.Handler(store)), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
 	errCh := make(chan error, 1)
 	go func() { slog.Info("cabinet listening", "address", server.Addr); errCh <- server.ListenAndServe() }()
 	ticker := time.NewTicker(cfg.Auth.CleanupInterval)

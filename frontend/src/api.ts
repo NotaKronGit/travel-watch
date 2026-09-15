@@ -1,5 +1,6 @@
 import { createClient } from '@connectrpc/connect';
 import { createConnectTransport } from '@connectrpc/connect-web';
+import { TripService } from './gen/travelwatch/cabinet/v1/trips_pb';
 import { AuthService } from './gen/travelwatch/cabinet/v1/auth_pb';
 
 const transport = createConnectTransport({
@@ -12,3 +13,5 @@ const transport = createConnectTransport({
   }],
 });
 export const authClient = createClient(AuthService, transport);
+
+export const tripClient = createClient(TripService, transport);

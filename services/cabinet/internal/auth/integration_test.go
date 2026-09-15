@@ -88,6 +88,7 @@ func TestPostgresAuth(t *testing.T) {
 		t.Fatal("app role can perform DDL")
 	}
 	t.Run("city catalog", func(t *testing.T) { testCityCatalog(t, ctx, migrator, db) })
+	t.Run("trip storage", func(t *testing.T) { testTripStorage(t, ctx, migrator, db) })
 	server := httptest.NewServer(Handler(storage.New(db), testConfig(t)))
 	defer server.Close()
 	jar, _ := cookiejar.New(nil)

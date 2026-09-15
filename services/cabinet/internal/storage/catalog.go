@@ -55,10 +55,10 @@ func (s *Store) ReplaceCatalog(ctx context.Context, snapshot catalog.Snapshot) e
 			if err != nil {
 				return err
 			}
-			rows = append(rows, goqu.Record{"source": snapshot.Source, "source_id": c.SourceID, "name": c.Name, "name_ru": c.NameRu, "country_code": c.CountryCode, "region_code": c.RegionCode, "timezone": c.Timezone, "aliases": string(aliases), "latitude": c.Latitude, "longitude": c.Longitude, "population": c.Population, "active": true})
+			rows = append(rows, goqu.Record{"source": snapshot.Source, "source_id": c.SourceID, "name": c.Name, "name_ru": c.NameRu, "iata_code": c.IATACode, "country_code": c.CountryCode, "region_code": c.RegionCode, "timezone": c.Timezone, "aliases": string(aliases), "latitude": c.Latitude, "longitude": c.Longitude, "population": c.Population, "active": true})
 		}
 		update := goqu.Record{}
-		for _, col := range []string{"name", "name_ru", "country_code", "region_code", "timezone", "aliases", "latitude", "longitude", "population", "active"} {
+		for _, col := range []string{"name", "name_ru", "iata_code", "country_code", "region_code", "timezone", "aliases", "latitude", "longitude", "population", "active"} {
 			update[col] = goqu.I("excluded." + col)
 		}
 		if err := exec(postgres.Insert("catalog_cities").Rows(rows).OnConflict(goqu.DoUpdate("source, source_id", update))); err != nil {

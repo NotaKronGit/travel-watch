@@ -96,3 +96,32 @@ func TestAlternateNamesFailuresAndCleanup(t *testing.T) {
 		})
 	}
 }
+
+func TestCityIATACodes(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		codes []string
+		want  string
+	}{
+		{"single", []string{"ABC"}, "ABC"},
+		{"duplicate", []string{"ABC", "ABC"}, "ABC"},
+		{"ambiguous", []string{"ABC", "DEF"}, ""},
+		{"invalid", []string{"AB1"}, ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := fixture()
+			rows := alternate("1", "1", "ru", "Город", "", "", "", "", "", "")
+			for _, code := range tc.codes {
+				rows += alternate("2", "1", "iata", code, "", "", "", "", "", "")
+			}
+			rows += alternate("3", "999", "iata", "XYZ", "", "", "", "", "", "")
+			rows += alternate("4", "1", "iata", "OLD", "", "", "", "1", "", "")
+			if err := applyRussianNames(context.Background(), &s, strings.NewReader(rows)); err != nil {
+				t.Fatal(err)
+			}
+			if s.Cities[0].IATACode != tc.want {
+				t.Fatalf("code=%q, want %q", s.Cities[0].IATACode, tc.want)
+			}
+		})
+	}
+}

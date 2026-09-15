@@ -52,7 +52,7 @@ func reject(w http.ResponseWriter, status int, code, message string) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(map[string]string{"code": code, "message": message})
 }
-func Handler(store Repository, cfg config.Config) http.Handler {
+func Handler(store Repository, cfg config.Config, extra ...func(*Service) (string, http.Handler)) http.Handler {
 	service := NewService(store, cfg.Auth)
 	path, rpc := cabinetv1connect.NewAuthServiceHandler(service, connect.WithReadMaxBytes(cfg.Server.MaxBodyBytes), connect.WithSendMaxBytes(cfg.Server.MaxBodyBytes))
 	limits := &limiter{entries: make(map[string]attempt), config: cfg.Auth}
@@ -67,42 +67,49 @@ func Handler(store Repository, cfg config.Config) http.Handler {
 		}
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.Handle(path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-store")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		if r.Method != http.MethodPost {
-			reject(w, 405, "unimplemented", "Метод не поддерживается")
-			return
-		}
-		// Cookie-аутентификация требует защиты и входа, и остальных RPC от CSRF.
-		// Frontend обращается через same-origin proxy; CORS здесь не включается.
-		if r.Header.Get("Origin") != cfg.Server.Origin || r.Header.Get("X-Travel-Watch-CSRF") != "1" {
-			reject(w, 403, "permission_denied", "Недопустимый источник запроса")
-			return
-		}
-		if strings.HasSuffix(r.URL.Path, "/Login") || strings.HasSuffix(r.URL.Path, "/Register") {
-			host, _, err := net.SplitHostPort(r.RemoteAddr)
-			if err != nil {
-				host = r.RemoteAddr
-			}
-			// X-Forwarded-For не доверяем: этот этап рассчитан на один локальный экземпляр.
-			if !limits.allow(host, time.Now()) {
-				w.Header().Set("Retry-After", strconv.FormatInt(int64((cfg.Auth.LoginWindow+time.Second-1)/time.Second), 10))
-				reject(w, 429, "resource_exhausted", "Слишком много попыток. Попробуйте позже")
+	routes := map[string]http.Handler{path: rpc}
+	for _, register := range extra {
+		p, h := register(service)
+		routes[p] = h
+	}
+	for route, handler := range routes {
+		mux.Handle(route, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "no-store")
+			w.Header().Set("X-Content-Type-Options", "nosniff")
+			if r.Method != http.MethodPost {
+				reject(w, 405, "unimplemented", "Метод не поддерживается")
 				return
 			}
-			select {
-			case hashSlots <- struct{}{}:
-				defer func() { <-hashSlots }()
-			default:
-				reject(w, 429, "resource_exhausted", "Сервер занят. Попробуйте позже")
+			// Cookie-аутентификация требует защиты и входа, и остальных RPC от CSRF.
+			// Frontend обращается через same-origin proxy; CORS здесь не включается.
+			if r.Header.Get("Origin") != cfg.Server.Origin || r.Header.Get("X-Travel-Watch-CSRF") != "1" {
+				reject(w, 403, "permission_denied", "Недопустимый источник запроса")
 				return
 			}
-		}
-		ctx, cancel := context.WithTimeout(r.Context(), cfg.Server.RequestTimeout)
-		defer cancel()
-		r.Body = http.MaxBytesReader(w, r.Body, int64(cfg.Server.MaxBodyBytes))
-		rpc.ServeHTTP(w, r.WithContext(ctx))
-	}))
+			if strings.HasSuffix(r.URL.Path, "/Login") || strings.HasSuffix(r.URL.Path, "/Register") {
+				host, _, err := net.SplitHostPort(r.RemoteAddr)
+				if err != nil {
+					host = r.RemoteAddr
+				}
+				// X-Forwarded-For не доверяем: этот этап рассчитан на один локальный экземпляр.
+				if !limits.allow(host, time.Now()) {
+					w.Header().Set("Retry-After", strconv.FormatInt(int64((cfg.Auth.LoginWindow+time.Second-1)/time.Second), 10))
+					reject(w, 429, "resource_exhausted", "Слишком много попыток. Попробуйте позже")
+					return
+				}
+				select {
+				case hashSlots <- struct{}{}:
+					defer func() { <-hashSlots }()
+				default:
+					reject(w, 429, "resource_exhausted", "Сервер занят. Попробуйте позже")
+					return
+				}
+			}
+			ctx, cancel := context.WithTimeout(r.Context(), cfg.Server.RequestTimeout)
+			defer cancel()
+			r.Body = http.MaxBytesReader(w, r.Body, int64(cfg.Server.MaxBodyBytes))
+			handler.ServeHTTP(w, r.WithContext(ctx))
+		}))
+	}
 	return mux
 }
