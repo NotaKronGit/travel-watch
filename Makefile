@@ -127,3 +127,9 @@ collector-stations-find:
 .PHONY: search-compare-real
 search-compare-real:
 	@SEARCH_CONFIG=services/search/config.yaml go run ./services/search/cmd/search compare-real-routes docs/research/planner-comparison/cases.json
+
+.PHONY: search-plan-route
+search-plan-route:
+	@mkdir -p bin
+	@go build -o bin/collector ./services/collector/cmd/collector
+	@SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search plan-route -from "$(FROM)" -to "$(TO)" -from-lat "$(FROM_LAT)" -from-lon "$(FROM_LON)" -to-lat "$(TO_LAT)" -to-lon "$(TO_LON)"
