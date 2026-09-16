@@ -10,6 +10,12 @@ import (
 )
 
 func (c Config) Validate(command string) error {
+	if command == "compare-real-routes" {
+		if c.Gemini.APIKey == "" {
+			return nil
+		}
+		return c.Gemini.Validate()
+	}
 	if command == "compare-planners" {
 		return c.Gemini.Validate()
 	}

@@ -1,0 +1,681 @@
+[
+  {
+    "label": "Kursk",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 51.7373,
+      "lng": 36.1874,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:37Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c8",
+      "title": "Курск",
+      "distance": 0.8519988164324078
+    }
+  },
+  {
+    "label": "Ryazan",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 54.6292,
+      "lng": 39.7364,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:38Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c11",
+      "title": "Рязань",
+      "distance": 2.334449998581223
+    }
+  },
+  {
+    "label": "Moscow",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 55.7558,
+      "lng": 37.6173,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:38Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c213",
+      "title": "Москва",
+      "distance": 0.28675475293139574
+    }
+  },
+  {
+    "label": "Vladivostok",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 43.1155,
+      "lng": 131.8855,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:38Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c75",
+      "title": "Владивосток",
+      "distance": 0.26884191591523043
+    }
+  },
+  {
+    "label": "Bangkok",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 13.7563,
+      "lng": 100.5018,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:39Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c10620",
+      "title": "Бангкок",
+      "distance": 0.46360304966020593
+    }
+  },
+  {
+    "label": "Pattaya",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 12.9236,
+      "lng": 100.8825,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:39Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c23353",
+      "title": "Паттайя",
+      "distance": 2.410556019575209
+    }
+  },
+  {
+    "label": "Phuket",
+    "method": "nearest_settlement",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "lat": 7.8804,
+      "lng": 98.3923,
+      "distance": 20
+    },
+    "observed_at": "2026-09-16T10:36:40Z",
+    "status": "ok",
+    "settlement": {
+      "code": "c10622",
+      "title": "Пхукет",
+      "distance": 1.1450875652937749
+    }
+  },
+  {
+    "label": "Kursk-Moscow",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c8",
+      "to": "c213",
+      "transport_types": "train",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:40Z",
+    "status": "ok",
+    "pagination": {
+      "total": 82,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 82,
+    "examples": [
+      {
+        "from": "Курск",
+        "to": "Москва (Восточный вокзал)",
+        "from_code": "s9600816",
+        "to_code": "s9879173",
+        "number": "072В",
+        "mode": "train",
+        "has_transfers": null,
+        "start_date": "2026-09-15"
+      },
+      {
+        "from": "Курск",
+        "to": "Москва (Киевский вокзал)",
+        "from_code": "s9600816",
+        "to_code": "s2000007",
+        "number": "474С",
+        "mode": "train",
+        "has_transfers": null,
+        "start_date": "2026-08-31"
+      },
+      {
+        "from": "Курск",
+        "to": "Москва (Киевский вокзал)",
+        "from_code": "s9600816",
+        "to_code": "s2000007",
+        "number": "474С",
+        "mode": "train",
+        "has_transfers": null,
+        "start_date": "2026-09-04"
+      }
+    ]
+  },
+  {
+    "label": "Ryazan-Moscow",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c11",
+      "to": "c213",
+      "transport_types": "train",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:41Z",
+    "status": "ok",
+    "pagination": {
+      "total": 224,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 100,
+    "examples": [
+      {
+        "from": "Рязань-2",
+        "to": "Москва (Казанский вокзал)",
+        "from_code": "s9600746",
+        "to_code": "s2000003",
+        "number": "172С",
+        "mode": "train",
+        "has_transfers": null,
+        "start_date": "2026-11-26"
+      },
+      {
+        "from": "Рязань-2",
+        "to": "Москва (Казанский вокзал)",
+        "from_code": "s9600746",
+        "to_code": "s2000003",
+        "number": "158С",
+        "mode": "train",
+        "has_transfers": null,
+        "start_date": "2026-11-27"
+      },
+      {
+        "from": "Рязань-2",
+        "to": "Москва (Казанский вокзал)",
+        "from_code": "s9600746",
+        "to_code": "s2000003",
+        "number": "068С",
+        "mode": "train",
+        "has_transfers": null,
+        "start_date": "2026-12-13"
+      }
+    ]
+  },
+  {
+    "label": "Kursk-Pattaya",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c8",
+      "to": "c23353",
+      "transport_types": "train,plane,bus",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:42Z",
+    "status": "ok",
+    "pagination": {
+      "total": 0,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 0,
+    "examples": []
+  },
+  {
+    "label": "Ryazan-Phuket",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c11",
+      "to": "c10622",
+      "transport_types": "train,plane,bus",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:43Z",
+    "status": "ok",
+    "pagination": {
+      "total": 0,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 0,
+    "examples": []
+  },
+  {
+    "label": "Moscow-Bangkok",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c213",
+      "to": "c10620",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:43Z",
+    "status": "ok",
+    "pagination": {
+      "total": 7,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 7,
+    "examples": [
+      {
+        "from": "Шереметьево",
+        "to": "Суварнабхуми",
+        "from_code": "s9600213",
+        "to_code": "s9623549",
+        "number": "SU 270",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-13"
+      },
+      {
+        "from": "Шереметьево",
+        "to": "Суварнабхуми",
+        "from_code": "s9600213",
+        "to_code": "s9623549",
+        "number": "SU 270",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-26"
+      },
+      {
+        "from": "Шереметьево",
+        "to": "Суварнабхуми",
+        "from_code": "s9600213",
+        "to_code": "s9623549",
+        "number": "SU 270",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-25"
+      }
+    ]
+  },
+  {
+    "label": "Vladivostok-Phuket",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c75",
+      "to": "c10622",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:44Z",
+    "status": "ok",
+    "pagination": {
+      "total": 5,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 5,
+    "examples": [
+      {
+        "from": "Кневичи",
+        "to": "Пхукет",
+        "from_code": "s9626399",
+        "to_code": "s9623774",
+        "number": "SU 638",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-28"
+      },
+      {
+        "from": "Кневичи",
+        "to": "Пхукет",
+        "from_code": "s9626399",
+        "to_code": "s9623774",
+        "number": "SU 638",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-09-18"
+      },
+      {
+        "from": "Кневичи",
+        "to": "Пхукет",
+        "from_code": "s9626399",
+        "to_code": "s9623774",
+        "number": "SU 638",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-09-22"
+      }
+    ]
+  },
+  {
+    "label": "Bangkok-Pattaya",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "c10620",
+      "to": "c23353",
+      "transport_types": "train,bus",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:44Z",
+    "status": "ok",
+    "pagination": {
+      "total": 0,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 0,
+    "examples": []
+  },
+  {
+    "label": "SVO-BKK",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "SVO",
+      "to": "BKK",
+      "system": "iata",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:45Z",
+    "status": "ok",
+    "pagination": {
+      "total": 7,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 7,
+    "examples": [
+      {
+        "from": "Шереметьево",
+        "to": "Суварнабхуми",
+        "from_code": "s9600213",
+        "to_code": "s9623549",
+        "number": "SU 270",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-13"
+      },
+      {
+        "from": "Шереметьево",
+        "to": "Суварнабхуми",
+        "from_code": "s9600213",
+        "to_code": "s9623549",
+        "number": "SU 270",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-26"
+      },
+      {
+        "from": "Шереметьево",
+        "to": "Суварнабхуми",
+        "from_code": "s9600213",
+        "to_code": "s9623549",
+        "number": "SU 270",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-25"
+      }
+    ]
+  },
+  {
+    "label": "DME-BKK",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "DME",
+      "to": "BKK",
+      "system": "iata",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:45Z",
+    "status": "ok",
+    "pagination": {
+      "total": 0,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 0,
+    "examples": []
+  },
+  {
+    "label": "VKO-BKK",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "VKO",
+      "to": "BKK",
+      "system": "iata",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:45Z",
+    "status": "ok",
+    "pagination": {
+      "total": 0,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 0,
+    "examples": []
+  },
+  {
+    "label": "SVO-HKT",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "SVO",
+      "to": "HKT",
+      "system": "iata",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:46Z",
+    "status": "ok",
+    "pagination": {
+      "total": 21,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 21,
+    "examples": [
+      {
+        "from": "Шереметьево",
+        "to": "Пхукет",
+        "from_code": "s9600213",
+        "to_code": "s9623774",
+        "number": "EO 3477",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-09-26"
+      },
+      {
+        "from": "Шереметьево",
+        "to": "Пхукет",
+        "from_code": "s9600213",
+        "to_code": "s9623774",
+        "number": "SU 278",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-25"
+      },
+      {
+        "from": "Шереметьево",
+        "to": "Пхукет",
+        "from_code": "s9600213",
+        "to_code": "s9623774",
+        "number": "SU 284",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-09-16"
+      }
+    ]
+  },
+  {
+    "label": "VVO-HKT",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "VVO",
+      "to": "HKT",
+      "system": "iata",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:46Z",
+    "status": "ok",
+    "pagination": {
+      "total": 5,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 5,
+    "examples": [
+      {
+        "from": "Кневичи",
+        "to": "Пхукет",
+        "from_code": "s9626399",
+        "to_code": "s9623774",
+        "number": "SU 638",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-28"
+      },
+      {
+        "from": "Кневичи",
+        "to": "Пхукет",
+        "from_code": "s9626399",
+        "to_code": "s9623774",
+        "number": "SU 638",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-09-22"
+      },
+      {
+        "from": "Кневичи",
+        "to": "Пхукет",
+        "from_code": "s9626399",
+        "to_code": "s9623774",
+        "number": "SU 638",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-09-18"
+      }
+    ]
+  },
+  {
+    "label": "BKK-HKT",
+    "method": "search",
+    "params": {
+      "format": "json",
+      "lang": "ru_RU",
+      "from": "BKK",
+      "to": "HKT",
+      "system": "iata",
+      "transport_types": "plane",
+      "transfers": "false",
+      "limit": 100
+    },
+    "observed_at": "2026-09-16T10:36:47Z",
+    "status": "ok",
+    "pagination": {
+      "total": 188,
+      "limit": 100,
+      "offset": 0
+    },
+    "interval_count": 0,
+    "returned_segments": 100,
+    "examples": [
+      {
+        "from": "Дон-Муанг",
+        "to": "Пхукет",
+        "from_code": "s9626775",
+        "to_code": "s9623774",
+        "number": "SL 750",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-25"
+      },
+      {
+        "from": "Суварнабхуми",
+        "to": "Пхукет",
+        "from_code": "s9623549",
+        "to_code": "s9623774",
+        "number": "VZ 302",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-23"
+      },
+      {
+        "from": "Суварнабхуми",
+        "to": "Пхукет",
+        "from_code": "s9623549",
+        "to_code": "s9623774",
+        "number": "VZ 302",
+        "mode": "plane",
+        "has_transfers": null,
+        "start_date": "2026-10-26"
+      }
+    ]
+  }
+]

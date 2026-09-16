@@ -1,0 +1,107 @@
+{
+  "snapshot": {
+    "Source": "https://www.rome2rio.com/s/Kursk/Pattaya",
+    "Synthetic": false,
+    "Complete": false,
+    "Cities": [
+      {
+        "ID": "kursk",
+        "Name": "Курск",
+        "Timezone": "Europe/Moscow"
+      },
+      {
+        "ID": "moscow",
+        "Name": "Москва",
+        "Timezone": "Europe/Moscow"
+      },
+      {
+        "ID": "tashkent",
+        "Name": "Ташкент",
+        "Timezone": "Asia/Tashkent"
+      },
+      {
+        "ID": "bangkok",
+        "Name": "Бангкок",
+        "Timezone": "Asia/Bangkok"
+      },
+      {
+        "ID": "pattaya",
+        "Name": "Паттайя",
+        "Timezone": "Asia/Bangkok"
+      }
+    ],
+    "Nodes": [
+      {
+        "ID": "kursk-station",
+        "CityID": "kursk",
+        "Name": "Вокзал Курск",
+        "Kind": "station",
+        "Timezone": "Europe/Moscow"
+      },
+      {
+        "ID": "kursky",
+        "CityID": "moscow",
+        "Name": "Москва, Курский вокзал",
+        "Kind": "station",
+        "Timezone": "Europe/Moscow"
+      },
+      {
+        "ID": "DME",
+        "CityID": "moscow",
+        "Name": "Домодедово (DME)",
+        "Kind": "airport",
+        "Timezone": "Europe/Moscow"
+      },
+      {
+        "ID": "TAS",
+        "CityID": "tashkent",
+        "Name": "Ташкент (TAS)",
+        "Kind": "airport",
+        "Timezone": "Asia/Tashkent"
+      },
+      {
+        "ID": "BKK",
+        "CityID": "bangkok",
+        "Name": "Суварнабхуми (BKK)",
+        "Kind": "airport",
+        "Timezone": "Asia/Bangkok"
+      }
+    ],
+    "Links": [
+      {
+        "From": "kursk",
+        "To": "kursk-station",
+        "Mode": "transfer"
+      },
+      {
+        "From": "kursk-station",
+        "To": "kursky",
+        "Mode": "train"
+      },
+      {
+        "From": "kursky",
+        "To": "DME",
+        "Mode": "transfer"
+      },
+      {
+        "From": "DME",
+        "To": "TAS",
+        "Mode": "flight"
+      },
+      {
+        "From": "TAS",
+        "To": "BKK",
+        "Mode": "flight"
+      },
+      {
+        "From": "BKK",
+        "To": "pattaya",
+        "Mode": "transfer"
+      }
+    ]
+  },
+  "query": {
+    "OriginCityID": "kursk",
+    "DestinationCityID": "pattaya"
+  }
+}

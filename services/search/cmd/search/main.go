@@ -36,6 +36,9 @@ func run() error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if command == "compare-real-routes" {
+		return compareRealRoutes(ctx, cfg, os.Args[2:])
+	}
 	if command == "compare-planners" {
 		return comparePlanners(ctx, cfg)
 	}

@@ -36,7 +36,7 @@ func (p Provider) FindStations(ctx context.Context, q rail.StationQuery) (rail.S
 	if p.StationError != nil {
 		return rail.StationResult{}, p.StationError
 	}
-	if q.Country != "RU" {
+	if q.Center != nil || q.Country != "RU" {
 		return rail.StationResult{}, rail.ErrUnsupported
 	}
 	r := rail.StationResult{Provider: ID, Synthetic: true, ObservedAt: observed(), Complete: true, Stations: []rail.Station{}}

@@ -6,6 +6,7 @@ import { Code, ConnectError } from '@connectrpc/connect';
 import { tripClient } from './api';
 import { TripStatus, type TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
 
+import { PlannerComparison } from './PlannerComparison';
 import { TripActions } from './TripActions';
 const statuses: Record<number,string> = {
   [TripStatus.SAVED]: 'Сохранена, поиск ещё не запущен',
@@ -67,6 +68,7 @@ function TripContent({id}: {id?: string}) {
           {trip.cancelledAt && <Typography variant="body2" color="text.secondary">Отменена: {new Date(Number(trip.cancelledAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           {trip.createdAt && <Typography variant="body2" color="text.secondary">Создана: {new Date(Number(trip.createdAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           <Typography variant="caption" sx={{overflowWrap:'anywhere'}}>Номер заявки: {trip.id}</Typography>
+          <PlannerComparison/>
         </Stack>}
       </Paper>)}
     </Stack>}

@@ -25,11 +25,13 @@ type Station struct {
 	ESR, Express3                 string       // Optional identifiers; preserve leading zeroes.
 }
 
-// StationQuery searches by provider-interpreted text within a country.
+// StationQuery selects either text within a country or a geographic circle.
 // A result is a candidate match, not an approved city-to-station association.
 type StationQuery struct {
 	Text, Country string
 	Limit         int
+	Center        *Coordinates
+	RadiusKM      float64
 }
 type TrainQuery struct {
 	From, To      Ref

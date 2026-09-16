@@ -27,4 +27,8 @@ MVP допускает максимум два основных участка: 
 
 [Каталог аэропортов Search: импорт и проверка](docs/ops/airport-catalog.md).
 
-[Collector: интерфейсы ЖД-провайдеров и синтетические тесты](docs/services/collector.md).
+[Collector: интерфейсы ЖД-провайдеров](docs/services/collector.md).
+
+[Поиск ближайших ЖД-станций через Яндекс Расписания](docs/ops/rail-stations.md).
+
+[Независимое сравнение GraphPlanner и Gemini: текущий статус и ограничения](docs/research/planner-comparison/README.md).
