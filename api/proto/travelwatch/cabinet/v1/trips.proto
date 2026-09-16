@@ -1,9 +1,11 @@
 syntax = "proto3";
 package travelwatch.cabinet.v1;
 import "google/protobuf/timestamp.proto";
+import "travelwatch/search/v1/routes.proto";
 option go_package = "github.com/NotaKronGit/travel-watch/gen/travelwatch/cabinet/v1;cabinetv1";
 
 service TripService {
+  rpc GetTripRoutes(GetTripRoutesRequest) returns (GetTripRoutesResponse);
   rpc SearchCities(SearchCitiesRequest) returns (SearchCitiesResponse);
   rpc ListTrips(ListTripsRequest) returns (ListTripsResponse);
   rpc GetTrip(GetTripRequest) returns (GetTripResponse);
@@ -60,7 +62,11 @@ message TripDetails {
   repeated TripStageHistory history = 12;
 
 }
-message ListTripsRequest { int32 offset = 1; }
+message ListTripsRequest {
+  int32 offset = 1;
+  // Default: active (saved/running) requests only.
+  bool include_inactive = 2;
+}
 message ListTripsResponse {
   repeated TripDetails trips = 1;
   bool has_more = 2;
@@ -79,4 +85,16 @@ message TripStageHistory {
   int32 route_count = 8;
   bool incomplete = 9;
   string planner_id = 10;
+  string outcome = 11;
+}
+
+message GetTripRoutesRequest {
+ string id = 1;
+ string planner_id = 2;
+ int32 offset = 3;
+ int32 page_size = 4;
+}
+
+message GetTripRoutesResponse {
+ travelwatch.search.v1.GetRoutesResponse result = 1;
 }

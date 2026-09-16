@@ -1,14 +1,18 @@
 package config
 
-import "time"
+import (
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/searchclient"
+	"time"
+)
 
 type Config struct {
-	Progress Progress `mapstructure:"progress"`
-	Outbox   Outbox   `mapstructure:"outbox"`
-	Server   Server   `mapstructure:"server"`
-	Database Database `mapstructure:"database"`
-	Catalog  Catalog  `mapstructure:"catalog"`
-	Auth     Auth     `mapstructure:"auth"`
+	Search   searchclient.Config `mapstructure:"search"`
+	Progress Progress            `mapstructure:"progress"`
+	Outbox   Outbox              `mapstructure:"outbox"`
+	Server   Server              `mapstructure:"server"`
+	Database Database            `mapstructure:"database"`
+	Catalog  Catalog             `mapstructure:"catalog"`
+	Auth     Auth                `mapstructure:"auth"`
 }
 
 type Server struct {

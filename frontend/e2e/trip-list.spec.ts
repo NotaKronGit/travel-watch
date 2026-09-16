@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+test.beforeEach(async ({page})=>{ await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>r.fulfill({json:{result:{sources:[]}}})); });
 const trip = {id:'11111111-1111-1111-1111-111111111111',origin:{name:'Курск',country:'Россия',region:'Курская область'},destination:{name:'Бангкок',country:'Таиланд'},departureFrom:'2027-01-10',departureTo:'2027-01-12',adults:2,status:'TRIP_STATUS_SAVED'};
 test.beforeEach(async ({page}) => {
  await page.route('**/travelwatch.cabinet.v1.AuthService/*', r=>r.fulfill({json:{user:{id:'test',email:'test@example.com'}}}));
@@ -28,7 +29,7 @@ test('empty list, retry and unavailable detail are explicit',async ({page})=>{
  await expect(page.getByRole('alert')).toContainText('Не удалось загрузить');
  fail=false;
  await page.getByRole('button',{name:'Повторить загрузку'}).click();
- await expect(page.getByText('У вас пока нет заявок')).toBeVisible();
+ await expect(page.getByText('У вас пока нет активных заявок')).toBeVisible();
  await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({status:404,json:{code:'not_found'}}));
  await page.goto('/#/trips/'+trip.id);
  await expect(page.getByRole('alert')).toHaveText('Заявка не найдена');
@@ -48,7 +49,7 @@ test('failed loading of another list page offers retry',async ({page})=>{
  await expect(page.getByText('Курск → Бангкок')).toHaveCount(0);
  fail=false;
  await page.getByRole('button',{name:'Повторить загрузку'}).click();
- await expect(page.getByText('У вас пока нет заявок')).toBeVisible();
+ await expect(page.getByText('У вас пока нет активных заявок')).toBeVisible();
  await expect(page.getByText('Страница 2')).toBeVisible();
 });
 
@@ -111,4 +112,24 @@ test('failed refresh after cancellation can be retried without cancelling again 
   await expect(note).toHaveValue('Черновик');
   await expect(page.getByRole('button',{name:'Повторить обновление заявки'})).toHaveCount(0);
   expect(cancellations).toBe(1);
+});
+
+test('inactive checkbox resets pagination and requests history explicitly',async({page})=>{
+ const queries: {offset?:number;includeInactive?:boolean}[]=[];
+ await page.route('**/travelwatch.cabinet.v1.TripService/ListTrips',r=>{
+  const q=r.request().postDataJSON();queries.push(q);
+  return r.fulfill({json:{trips:[{...trip,status:q.includeInactive?'TRIP_STATUS_CANCELLED':'TRIP_STATUS_RUNNING'}],hasMore:!q.offset}});
+ });
+ await page.goto('/#/trips');
+ await expect(page.getByText('Выполняется',{exact:true})).toBeVisible();
+ expect(queries[0].includeInactive||false).toBe(false);
+ await page.getByRole('button',{name:'Далее',exact:true}).click();
+ await expect(page.getByText('Страница 2')).toBeVisible();
+ await page.getByRole('checkbox',{name:'Показать завершённые и отменённые'}).check();
+ await expect(page.getByText('Отменена',{exact:true})).toBeVisible();
+ await expect(page.getByText('Страница 1')).toBeVisible();
+ expect(queries.at(-1)?.includeInactive).toBe(true);
+ expect(queries.at(-1)?.offset||0).toBe(0);
+ await page.getByRole('checkbox',{name:'Показать завершённые и отменённые'}).uncheck();
+ await expect(page.getByText('Выполняется',{exact:true})).toBeVisible();
 });

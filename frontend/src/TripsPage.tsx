@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Title } from 'react-admin';
-import { Alert, Box, Button, Chip, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Checkbox, FormControlLabel, Chip, Paper, Stack, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Code, ConnectError } from '@connectrpc/connect';
 import { tripClient } from './api';
 import { TripStatus, type TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
 
-import { PlannerComparison } from './PlannerComparison';
+import { TripStages } from './TripStages';
+import { TripRouteResults } from './TripRouteResults';
 import { TripActions } from './TripActions';
 import { TripHistory, buildingLabels } from './TripHistory';
 const statuses: Record<number,string> = {
@@ -30,6 +31,7 @@ export function TripsPage({detail = false}: {detail?: boolean}) {
 }
 function TripContent({id}: {id?: string}) {
   const [offset,setOffset] = useState(0);
+  const [includeInactive,setIncludeInactive] = useState(false);
   const [retry,setRetry] = useState(0);
   const [result,setResult] = useState<{trips:TripDetails[];more:boolean;offset:number} | null>(null);
   const [loading,setLoading] = useState(true);
@@ -44,7 +46,7 @@ function TripContent({id}: {id?: string}) {
     async function load() {
       try {
         const r = id === undefined
-          ? await tripClient.listTrips({offset},{signal:controller.signal}).then(r => ({trips:r.trips,more:r.hasMore,offset}))
+          ? await tripClient.listTrips({offset,includeInactive},{signal:controller.signal}).then(r => ({trips:r.trips,more:r.hasMore,offset}))
           : await tripClient.getTrip({id},{signal:controller.signal}).then(r => {if (!r.trip) throw new Error('Missing trip'); return {trips:[r.trip],more:false,offset};});
         if (!controller.signal.aborted) {
           setResult(current => ({...r, trips:r.trips.map(next => mergeTrip(current?.trips.find(old => old.id === next.id),next))}));
@@ -64,7 +66,7 @@ function TripContent({id}: {id?: string}) {
     }
     void load();
     return () => {controller.abort();if(timer)clearTimeout(timer);};
-  },[id,offset,retry,navigate]);
+  },[id,offset,includeInactive,retry,navigate]);
   const hasResult = result?.offset === offset;
   const title = id === undefined ? 'Мои заявки' : 'Заявка';
   return <Box sx={{maxWidth:1000,mx:'auto',p:{xs:2,md:4}}}>
@@ -73,21 +75,23 @@ function TripContent({id}: {id?: string}) {
       <Typography component="h1" variant="h4" sx={{fontWeight:650}}>{title}</Typography>
       <Button component={Link} to="/trips/create" variant="contained">Создать заявку</Button>
     </Stack>
+    {id === undefined && <FormControlLabel sx={{mb:2}} control={<Checkbox checked={includeInactive} onChange={(_,checked)=>{setIncludeInactive(checked);setOffset(0);setResult(null);}}/>} label="Показать завершённые и отменённые"/>}
     {id !== undefined && <Button component={Link} to="/trips" sx={{mb:2}}>← Мои заявки</Button>}
     {loading ? <Typography role="status">Загружаем заявки…</Typography> : (missing || (error && !hasResult)) ? <Stack spacing={2}><Alert severity={missing ? 'info' : 'error'}>{missing ? error : 'Не удалось загрузить данные. Повторите попытку.'}</Alert>{!missing && <Button onClick={() => setRetry(n=>n+1)}>Повторить загрузку</Button>}</Stack> : result?.offset === offset && <Stack spacing={2}>
       {error && <Alert severity="warning">{error}</Alert>}
-      {result.trips.length === 0 && <Paper variant="outlined" sx={{p:4,borderRadius:4}}><Typography variant="h6">У вас пока нет заявок</Typography><Typography color="text.secondary" sx={{mt:1}}>Создайте первую заявку, чтобы сохранить параметры поездки.</Typography></Paper>}
+      {result.trips.length === 0 && <Paper variant="outlined" sx={{p:4,borderRadius:4}}><Typography variant="h6">{includeInactive ? 'У вас пока нет заявок' : 'У вас пока нет активных заявок'}</Typography><Typography color="text.secondary" sx={{mt:1}}>Создайте первую заявку, чтобы сохранить параметры поездки.</Typography></Paper>}
       {result.trips.map(trip => <Paper key={trip.id} variant="outlined" sx={{p:{xs:2,md:3},borderRadius:4}}>
         <TripSummary trip={trip}/>
         {id === undefined ? <Button component={Link} to={`/trips/${trip.id}`} sx={{mt:2}}>Открыть заявку</Button> : <Stack spacing={2} sx={{mt:3}}>
+          <Typography variant="caption" sx={{overflowWrap:'anywhere'}}>Номер заявки: {trip.id}</Typography>
           <TripActions trip={trip} onChange={updated=>setResult(current=>current ? {...current,trips:current.trips.map(item=>item.id===updated.id ? mergeTrip(item,updated) : item)} : current)}/>
+          <TripStages stage={trip.buildingStage} cancelled={trip.status===TripStatus.CANCELLED || trip.status===TripStatus.COMPLETED} creation={<Stack spacing={2}>
+          <Typography component="h2" variant="h6">Параметры заявки</Typography>
           <Typography>Поездка в одну сторону. Диапазон относится к выезду, обратный билет не включён.</Typography>
           <Alert severity="info">Поиск билетов и уведомления ещё не подключены.</Alert>
           {trip.cancelledAt && <Typography variant="body2" color="text.secondary">Отменена: {new Date(Number(trip.cancelledAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           {trip.createdAt && <Typography variant="body2" color="text.secondary">Создана: {new Date(Number(trip.createdAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
-          <Typography variant="caption" sx={{overflowWrap:'anywhere'}}>Номер заявки: {trip.id}</Typography>
-          <TripHistory trip={trip}/>
-          <PlannerComparison/>
+          </Stack>} routes={<TripRouteResults key={trip.id} id={trip.id} revision={String(trip.history.reduce((revision,event)=>event.revision>revision?event.revision:revision,0n))}/>} footer={<TripHistory trip={trip}/>}/>
         </Stack>}
       </Paper>)}
     </Stack>}

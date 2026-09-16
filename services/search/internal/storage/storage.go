@@ -16,7 +16,10 @@ import (
 var postgres = goqu.Dialect("postgres")
 var ErrConflict = errors.New("event identity reused with different contents")
 
-type Store struct{ db *sql.DB }
+type Store struct {
+	db       *sql.DB
+	planners []string
+}
 
 func New(db *sql.DB) *Store { return &Store{db: db} }
 
@@ -99,6 +102,9 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 			return err
 		}
 		if n > 0 {
+			if err = cancelSources(ctx, tx, e.RequestID); err != nil {
+				return err
+			}
 			if err = progressEvent(ctx, tx, e.RequestID, 0, true); err != nil {
 				return err
 			}

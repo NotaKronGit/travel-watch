@@ -388,7 +388,10 @@ type TripRouteBuildingUpdated struct {
 	DurationMs    int64                  `protobuf:"varint,10,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
 	RouteCount    int32                  `protobuf:"varint,11,opt,name=route_count,json=routeCount,proto3" json:"route_count,omitempty"`
 	Incomplete    bool                   `protobuf:"varint,12,opt,name=incomplete,proto3" json:"incomplete,omitempty"`
-	PlannerId     string                 `protobuf:"bytes,13,opt,name=planner_id,json=plannerId,proto3" json:"planner_id,omitempty"`
+	// Version 2: all is the aggregate; graph/gemini are independent sources.
+	PlannerId string `protobuf:"bytes,13,opt,name=planner_id,json=plannerId,proto3" json:"planner_id,omitempty"`
+	// Bounded diagnostic category, never provider response text.
+	Outcome       string `protobuf:"bytes,14,opt,name=outcome,proto3" json:"outcome,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -514,6 +517,13 @@ func (x *TripRouteBuildingUpdated) GetPlannerId() string {
 	return ""
 }
 
+func (x *TripRouteBuildingUpdated) GetOutcome() string {
+	if x != nil {
+		return x.Outcome
+	}
+	return ""
+}
+
 var File_travelwatch_events_v1_trip_request_proto protoreflect.FileDescriptor
 
 const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
@@ -547,7 +557,7 @@ const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
 	"\n" +
 	"request_id\x18\x03 \x01(\tR\trequestId\x12;\n" +
 	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"occurredAt\"\xa8\x04\n" +
+	"occurredAt\"\xc2\x04\n" +
 	"\x18TripRouteBuildingUpdated\x12\x19\n" +
 	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12%\n" +
 	"\x0eschema_version\x18\x02 \x01(\rR\rschemaVersion\x12\x1d\n" +
@@ -571,7 +581,8 @@ const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
 	"incomplete\x18\f \x01(\bR\n" +
 	"incomplete\x12\x1d\n" +
 	"\n" +
-	"planner_id\x18\r \x01(\tR\tplannerId*\x94\x02\n" +
+	"planner_id\x18\r \x01(\tR\tplannerId\x12\x18\n" +
+	"\aoutcome\x18\x0e \x01(\tR\aoutcome*\x94\x02\n" +
 	"\x12RouteBuildingStage\x12$\n" +
 	" ROUTE_BUILDING_STAGE_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bROUTE_BUILDING_STAGE_QUEUED\x10\x01\x12!\n" +

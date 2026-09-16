@@ -33,6 +33,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// TripServiceGetTripRoutesProcedure is the fully-qualified name of the TripService's GetTripRoutes
+	// RPC.
+	TripServiceGetTripRoutesProcedure = "/travelwatch.cabinet.v1.TripService/GetTripRoutes"
 	// TripServiceSearchCitiesProcedure is the fully-qualified name of the TripService's SearchCities
 	// RPC.
 	TripServiceSearchCitiesProcedure = "/travelwatch.cabinet.v1.TripService/SearchCities"
@@ -51,6 +54,7 @@ const (
 
 // TripServiceClient is a client for the travelwatch.cabinet.v1.TripService service.
 type TripServiceClient interface {
+	GetTripRoutes(context.Context, *connect.Request[v1.GetTripRoutesRequest]) (*connect.Response[v1.GetTripRoutesResponse], error)
 	SearchCities(context.Context, *connect.Request[v1.SearchCitiesRequest]) (*connect.Response[v1.SearchCitiesResponse], error)
 	ListTrips(context.Context, *connect.Request[v1.ListTripsRequest]) (*connect.Response[v1.ListTripsResponse], error)
 	GetTrip(context.Context, *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error)
@@ -70,6 +74,12 @@ func NewTripServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	tripServiceMethods := v1.File_travelwatch_cabinet_v1_trips_proto.Services().ByName("TripService").Methods()
 	return &tripServiceClient{
+		getTripRoutes: connect.NewClient[v1.GetTripRoutesRequest, v1.GetTripRoutesResponse](
+			httpClient,
+			baseURL+TripServiceGetTripRoutesProcedure,
+			connect.WithSchema(tripServiceMethods.ByName("GetTripRoutes")),
+			connect.WithClientOptions(opts...),
+		),
 		searchCities: connect.NewClient[v1.SearchCitiesRequest, v1.SearchCitiesResponse](
 			httpClient,
 			baseURL+TripServiceSearchCitiesProcedure,
@@ -111,12 +121,18 @@ func NewTripServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // tripServiceClient implements TripServiceClient.
 type tripServiceClient struct {
+	getTripRoutes     *connect.Client[v1.GetTripRoutesRequest, v1.GetTripRoutesResponse]
 	searchCities      *connect.Client[v1.SearchCitiesRequest, v1.SearchCitiesResponse]
 	listTrips         *connect.Client[v1.ListTripsRequest, v1.ListTripsResponse]
 	getTrip           *connect.Client[v1.GetTripRequest, v1.GetTripResponse]
 	cancelTrip        *connect.Client[v1.CancelTripRequest, v1.CancelTripResponse]
 	updateTripComment *connect.Client[v1.UpdateTripCommentRequest, v1.UpdateTripCommentResponse]
 	createTrip        *connect.Client[v1.CreateTripRequest, v1.CreateTripResponse]
+}
+
+// GetTripRoutes calls travelwatch.cabinet.v1.TripService.GetTripRoutes.
+func (c *tripServiceClient) GetTripRoutes(ctx context.Context, req *connect.Request[v1.GetTripRoutesRequest]) (*connect.Response[v1.GetTripRoutesResponse], error) {
+	return c.getTripRoutes.CallUnary(ctx, req)
 }
 
 // SearchCities calls travelwatch.cabinet.v1.TripService.SearchCities.
@@ -151,6 +167,7 @@ func (c *tripServiceClient) CreateTrip(ctx context.Context, req *connect.Request
 
 // TripServiceHandler is an implementation of the travelwatch.cabinet.v1.TripService service.
 type TripServiceHandler interface {
+	GetTripRoutes(context.Context, *connect.Request[v1.GetTripRoutesRequest]) (*connect.Response[v1.GetTripRoutesResponse], error)
 	SearchCities(context.Context, *connect.Request[v1.SearchCitiesRequest]) (*connect.Response[v1.SearchCitiesResponse], error)
 	ListTrips(context.Context, *connect.Request[v1.ListTripsRequest]) (*connect.Response[v1.ListTripsResponse], error)
 	GetTrip(context.Context, *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error)
@@ -166,6 +183,12 @@ type TripServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTripServiceHandler(svc TripServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	tripServiceMethods := v1.File_travelwatch_cabinet_v1_trips_proto.Services().ByName("TripService").Methods()
+	tripServiceGetTripRoutesHandler := connect.NewUnaryHandler(
+		TripServiceGetTripRoutesProcedure,
+		svc.GetTripRoutes,
+		connect.WithSchema(tripServiceMethods.ByName("GetTripRoutes")),
+		connect.WithHandlerOptions(opts...),
+	)
 	tripServiceSearchCitiesHandler := connect.NewUnaryHandler(
 		TripServiceSearchCitiesProcedure,
 		svc.SearchCities,
@@ -204,6 +227,8 @@ func NewTripServiceHandler(svc TripServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/travelwatch.cabinet.v1.TripService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case TripServiceGetTripRoutesProcedure:
+			tripServiceGetTripRoutesHandler.ServeHTTP(w, r)
 		case TripServiceSearchCitiesProcedure:
 			tripServiceSearchCitiesHandler.ServeHTTP(w, r)
 		case TripServiceListTripsProcedure:
@@ -224,6 +249,10 @@ func NewTripServiceHandler(svc TripServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedTripServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTripServiceHandler struct{}
+
+func (UnimplementedTripServiceHandler) GetTripRoutes(context.Context, *connect.Request[v1.GetTripRoutesRequest]) (*connect.Response[v1.GetTripRoutesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("travelwatch.cabinet.v1.TripService.GetTripRoutes is not implemented"))
+}
 
 func (UnimplementedTripServiceHandler) SearchCities(context.Context, *connect.Request[v1.SearchCitiesRequest]) (*connect.Response[v1.SearchCitiesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("travelwatch.cabinet.v1.TripService.SearchCities is not implemented"))

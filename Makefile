@@ -50,7 +50,7 @@ STAGE_LOCAL = docker compose --env-file .env.stage_local -f deploy/stage_local/c
 stage-local-cities-sync:
 	$(STAGE_LOCAL) run --rm --build cities-sync
 
-stage-local-up:
+stage-local-up: tls-init
 	$(STAGE_LOCAL) up --build -d --wait --wait-timeout 120
 
 stage-local-stop:
@@ -65,7 +65,7 @@ stage-local-logs:
 DEV = docker compose --env-file .env.dev -f deploy/dev/compose.yaml
 .PHONY: dev-up dev-stop dev-restart dev-logs
 
-dev-up:
+dev-up: tls-init
 	$(DEV) pull
 	$(DEV) up --no-build --pull never -d --wait --wait-timeout 120
 
@@ -159,3 +159,10 @@ dev-building-up:
 	$(DEV) --profile planning up -d --no-build route-builder progress-publisher progress-consumer
 dev-airports-sync:
 	$(DEV) --profile tools run --rm airports-sync
+
+.PHONY: tls-init search-results
+tls-init:
+	go run ./tools/devcerts
+
+search-results:
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search serve-results

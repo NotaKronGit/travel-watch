@@ -41,7 +41,7 @@ func (r *readTripRepository) GetTrip(_ context.Context, owner, id string) (stora
 	r.id = id
 	return storage.TripDetails{ID: id, Adults: 2, CreatedAt: time.Unix(1, 0)}, r.err
 }
-func (r *readTripRepository) ListTrips(_ context.Context, owner string, offset uint) ([]storage.TripDetails, bool, error) {
+func (r *readTripRepository) ListTrips(_ context.Context, owner string, offset uint, _ bool) ([]storage.TripDetails, bool, error) {
 	r.calls++
 	r.owner = owner
 	r.offset = offset

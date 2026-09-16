@@ -16,6 +16,7 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/outbox"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/progress"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/searchclient"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/trips"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
@@ -35,6 +36,11 @@ func run() error {
 	}
 	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" && command != "consume-progress" {
 		return errors.New("usage: cabinet [serve|migrate|sync-cities|publish-outbox]")
+	}
+	if command == "serve" {
+		if err := godotenv.Load(".local/tls/cabinet.env"); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return errors.New("cannot load Cabinet TLS environment")
+		}
 	}
 	configPath := os.Getenv("CABINET_CONFIG")
 	if configPath == "" {
@@ -105,7 +111,12 @@ func run() error {
 		slog.Info("city catalog imported", "cities", count)
 		return nil
 	}
-	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg, trips.Handler(store)), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
+	routes, closeRoutes, err := searchclient.New(cfg.Search)
+	if err != nil {
+		return err
+	}
+	defer closeRoutes()
+	server := &http.Server{Addr: cfg.Server.Address, Handler: auth.Handler(store, cfg, trips.Handler(store, routes)), ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout, ReadTimeout: cfg.Server.ReadTimeout, WriteTimeout: cfg.Server.WriteTimeout, IdleTimeout: cfg.Server.IdleTimeout, MaxHeaderBytes: cfg.Server.MaxHeaderBytes}
 	errCh := make(chan error, 1)
 	go func() { slog.Info("cabinet listening", "address", server.Addr); errCh <- server.ListenAndServe() }()
 	ticker := time.NewTicker(cfg.Auth.CleanupInterval)

@@ -6,13 +6,15 @@ import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobu
 import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { GetRoutesResponse } from "../../search/v1/routes_pb";
+import { file_travelwatch_search_v1_routes } from "../../search/v1/routes_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file travelwatch/cabinet/v1/trips.proto.
  */
 export const file_travelwatch_cabinet_v1_trips: GenFile = /*@__PURE__*/
-  fileDesc("CiJ0cmF2ZWx3YXRjaC9jYWJpbmV0L3YxL3RyaXBzLnByb3RvEhZ0cmF2ZWx3YXRjaC5jYWJpbmV0LnYxImwKCkNpdHlPcHRpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdjb3VudHJ5GAMgASgJEg4KBnJlZ2lvbhgEIAEoCRIQCgh0aW1lem9uZRgFIAEoCRIRCglpYXRhX2NvZGUYBiABKAkiJAoTU2VhcmNoQ2l0aWVzUmVxdWVzdBINCgVxdWVyeRgBIAEoCSJKChRTZWFyY2hDaXRpZXNSZXNwb25zZRIyCgZjaXRpZXMYASADKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24ikAEKEUNyZWF0ZVRyaXBSZXF1ZXN0EhIKCnJlcXVlc3RfaWQYASABKAkSEQoJb3JpZ2luX2lkGAIgASgJEhYKDmRlc3RpbmF0aW9uX2lkGAMgASgJEhYKDmRlcGFydHVyZV9mcm9tGAQgASgJEhQKDGRlcGFydHVyZV90bxgFIAEoCRIOCgZhZHVsdHMYBiABKAUiIAoSQ3JlYXRlVHJpcFJlc3BvbnNlEgoKAmlkGAEgASgJIh8KEUNhbmNlbFRyaXBSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkNhbmNlbFRyaXBSZXNwb25zZSI3ChhVcGRhdGVUcmlwQ29tbWVudFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29tbWVudBgCIAEoCSIbChlVcGRhdGVUcmlwQ29tbWVudFJlc3BvbnNlIr4DCgtUcmlwRGV0YWlscxIKCgJpZBgBIAEoCRIyCgZvcmlnaW4YAiABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SNwoLZGVzdGluYXRpb24YAyABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SFgoOZGVwYXJ0dXJlX2Zyb20YBCABKAkSFAoMZGVwYXJ0dXJlX3RvGAUgASgJEg4KBmFkdWx0cxgGIAEoBRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZzdGF0dXMYCCABKA4yIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGF0dXMSDwoHY29tbWVudBgJIAEoCRIwCgxjYW5jZWxsZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhYKDmJ1aWxkaW5nX3N0YWdlGAsgASgJEjkKB2hpc3RvcnkYDCADKAsyKC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGFnZUhpc3RvcnkiIgoQTGlzdFRyaXBzUmVxdWVzdBIOCgZvZmZzZXQYASABKAUiWQoRTGlzdFRyaXBzUmVzcG9uc2USMgoFdHJpcHMYASADKAsyIy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBEZXRhaWxzEhAKCGhhc19tb3JlGAIgASgIIhwKDkdldFRyaXBSZXF1ZXN0EgoKAmlkGAEgASgJIkQKD0dldFRyaXBSZXNwb25zZRIxCgR0cmlwGAEgASgLMiMudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5UcmlwRGV0YWlscyKoAgoQVHJpcFN0YWdlSGlzdG9yeRIQCghyZXZpc2lvbhgBIAEoAxINCgVzdGFnZRgCIAEoCRIvCgtvY2N1cnJlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHYXR0ZW1wdBgEIAEoBRIuCgpzdGFydGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLZHVyYXRpb25fbXMYByABKAMSEwoLcm91dGVfY291bnQYCCABKAUSEgoKaW5jb21wbGV0ZRgJIAEoCBISCgpwbGFubmVyX2lkGAogASgJKo8BCgpUcmlwU3RhdHVzEhsKF1RSSVBfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFQoRVFJJUF9TVEFUVVNfU0FWRUQQARIXChNUUklQX1NUQVRVU19SVU5OSU5HEAISGQoVVFJJUF9TVEFUVVNfQ0FOQ0VMTEVEEAMSGQoVVFJJUF9TVEFUVVNfQ09NUExFVEVEEAQy+gQKC1RyaXBTZXJ2aWNlEmkKDFNlYXJjaENpdGllcxIrLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuU2VhcmNoQ2l0aWVzUmVxdWVzdBosLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuU2VhcmNoQ2l0aWVzUmVzcG9uc2USYAoJTGlzdFRyaXBzEigudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5MaXN0VHJpcHNSZXF1ZXN0GikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5MaXN0VHJpcHNSZXNwb25zZRJaCgdHZXRUcmlwEiYudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5HZXRUcmlwUmVxdWVzdBonLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuR2V0VHJpcFJlc3BvbnNlEmMKCkNhbmNlbFRyaXASKS50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNhbmNlbFRyaXBSZXF1ZXN0GioudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DYW5jZWxUcmlwUmVzcG9uc2USeAoRVXBkYXRlVHJpcENvbW1lbnQSMC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlVwZGF0ZVRyaXBDb21tZW50UmVxdWVzdBoxLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVXBkYXRlVHJpcENvbW1lbnRSZXNwb25zZRJjCgpDcmVhdGVUcmlwEikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DcmVhdGVUcmlwUmVxdWVzdBoqLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuQ3JlYXRlVHJpcFJlc3BvbnNlQkpaSGdpdGh1Yi5jb20vTm90YUtyb25HaXQvdHJhdmVsLXdhdGNoL2dlbi90cmF2ZWx3YXRjaC9jYWJpbmV0L3YxO2NhYmluZXR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("CiJ0cmF2ZWx3YXRjaC9jYWJpbmV0L3YxL3RyaXBzLnByb3RvEhZ0cmF2ZWx3YXRjaC5jYWJpbmV0LnYxImwKCkNpdHlPcHRpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdjb3VudHJ5GAMgASgJEg4KBnJlZ2lvbhgEIAEoCRIQCgh0aW1lem9uZRgFIAEoCRIRCglpYXRhX2NvZGUYBiABKAkiJAoTU2VhcmNoQ2l0aWVzUmVxdWVzdBINCgVxdWVyeRgBIAEoCSJKChRTZWFyY2hDaXRpZXNSZXNwb25zZRIyCgZjaXRpZXMYASADKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24ikAEKEUNyZWF0ZVRyaXBSZXF1ZXN0EhIKCnJlcXVlc3RfaWQYASABKAkSEQoJb3JpZ2luX2lkGAIgASgJEhYKDmRlc3RpbmF0aW9uX2lkGAMgASgJEhYKDmRlcGFydHVyZV9mcm9tGAQgASgJEhQKDGRlcGFydHVyZV90bxgFIAEoCRIOCgZhZHVsdHMYBiABKAUiIAoSQ3JlYXRlVHJpcFJlc3BvbnNlEgoKAmlkGAEgASgJIh8KEUNhbmNlbFRyaXBSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkNhbmNlbFRyaXBSZXNwb25zZSI3ChhVcGRhdGVUcmlwQ29tbWVudFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29tbWVudBgCIAEoCSIbChlVcGRhdGVUcmlwQ29tbWVudFJlc3BvbnNlIr4DCgtUcmlwRGV0YWlscxIKCgJpZBgBIAEoCRIyCgZvcmlnaW4YAiABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SNwoLZGVzdGluYXRpb24YAyABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SFgoOZGVwYXJ0dXJlX2Zyb20YBCABKAkSFAoMZGVwYXJ0dXJlX3RvGAUgASgJEg4KBmFkdWx0cxgGIAEoBRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZzdGF0dXMYCCABKA4yIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGF0dXMSDwoHY29tbWVudBgJIAEoCRIwCgxjYW5jZWxsZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhYKDmJ1aWxkaW5nX3N0YWdlGAsgASgJEjkKB2hpc3RvcnkYDCADKAsyKC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGFnZUhpc3RvcnkiPAoQTGlzdFRyaXBzUmVxdWVzdBIOCgZvZmZzZXQYASABKAUSGAoQaW5jbHVkZV9pbmFjdGl2ZRgCIAEoCCJZChFMaXN0VHJpcHNSZXNwb25zZRIyCgV0cmlwcxgBIAMoCzIjLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVHJpcERldGFpbHMSEAoIaGFzX21vcmUYAiABKAgiHAoOR2V0VHJpcFJlcXVlc3QSCgoCaWQYASABKAkiRAoPR2V0VHJpcFJlc3BvbnNlEjEKBHRyaXAYASABKAsyIy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBEZXRhaWxzIrkCChBUcmlwU3RhZ2VIaXN0b3J5EhAKCHJldmlzaW9uGAEgASgDEg0KBXN0YWdlGAIgASgJEi8KC29jY3VycmVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgdhdHRlbXB0GAQgASgFEi4KCnN0YXJ0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgtkdXJhdGlvbl9tcxgHIAEoAxITCgtyb3V0ZV9jb3VudBgIIAEoBRISCgppbmNvbXBsZXRlGAkgASgIEhIKCnBsYW5uZXJfaWQYCiABKAkSDwoHb3V0Y29tZRgLIAEoCSJZChRHZXRUcmlwUm91dGVzUmVxdWVzdBIKCgJpZBgBIAEoCRISCgpwbGFubmVyX2lkGAIgASgJEg4KBm9mZnNldBgDIAEoBRIRCglwYWdlX3NpemUYBCABKAUiUQoVR2V0VHJpcFJvdXRlc1Jlc3BvbnNlEjgKBnJlc3VsdBgBIAEoCzIoLnRyYXZlbHdhdGNoLnNlYXJjaC52MS5HZXRSb3V0ZXNSZXNwb25zZSqPAQoKVHJpcFN0YXR1cxIbChdUUklQX1NUQVRVU19VTlNQRUNJRklFRBAAEhUKEVRSSVBfU1RBVFVTX1NBVkVEEAESFwoTVFJJUF9TVEFUVVNfUlVOTklORxACEhkKFVRSSVBfU1RBVFVTX0NBTkNFTExFRBADEhkKFVRSSVBfU1RBVFVTX0NPTVBMRVRFRBAEMugFCgtUcmlwU2VydmljZRJsCg1HZXRUcmlwUm91dGVzEiwudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5HZXRUcmlwUm91dGVzUmVxdWVzdBotLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuR2V0VHJpcFJvdXRlc1Jlc3BvbnNlEmkKDFNlYXJjaENpdGllcxIrLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuU2VhcmNoQ2l0aWVzUmVxdWVzdBosLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuU2VhcmNoQ2l0aWVzUmVzcG9uc2USYAoJTGlzdFRyaXBzEigudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5MaXN0VHJpcHNSZXF1ZXN0GikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5MaXN0VHJpcHNSZXNwb25zZRJaCgdHZXRUcmlwEiYudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5HZXRUcmlwUmVxdWVzdBonLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuR2V0VHJpcFJlc3BvbnNlEmMKCkNhbmNlbFRyaXASKS50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNhbmNlbFRyaXBSZXF1ZXN0GioudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DYW5jZWxUcmlwUmVzcG9uc2USeAoRVXBkYXRlVHJpcENvbW1lbnQSMC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlVwZGF0ZVRyaXBDb21tZW50UmVxdWVzdBoxLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVXBkYXRlVHJpcENvbW1lbnRSZXNwb25zZRJjCgpDcmVhdGVUcmlwEikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DcmVhdGVUcmlwUmVxdWVzdBoqLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuQ3JlYXRlVHJpcFJlc3BvbnNlQkpaSGdpdGh1Yi5jb20vTm90YUtyb25HaXQvdHJhdmVsLXdhdGNoL2dlbi90cmF2ZWx3YXRjaC9jYWJpbmV0L3YxO2NhYmluZXR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_travelwatch_search_v1_routes]);
 
 /**
  * @generated from message travelwatch.cabinet.v1.CityOption
@@ -300,6 +302,13 @@ export type ListTripsRequest = Message<"travelwatch.cabinet.v1.ListTripsRequest"
    * @generated from field: int32 offset = 1;
    */
   offset: number;
+
+  /**
+   * Default: active (saved/running) requests only.
+   *
+   * @generated from field: bool include_inactive = 2;
+   */
+  includeInactive: boolean;
 };
 
 /**
@@ -418,6 +427,11 @@ export type TripStageHistory = Message<"travelwatch.cabinet.v1.TripStageHistory"
    * @generated from field: string planner_id = 10;
    */
   plannerId: string;
+
+  /**
+   * @generated from field: string outcome = 11;
+   */
+  outcome: string;
 };
 
 /**
@@ -426,6 +440,55 @@ export type TripStageHistory = Message<"travelwatch.cabinet.v1.TripStageHistory"
  */
 export const TripStageHistorySchema: GenMessage<TripStageHistory> = /*@__PURE__*/
   messageDesc(file_travelwatch_cabinet_v1_trips, 14);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.GetTripRoutesRequest
+ */
+export type GetTripRoutesRequest = Message<"travelwatch.cabinet.v1.GetTripRoutesRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string planner_id = 2;
+   */
+  plannerId: string;
+
+  /**
+   * @generated from field: int32 offset = 3;
+   */
+  offset: number;
+
+  /**
+   * @generated from field: int32 page_size = 4;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.GetTripRoutesRequest.
+ * Use `create(GetTripRoutesRequestSchema)` to create a new message.
+ */
+export const GetTripRoutesRequestSchema: GenMessage<GetTripRoutesRequest> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 15);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.GetTripRoutesResponse
+ */
+export type GetTripRoutesResponse = Message<"travelwatch.cabinet.v1.GetTripRoutesResponse"> & {
+  /**
+   * @generated from field: travelwatch.search.v1.GetRoutesResponse result = 1;
+   */
+  result?: GetRoutesResponse | undefined;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.GetTripRoutesResponse.
+ * Use `create(GetTripRoutesResponseSchema)` to create a new message.
+ */
+export const GetTripRoutesResponseSchema: GenMessage<GetTripRoutesResponse> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 16);
 
 /**
  * @generated from enum travelwatch.cabinet.v1.TripStatus
@@ -467,6 +530,14 @@ export const TripStatusSchema: GenEnum<TripStatus> = /*@__PURE__*/
  * @generated from service travelwatch.cabinet.v1.TripService
  */
 export const TripService: GenService<{
+  /**
+   * @generated from rpc travelwatch.cabinet.v1.TripService.GetTripRoutes
+   */
+  getTripRoutes: {
+    methodKind: "unary";
+    input: typeof GetTripRoutesRequestSchema;
+    output: typeof GetTripRoutesResponseSchema;
+  },
   /**
    * @generated from rpc travelwatch.cabinet.v1.TripService.SearchCities
    */

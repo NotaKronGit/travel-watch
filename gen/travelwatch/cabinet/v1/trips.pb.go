@@ -7,6 +7,7 @@
 package cabinetv1
 
 import (
+	v1 "github.com/NotaKronGit/travel-watch/gen/travelwatch/search/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -681,10 +682,12 @@ func (x *TripDetails) GetHistory() []*TripStageHistory {
 }
 
 type ListTripsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Offset        int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Offset int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	// Default: active (saved/running) requests only.
+	IncludeInactive bool `protobuf:"varint,2,opt,name=include_inactive,json=includeInactive,proto3" json:"include_inactive,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ListTripsRequest) Reset() {
@@ -722,6 +725,13 @@ func (x *ListTripsRequest) GetOffset() int32 {
 		return x.Offset
 	}
 	return 0
+}
+
+func (x *ListTripsRequest) GetIncludeInactive() bool {
+	if x != nil {
+		return x.IncludeInactive
+	}
+	return false
 }
 
 type ListTripsResponse struct {
@@ -876,6 +886,7 @@ type TripStageHistory struct {
 	RouteCount    int32                  `protobuf:"varint,8,opt,name=route_count,json=routeCount,proto3" json:"route_count,omitempty"`
 	Incomplete    bool                   `protobuf:"varint,9,opt,name=incomplete,proto3" json:"incomplete,omitempty"`
 	PlannerId     string                 `protobuf:"bytes,10,opt,name=planner_id,json=plannerId,proto3" json:"planner_id,omitempty"`
+	Outcome       string                 `protobuf:"bytes,11,opt,name=outcome,proto3" json:"outcome,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -980,11 +991,130 @@ func (x *TripStageHistory) GetPlannerId() string {
 	return ""
 }
 
+func (x *TripStageHistory) GetOutcome() string {
+	if x != nil {
+		return x.Outcome
+	}
+	return ""
+}
+
+type GetTripRoutesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PlannerId     string                 `protobuf:"bytes,2,opt,name=planner_id,json=plannerId,proto3" json:"planner_id,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTripRoutesRequest) Reset() {
+	*x = GetTripRoutesRequest{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTripRoutesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTripRoutesRequest) ProtoMessage() {}
+
+func (x *GetTripRoutesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTripRoutesRequest.ProtoReflect.Descriptor instead.
+func (*GetTripRoutesRequest) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetTripRoutesRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetTripRoutesRequest) GetPlannerId() string {
+	if x != nil {
+		return x.PlannerId
+	}
+	return ""
+}
+
+func (x *GetTripRoutesRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *GetTripRoutesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type GetTripRoutesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Result        *v1.GetRoutesResponse  `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTripRoutesResponse) Reset() {
+	*x = GetTripRoutesResponse{}
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTripRoutesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTripRoutesResponse) ProtoMessage() {}
+
+func (x *GetTripRoutesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_cabinet_v1_trips_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTripRoutesResponse.ProtoReflect.Descriptor instead.
+func (*GetTripRoutesResponse) Descriptor() ([]byte, []int) {
+	return file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetTripRoutesResponse) GetResult() *v1.GetRoutesResponse {
+	if x != nil {
+		return x.Result
+	}
+	return nil
+}
+
 var File_travelwatch_cabinet_v1_trips_proto protoreflect.FileDescriptor
 
 const file_travelwatch_cabinet_v1_trips_proto_rawDesc = "" +
 	"\n" +
-	"\"travelwatch/cabinet/v1/trips.proto\x12\x16travelwatch.cabinet.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9b\x01\n" +
+	"\"travelwatch/cabinet/v1/trips.proto\x12\x16travelwatch.cabinet.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"travelwatch/search/v1/routes.proto\"\x9b\x01\n" +
 	"\n" +
 	"CityOption\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -1028,16 +1158,17 @@ const file_travelwatch_cabinet_v1_trips_proto_rawDesc = "" +
 	"\fcancelled_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\x12%\n" +
 	"\x0ebuilding_stage\x18\v \x01(\tR\rbuildingStage\x12B\n" +
-	"\ahistory\x18\f \x03(\v2(.travelwatch.cabinet.v1.TripStageHistoryR\ahistory\"*\n" +
+	"\ahistory\x18\f \x03(\v2(.travelwatch.cabinet.v1.TripStageHistoryR\ahistory\"U\n" +
 	"\x10ListTripsRequest\x12\x16\n" +
-	"\x06offset\x18\x01 \x01(\x05R\x06offset\"i\n" +
+	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12)\n" +
+	"\x10include_inactive\x18\x02 \x01(\bR\x0fincludeInactive\"i\n" +
 	"\x11ListTripsResponse\x129\n" +
 	"\x05trips\x18\x01 \x03(\v2#.travelwatch.cabinet.v1.TripDetailsR\x05trips\x12\x19\n" +
 	"\bhas_more\x18\x02 \x01(\bR\ahasMore\" \n" +
 	"\x0eGetTripRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"J\n" +
 	"\x0fGetTripResponse\x127\n" +
-	"\x04trip\x18\x01 \x01(\v2#.travelwatch.cabinet.v1.TripDetailsR\x04trip\"\x94\x03\n" +
+	"\x04trip\x18\x01 \x01(\v2#.travelwatch.cabinet.v1.TripDetailsR\x04trip\"\xae\x03\n" +
 	"\x10TripStageHistory\x12\x1a\n" +
 	"\brevision\x18\x01 \x01(\x03R\brevision\x12\x14\n" +
 	"\x05stage\x18\x02 \x01(\tR\x05stage\x12;\n" +
@@ -1057,15 +1188,25 @@ const file_travelwatch_cabinet_v1_trips_proto_rawDesc = "" +
 	"incomplete\x12\x1d\n" +
 	"\n" +
 	"planner_id\x18\n" +
-	" \x01(\tR\tplannerId*\x8f\x01\n" +
+	" \x01(\tR\tplannerId\x12\x18\n" +
+	"\aoutcome\x18\v \x01(\tR\aoutcome\"z\n" +
+	"\x14GetTripRoutesRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"planner_id\x18\x02 \x01(\tR\tplannerId\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"Y\n" +
+	"\x15GetTripRoutesResponse\x12@\n" +
+	"\x06result\x18\x01 \x01(\v2(.travelwatch.search.v1.GetRoutesResponseR\x06result*\x8f\x01\n" +
 	"\n" +
 	"TripStatus\x12\x1b\n" +
 	"\x17TRIP_STATUS_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11TRIP_STATUS_SAVED\x10\x01\x12\x17\n" +
 	"\x13TRIP_STATUS_RUNNING\x10\x02\x12\x19\n" +
 	"\x15TRIP_STATUS_CANCELLED\x10\x03\x12\x19\n" +
-	"\x15TRIP_STATUS_COMPLETED\x10\x042\xfa\x04\n" +
-	"\vTripService\x12i\n" +
+	"\x15TRIP_STATUS_COMPLETED\x10\x042\xe8\x05\n" +
+	"\vTripService\x12l\n" +
+	"\rGetTripRoutes\x12,.travelwatch.cabinet.v1.GetTripRoutesRequest\x1a-.travelwatch.cabinet.v1.GetTripRoutesResponse\x12i\n" +
 	"\fSearchCities\x12+.travelwatch.cabinet.v1.SearchCitiesRequest\x1a,.travelwatch.cabinet.v1.SearchCitiesResponse\x12`\n" +
 	"\tListTrips\x12(.travelwatch.cabinet.v1.ListTripsRequest\x1a).travelwatch.cabinet.v1.ListTripsResponse\x12Z\n" +
 	"\aGetTrip\x12&.travelwatch.cabinet.v1.GetTripRequest\x1a'.travelwatch.cabinet.v1.GetTripResponse\x12c\n" +
@@ -1088,7 +1229,7 @@ func file_travelwatch_cabinet_v1_trips_proto_rawDescGZIP() []byte {
 }
 
 var file_travelwatch_cabinet_v1_trips_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_travelwatch_cabinet_v1_trips_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_travelwatch_cabinet_v1_trips_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_travelwatch_cabinet_v1_trips_proto_goTypes = []any{
 	(TripStatus)(0),                   // 0: travelwatch.cabinet.v1.TripStatus
 	(*CityOption)(nil),                // 1: travelwatch.cabinet.v1.CityOption
@@ -1106,38 +1247,44 @@ var file_travelwatch_cabinet_v1_trips_proto_goTypes = []any{
 	(*GetTripRequest)(nil),            // 13: travelwatch.cabinet.v1.GetTripRequest
 	(*GetTripResponse)(nil),           // 14: travelwatch.cabinet.v1.GetTripResponse
 	(*TripStageHistory)(nil),          // 15: travelwatch.cabinet.v1.TripStageHistory
-	(*timestamppb.Timestamp)(nil),     // 16: google.protobuf.Timestamp
+	(*GetTripRoutesRequest)(nil),      // 16: travelwatch.cabinet.v1.GetTripRoutesRequest
+	(*GetTripRoutesResponse)(nil),     // 17: travelwatch.cabinet.v1.GetTripRoutesResponse
+	(*timestamppb.Timestamp)(nil),     // 18: google.protobuf.Timestamp
+	(*v1.GetRoutesResponse)(nil),      // 19: travelwatch.search.v1.GetRoutesResponse
 }
 var file_travelwatch_cabinet_v1_trips_proto_depIdxs = []int32{
 	1,  // 0: travelwatch.cabinet.v1.SearchCitiesResponse.cities:type_name -> travelwatch.cabinet.v1.CityOption
 	1,  // 1: travelwatch.cabinet.v1.TripDetails.origin:type_name -> travelwatch.cabinet.v1.CityOption
 	1,  // 2: travelwatch.cabinet.v1.TripDetails.destination:type_name -> travelwatch.cabinet.v1.CityOption
-	16, // 3: travelwatch.cabinet.v1.TripDetails.created_at:type_name -> google.protobuf.Timestamp
+	18, // 3: travelwatch.cabinet.v1.TripDetails.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 4: travelwatch.cabinet.v1.TripDetails.status:type_name -> travelwatch.cabinet.v1.TripStatus
-	16, // 5: travelwatch.cabinet.v1.TripDetails.cancelled_at:type_name -> google.protobuf.Timestamp
+	18, // 5: travelwatch.cabinet.v1.TripDetails.cancelled_at:type_name -> google.protobuf.Timestamp
 	15, // 6: travelwatch.cabinet.v1.TripDetails.history:type_name -> travelwatch.cabinet.v1.TripStageHistory
 	10, // 7: travelwatch.cabinet.v1.ListTripsResponse.trips:type_name -> travelwatch.cabinet.v1.TripDetails
 	10, // 8: travelwatch.cabinet.v1.GetTripResponse.trip:type_name -> travelwatch.cabinet.v1.TripDetails
-	16, // 9: travelwatch.cabinet.v1.TripStageHistory.occurred_at:type_name -> google.protobuf.Timestamp
-	16, // 10: travelwatch.cabinet.v1.TripStageHistory.started_at:type_name -> google.protobuf.Timestamp
-	16, // 11: travelwatch.cabinet.v1.TripStageHistory.finished_at:type_name -> google.protobuf.Timestamp
-	2,  // 12: travelwatch.cabinet.v1.TripService.SearchCities:input_type -> travelwatch.cabinet.v1.SearchCitiesRequest
-	11, // 13: travelwatch.cabinet.v1.TripService.ListTrips:input_type -> travelwatch.cabinet.v1.ListTripsRequest
-	13, // 14: travelwatch.cabinet.v1.TripService.GetTrip:input_type -> travelwatch.cabinet.v1.GetTripRequest
-	6,  // 15: travelwatch.cabinet.v1.TripService.CancelTrip:input_type -> travelwatch.cabinet.v1.CancelTripRequest
-	8,  // 16: travelwatch.cabinet.v1.TripService.UpdateTripComment:input_type -> travelwatch.cabinet.v1.UpdateTripCommentRequest
-	4,  // 17: travelwatch.cabinet.v1.TripService.CreateTrip:input_type -> travelwatch.cabinet.v1.CreateTripRequest
-	3,  // 18: travelwatch.cabinet.v1.TripService.SearchCities:output_type -> travelwatch.cabinet.v1.SearchCitiesResponse
-	12, // 19: travelwatch.cabinet.v1.TripService.ListTrips:output_type -> travelwatch.cabinet.v1.ListTripsResponse
-	14, // 20: travelwatch.cabinet.v1.TripService.GetTrip:output_type -> travelwatch.cabinet.v1.GetTripResponse
-	7,  // 21: travelwatch.cabinet.v1.TripService.CancelTrip:output_type -> travelwatch.cabinet.v1.CancelTripResponse
-	9,  // 22: travelwatch.cabinet.v1.TripService.UpdateTripComment:output_type -> travelwatch.cabinet.v1.UpdateTripCommentResponse
-	5,  // 23: travelwatch.cabinet.v1.TripService.CreateTrip:output_type -> travelwatch.cabinet.v1.CreateTripResponse
-	18, // [18:24] is the sub-list for method output_type
-	12, // [12:18] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	18, // 9: travelwatch.cabinet.v1.TripStageHistory.occurred_at:type_name -> google.protobuf.Timestamp
+	18, // 10: travelwatch.cabinet.v1.TripStageHistory.started_at:type_name -> google.protobuf.Timestamp
+	18, // 11: travelwatch.cabinet.v1.TripStageHistory.finished_at:type_name -> google.protobuf.Timestamp
+	19, // 12: travelwatch.cabinet.v1.GetTripRoutesResponse.result:type_name -> travelwatch.search.v1.GetRoutesResponse
+	16, // 13: travelwatch.cabinet.v1.TripService.GetTripRoutes:input_type -> travelwatch.cabinet.v1.GetTripRoutesRequest
+	2,  // 14: travelwatch.cabinet.v1.TripService.SearchCities:input_type -> travelwatch.cabinet.v1.SearchCitiesRequest
+	11, // 15: travelwatch.cabinet.v1.TripService.ListTrips:input_type -> travelwatch.cabinet.v1.ListTripsRequest
+	13, // 16: travelwatch.cabinet.v1.TripService.GetTrip:input_type -> travelwatch.cabinet.v1.GetTripRequest
+	6,  // 17: travelwatch.cabinet.v1.TripService.CancelTrip:input_type -> travelwatch.cabinet.v1.CancelTripRequest
+	8,  // 18: travelwatch.cabinet.v1.TripService.UpdateTripComment:input_type -> travelwatch.cabinet.v1.UpdateTripCommentRequest
+	4,  // 19: travelwatch.cabinet.v1.TripService.CreateTrip:input_type -> travelwatch.cabinet.v1.CreateTripRequest
+	17, // 20: travelwatch.cabinet.v1.TripService.GetTripRoutes:output_type -> travelwatch.cabinet.v1.GetTripRoutesResponse
+	3,  // 21: travelwatch.cabinet.v1.TripService.SearchCities:output_type -> travelwatch.cabinet.v1.SearchCitiesResponse
+	12, // 22: travelwatch.cabinet.v1.TripService.ListTrips:output_type -> travelwatch.cabinet.v1.ListTripsResponse
+	14, // 23: travelwatch.cabinet.v1.TripService.GetTrip:output_type -> travelwatch.cabinet.v1.GetTripResponse
+	7,  // 24: travelwatch.cabinet.v1.TripService.CancelTrip:output_type -> travelwatch.cabinet.v1.CancelTripResponse
+	9,  // 25: travelwatch.cabinet.v1.TripService.UpdateTripComment:output_type -> travelwatch.cabinet.v1.UpdateTripCommentResponse
+	5,  // 26: travelwatch.cabinet.v1.TripService.CreateTrip:output_type -> travelwatch.cabinet.v1.CreateTripResponse
+	20, // [20:27] is the sub-list for method output_type
+	13, // [13:20] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_cabinet_v1_trips_proto_init() }
@@ -1151,7 +1298,7 @@ func file_travelwatch_cabinet_v1_trips_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_travelwatch_cabinet_v1_trips_proto_rawDesc), len(file_travelwatch_cabinet_v1_trips_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

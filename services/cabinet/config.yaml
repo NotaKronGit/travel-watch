@@ -66,3 +66,13 @@ progress:
   timeout: 10s
   lease: 10m
   max_attempts: 3
+
+search:
+  enabled: false
+  address: https://localhost:9093
+  timeout: 3s
+  tls:
+    peer_name: search
+    ca_base64: ""
+    cert_base64: ""
+    key_base64: ""

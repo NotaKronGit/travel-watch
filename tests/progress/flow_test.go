@@ -265,6 +265,7 @@ func TestProgressFlow(t *testing.T) {
 	add("CABINET_OUTBOX_BROKERS", "127.0.0.1:19092")
 	add("CABINET_OUTBOX_TOPIC", requestTopic)
 	add("CABINET_OUTBOX_POLL_INTERVAL", "100ms")
+	add("SEARCH_PROGRESS_SOURCES", "graph,gemini")
 	add("SEARCH_CONSUMER_BROKERS", "127.0.0.1:19092")
 	add("SEARCH_CONSUMER_TOPIC", requestTopic)
 	add("SEARCH_CONSUMER_GROUP_ID", "test-"+schema)
@@ -424,10 +425,10 @@ func TestProgressFlow(t *testing.T) {
 		release(t)
 		waitFor(t, ctx, "completed through Kafka", func() bool { v := get(id); return v != nil && v.BuildingStage == "awaiting_schedules" })
 		v := get(id)
-		if v.Status != cabinetv1.TripStatus_TRIP_STATUS_RUNNING || len(v.History) != 3 {
+		if v.Status != cabinetv1.TripStatus_TRIP_STATUS_RUNNING || len(v.History) != 7 {
 			t.Fatal("bad lifecycle/history", v)
 		}
-		last := v.History[2]
+		last := v.History[len(v.History)-1]
 		if last.RouteCount != 1 || last.DurationMs <= 0 || last.StartedAt == nil || last.FinishedAt == nil || !last.Incomplete {
 			t.Fatal("missing measured result", last)
 		}
@@ -454,7 +455,7 @@ func TestProgressFlow(t *testing.T) {
 			}
 			return false
 		})
-		if len(get(id).History) != 3 {
+		if len(get(id).History) != 7 {
 			t.Fatal("replay duplicated history")
 		}
 		assertUnique(t, get(id))
@@ -527,7 +528,7 @@ func TestProgressFlow(t *testing.T) {
 		release(t)
 		waitFor(t, ctx, "recovered completion", func() bool { v := get(id); return v != nil && v.BuildingStage == "awaiting_schedules" })
 		v := get(id)
-		if len(v.History) != 4 || v.History[3].Attempt != 2 || v.History[3].RouteCount != 1 {
+		if len(v.History) != 9 || v.History[8].Attempt != 2 || v.History[8].RouteCount != 1 {
 			t.Fatal("bad restart history", v.History)
 		}
 		assertUnique(t, v)

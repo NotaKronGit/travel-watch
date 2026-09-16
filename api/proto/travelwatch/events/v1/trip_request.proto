@@ -65,5 +65,8 @@ message TripRouteBuildingUpdated {
   int64 duration_ms = 10;
   int32 route_count = 11;
   bool incomplete = 12;
+  // Version 2: all is the aggregate; graph/gemini are independent sources.
   string planner_id = 13;
+  // Bounded diagnostic category, never provider response text.
+  string outcome = 14;
 }

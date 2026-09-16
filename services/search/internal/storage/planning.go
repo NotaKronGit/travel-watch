@@ -25,10 +25,10 @@ func progressEvent(ctx context.Context, tx *sql.Tx, id string, count int, incomp
 	if err := tx.QueryRowContext(ctx, `UPDATE route_building SET revision=revision+1 WHERE request_id=$1 RETURNING stage,revision,attempt,started_at,finished_at,clock_timestamp()`, id).Scan(&stage, &rev, &attempt, &started, &finished, &now); err != nil {
 		return err
 	}
-	if attempt < 0 || attempt > 100 || count < 0 || count > 50 {
+	if attempt < 0 || attempt > 100 || count < 0 || count > 100 {
 		return errors.New("invalid progress counters")
 	}
-	e := &eventsv1.TripRouteBuildingUpdated{PlannerId: "graph", EventId: uuid.NewString(), SchemaVersion: 1, RequestId: id, Revision: rev, Attempt: attempt, OccurredAt: timestamppb.New(now), RouteCount: int32(count), Incomplete: incomplete}
+	e := &eventsv1.TripRouteBuildingUpdated{PlannerId: "all", EventId: uuid.NewString(), SchemaVersion: 2, RequestId: id, Revision: rev, Attempt: attempt, OccurredAt: timestamppb.New(now), RouteCount: int32(count), Incomplete: incomplete}
 	for v, name := range progress.Stages {
 		if name == stage {
 			e.Stage = v
@@ -62,7 +62,26 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 	if err != nil {
 		return j, false, err
 	}
+	if len(s.planners) > 0 {
+		members, marshalErr := json.Marshal(s.planners)
+		if marshalErr != nil {
+			return j, false, marshalErr
+		}
+		if _, err = tx.ExecContext(ctx, `UPDATE route_building SET planners=COALESCE(planners,$2::jsonb) WHERE request_id=$1`, j.RequestID, string(members)); err != nil {
+			return j, false, err
+		}
+	}
 	if j.Attempt >= maxAttempts {
+		var multi bool
+		if err = tx.QueryRowContext(ctx, `SELECT planners IS NOT NULL FROM route_building WHERE request_id=$1`, j.RequestID).Scan(&multi); err != nil {
+			return j, false, err
+		}
+		if multi {
+			if err = exhaustSources(ctx, tx, j.RequestID); err != nil {
+				return j, false, err
+			}
+			return j, false, tx.Commit()
+		}
 		_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage='failed',finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL WHERE request_id=$1`, j.RequestID)
 		if err == nil {
 			err = progressEvent(ctx, tx, j.RequestID, 0, true)
@@ -75,6 +94,9 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 	_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage='building',attempt=attempt+1,started_at=clock_timestamp(),finished_at=NULL,lease_token=$2,lease_until=now()+$3::interval WHERE request_id=$1`, j.RequestID, j.Token, lease.String())
 	if err == nil {
 		err = progressEvent(ctx, tx, j.RequestID, 0, true)
+	}
+	if err == nil {
+		err = s.startSources(ctx, tx, &j)
 	}
 	if err == nil {
 		err = tx.Commit()

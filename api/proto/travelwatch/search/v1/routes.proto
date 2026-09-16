@@ -1,0 +1,46 @@
+syntax = "proto3";
+package travelwatch.search.v1;
+import "google/protobuf/timestamp.proto";
+option go_package = "github.com/NotaKronGit/travel-watch/gen/travelwatch/search/v1;searchv1";
+
+// Internal gRPC service. Only Cabinet's verified mTLS identity is authorized.
+service RouteResultsService {
+  rpc GetRoutes(GetRoutesRequest) returns (GetRoutesResponse);
+}
+message GetRoutesRequest {
+  string request_id = 1;
+  // Empty selects the first page of every participating source.
+  string planner_id = 2;
+  int32 offset = 3;
+  int32 page_size = 4;
+}
+message RouteStep {
+  string description = 1;
+  string mode = 2;
+  // Source evidence, not confirmation of timetable compatibility.
+  string evidence = 3;
+}
+message RouteScheme {
+  repeated RouteStep steps = 1;
+  repeated string warnings = 2;
+}
+message SourceRoutes {
+  string planner_id = 1;
+  string stage = 2;
+  string outcome = 3;
+  int32 attempt = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp finished_at = 6;
+  int64 duration_ms = 7;
+  bool incomplete = 8;
+  int32 total = 9;
+  int32 offset = 10;
+  bool has_more = 11;
+  repeated RouteScheme routes = 12;
+  repeated string warnings = 13;
+}
+message GetRoutesResponse {
+  int64 revision = 1;
+  string stage = 2;
+  repeated SourceRoutes sources = 3;
+}

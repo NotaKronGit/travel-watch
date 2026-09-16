@@ -29,6 +29,21 @@ func TestConfig(t *testing.T) {
 	}
 }
 
+func TestConfiguredPlannerMembership(t *testing.T) {
+	t.Setenv("SEARCH_DATABASE_APP_PASSWORD", "test-placeholder")
+	t.Setenv("SEARCH_PROGRESS_SOURCES", "graph,gemini")
+	c, err := Load("../../config.yaml", "build-routes")
+	if err != nil || len(c.Progress.Sources) != 2 || c.Progress.Sources[1] != "gemini" {
+		t.Fatal("source env override", err)
+	}
+	for _, value := range []string{"graph,graph", "unknown", ""} {
+		t.Setenv("SEARCH_PROGRESS_SOURCES", value)
+		if _, err := Load("../../config.yaml", "build-routes"); err == nil {
+			t.Fatal("invalid membership", value)
+		}
+	}
+}
+
 func TestComparisonConfig(t *testing.T) {
 	t.Setenv("SEARCH_DATABASE_APP_PASSWORD", "")
 	t.Setenv("SEARCH_GEMINI_API_KEY", "test-placeholder")
