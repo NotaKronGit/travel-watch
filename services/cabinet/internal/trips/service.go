@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	contract "github.com/NotaKronGit/travel-watch/api/progress"
+	"github.com/NotaKronGit/travel-watch/gen/travelwatch/search/v1/searchv1connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"net/http"
 	"regexp"
@@ -22,18 +23,23 @@ type Repository interface {
 	CancelTrip(context.Context, string, string) error
 	UpdateTripComment(context.Context, string, string, string) error
 	GetTrip(context.Context, string, string) (storage.TripDetails, error)
-	ListTrips(context.Context, string, uint) ([]storage.TripDetails, bool, error)
+	ListTrips(context.Context, string, uint, bool) ([]storage.TripDetails, bool, error)
 	SearchCities(context.Context, string) ([]storage.CityOption, error)
 	CreateTrip(context.Context, storage.Trip) (string, error)
 }
 type Service struct {
-	store Repository
-	auth  *auth.Service
+	store  Repository
+	auth   *auth.Service
+	routes searchv1connect.RouteResultsServiceClient
 }
 
-func Handler(store Repository) func(*auth.Service) (string, http.Handler) {
+func Handler(store Repository, clients ...searchv1connect.RouteResultsServiceClient) func(*auth.Service) (string, http.Handler) {
 	return func(a *auth.Service) (string, http.Handler) {
-		return cabinetv1connect.NewTripServiceHandler(&Service{store: store, auth: a}, connect.WithReadMaxBytes(8192))
+		var client searchv1connect.RouteResultsServiceClient
+		if len(clients) > 0 {
+			client = clients[0]
+		}
+		return cabinetv1connect.NewTripServiceHandler(&Service{store: store, auth: a, routes: client}, connect.WithReadMaxBytes(8192))
 	}
 }
 func (s *Service) user(ctx context.Context, h http.Header) (string, error) {
@@ -123,7 +129,7 @@ func tripView(t storage.TripDetails) *v1.TripDetails {
 	}
 	history := make([]*v1.TripStageHistory, 0, len(t.History))
 	for _, e := range t.History {
-		history = append(history, &v1.TripStageHistory{PlannerId: e.PlannerId, Revision: e.Revision, Stage: contract.Stages[e.Stage], OccurredAt: e.OccurredAt, Attempt: e.Attempt, StartedAt: e.StartedAt, FinishedAt: e.FinishedAt, DurationMs: e.DurationMs, RouteCount: e.RouteCount, Incomplete: e.Incomplete})
+		history = append(history, &v1.TripStageHistory{PlannerId: e.PlannerId, Outcome: e.Outcome, Revision: e.Revision, Stage: contract.Stages[e.Stage], OccurredAt: e.OccurredAt, Attempt: e.Attempt, StartedAt: e.StartedAt, FinishedAt: e.FinishedAt, DurationMs: e.DurationMs, RouteCount: e.RouteCount, Incomplete: e.Incomplete})
 	}
 	return &v1.TripDetails{BuildingStage: t.BuildingStage, History: history, Status: status, Comment: t.Comment, CancelledAt: cancelled, Id: t.ID, Origin: cityView(t.Origin), Destination: cityView(t.Destination), DepartureFrom: t.DepartureFrom, DepartureTo: t.DepartureTo, Adults: t.Adults, CreatedAt: timestamppb.New(t.CreatedAt)}
 }
@@ -153,7 +159,7 @@ func (s *Service) ListTrips(ctx context.Context, req *connect.Request[v1.ListTri
 	if offset < 0 {
 		return nil, invalid("Некорректная страница")
 	}
-	trips, more, err := s.store.ListTrips(ctx, user, uint(offset))
+	trips, more, err := s.store.ListTrips(ctx, user, uint(offset), req.Msg.IncludeInactive)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnavailable, errors.New("Не удалось загрузить заявки"))
 	}

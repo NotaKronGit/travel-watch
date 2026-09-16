@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+test.beforeEach(async ({page})=>{ await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>r.fulfill({json:{result:{sources:[]}}})); });
 const origin = {id: '11111111-1111-1111-1111-111111111111', name:'Курск', country:'Россия', region:'', iataCode:'URS', timezone:'Europe/Moscow'};
 const destination = {id: '22222222-2222-2222-2222-222222222222', name:'Бангкок', country:'Таиланд', region:'', timezone:'Asia/Bangkok'};
 

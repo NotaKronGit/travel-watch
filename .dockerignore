@@ -12,3 +12,4 @@ bin
 frontend/e2e
 frontend/src/**/*.test.ts
 frontend/src/**/*.test.tsx
+.local

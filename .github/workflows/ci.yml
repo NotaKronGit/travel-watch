@@ -52,6 +52,7 @@ jobs:
           SEARCH_DATABASE_OWNER_PASSWORD: ci-search-owner
           SEARCH_DATABASE_APP_PASSWORD: ci-search-app
         run: |
+          make tls-init
           docker compose -f deploy/compose/compose.yaml config --quiet
           docker compose -f deploy/stage_local/compose.yaml --profile tools config --quiet
           docker compose -f deploy/dev/compose.yaml config --quiet

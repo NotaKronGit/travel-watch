@@ -5,6 +5,20 @@ x-cabinet: &cabinet-image
     context: ../..
     dockerfile: services/cabinet/Dockerfile
 services:
+  search-results:
+    image: travel-watch-search:${IMAGE_TAG:-local}
+    build: {context: ../.., dockerfile: services/search/Dockerfile}
+    command: [serve-results]
+    restart: unless-stopped
+    env_file: ../../.local/tls/search.env
+    environment:
+      SEARCH_RESULTS_ADDRESS: 0.0.0.0:9093
+      SEARCH_DATABASE_HOST: postgres
+      SEARCH_DATABASE_PORT: "5432"
+      SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
+    networks: [database, application]
+    depends_on:
+      search-migrate: {condition: service_completed_successfully}
   search-db-init:
     image: postgres:17-alpine
     restart: "no"
@@ -94,6 +108,8 @@ services:
       SEARCH_DATABASE_PORT: "5432"
       SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
       COLLECTOR_YANDEX_API_KEY: ${COLLECTOR_YANDEX_API_KEY:-}
+      SEARCH_GEMINI_API_KEY: ${SEARCH_GEMINI_API_KEY:-}
+      SEARCH_PROGRESS_SOURCES: ${SEARCH_PROGRESS_SOURCES:-graph,gemini}
     networks: [database, application]
     depends_on:
       search-migrate: {condition: service_completed_successfully}
@@ -151,9 +167,12 @@ services:
       postgres: { condition: service_healthy }
       migrate: { condition: service_completed_successfully }
   cabinet:
+    env_file: ../../.local/tls/cabinet.env
     <<: *cabinet-image
     restart: unless-stopped
     environment:
+      CABINET_SEARCH_ENABLED: "true"
+      CABINET_SEARCH_ADDRESS: https://search-results:9093
       CABINET_DATABASE_HOST: postgres
       CABINET_DATABASE_PORT: "5432"
       CABINET_DATABASE_APP_PASSWORD: ${CABINET_DATABASE_APP_PASSWORD:?Set CABINET_DATABASE_APP_PASSWORD}

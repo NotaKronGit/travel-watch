@@ -177,8 +177,12 @@ func (s *Store) GetTrip(ctx context.Context, user, id string) (TripDetails, erro
 	}
 	return t, err
 }
-func (s *Store) ListTrips(ctx context.Context, user string, offset uint) ([]TripDetails, bool, error) {
-	q, args, err := tripReadQuery(user).Order(goqu.I("t.created_at").Desc(), goqu.I("t.id").Desc()).Limit(21).Offset(offset).Prepared(true).ToSQL()
+func (s *Store) ListTrips(ctx context.Context, user string, offset uint, includeInactive bool) ([]TripDetails, bool, error) {
+	query := tripReadQuery(user)
+	if !includeInactive {
+		query = query.Where(goqu.I("t.status").In("saved", "running"))
+	}
+	q, args, err := query.Order(goqu.I("t.created_at").Desc(), goqu.I("t.id").Desc()).Limit(21).Offset(offset).Prepared(true).ToSQL()
 	if err != nil {
 		return nil, false, err
 	}

@@ -48,6 +48,7 @@ planner:
   max_candidates: 20
 
 progress:
+  sources: [graph, gemini]
   brokers: [127.0.0.1:9092]
   topic: travelwatch.route-building.v1
   group_id: travelwatch-cabinet-progress-v1
@@ -55,3 +56,13 @@ progress:
   timeout: 10s
   lease: 10m
   max_attempts: 3
+
+results:
+  address: 127.0.0.1:9093
+  timeout: 2s
+  shutdown_timeout: 5s
+  tls:
+    peer_name: cabinet
+    ca_base64: ""
+    cert_base64: ""
+    key_base64: ""

@@ -8,3 +8,4 @@ frontend/test-results/
 bin/
 *.tsbuildinfo
 .DS_Store
+.local/

@@ -26,6 +26,11 @@ func run() error {
 	if len(os.Args) > 1 {
 		command = os.Args[1]
 	}
+	if command == "serve-results" {
+		if err := godotenv.Load(".local/tls/search.env"); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return errors.New("cannot load Search TLS environment")
+		}
+	}
 	path := os.Getenv("SEARCH_CONFIG")
 	if path == "" {
 		path = "config.yaml"
@@ -67,6 +72,9 @@ func run() error {
 			return errors.New("Search migration failed")
 		}
 		return nil
+	}
+	if command == "serve-results" {
+		return serveResults(ctx, db, cfg)
 	}
 	if command == "build-routes" {
 		err := buildRoutes(ctx, db, cfg)

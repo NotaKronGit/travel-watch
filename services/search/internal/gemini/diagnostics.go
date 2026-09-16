@@ -88,5 +88,11 @@ func operationError(ctx context.Context, err error, phase string) error {
 	case errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF):
 		kind = "connection_closed"
 	}
+	if kind == "timeout" {
+		return fmt.Errorf("Gemini %s; phase=%s: %w", kind, phase, context.DeadlineExceeded)
+	}
+	if kind == "cancelled" {
+		return fmt.Errorf("Gemini %s; phase=%s: %w", kind, phase, context.Canceled)
+	}
 	return fmt.Errorf("Gemini %s; phase=%s", kind, phase)
 }

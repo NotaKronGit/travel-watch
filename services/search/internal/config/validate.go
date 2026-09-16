@@ -20,7 +20,7 @@ func (c Config) Validate(command string) error {
 		return c.Gemini.Validate()
 	}
 	d := c.Database
-	if command != "consume" && command != "migrate" && command != "airports-sync" && command != "airports-find" && command != "plan-route" && command != "build-routes" && command != "publish-progress" {
+	if command != "serve-results" && command != "consume" && command != "migrate" && command != "airports-sync" && command != "airports-find" && command != "plan-route" && command != "build-routes" && command != "publish-progress" {
 		return errors.New("usage: search [consume|migrate|compare-planners|compare-real-routes|airports-sync|airports-find|plan-route]")
 	}
 	if d.Host == "" || d.Name == "" || d.Port < 1 || d.Port > 65535 || d.MaxOpenConns < 1 || d.MaxIdleConns < 0 || d.MaxIdleConns > d.MaxOpenConns {
@@ -46,10 +46,27 @@ func (c Config) Validate(command string) error {
 	if d.AppUser == "" || d.AppPassword == "" {
 		return errors.New("Search database app credentials required")
 	}
+	if command == "serve-results" {
+		if _, _, err := net.SplitHostPort(c.Results.Address); err != nil || c.Results.Timeout < time.Second || c.Results.Timeout > 5*time.Second || c.Results.ShutdownTimeout < time.Second || c.Results.ShutdownTimeout > time.Minute {
+			return errors.New("invalid results RPC configuration")
+		}
+		return c.Results.TLS.Validate()
+	}
 	if command == "publish-progress" {
 		return c.Progress.Validate()
 	}
 	if command == "build-routes" {
+		if len(c.Progress.Sources) < 1 || len(c.Progress.Sources) > 2 {
+			return errors.New("configure one or two progress.sources")
+		}
+		seen := map[string]bool{}
+		for _, id := range c.Progress.Sources {
+			if (id != "graph" && id != "gemini") || seen[id] {
+				return errors.New("invalid or duplicate planner source")
+			}
+			seen[id] = true
+		}
+
 		if err := c.Progress.Validate(); err != nil {
 			return err
 		}

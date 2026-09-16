@@ -13,6 +13,11 @@ func (c Config) Validate(command string) error {
 	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" && command != "consume-progress" {
 		return errors.New("unknown Cabinet command")
 	}
+	if command == "serve" {
+		if err := c.Search.Validate(); err != nil {
+			return err
+		}
+	}
 	d := c.Database
 	if d.Host == "" || d.Name == "" || d.Port < 1 || d.Port > 65535 {
 		return errors.New("invalid database host, name or port")

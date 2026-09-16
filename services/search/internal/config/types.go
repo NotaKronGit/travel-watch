@@ -1,12 +1,14 @@
 package config
 
 import (
+	"github.com/NotaKronGit/travel-watch/api/mtls"
 	"github.com/NotaKronGit/travel-watch/services/search/internal/gemini"
 	"github.com/NotaKronGit/travel-watch/services/search/internal/realroutes"
 	"time"
 )
 
 type Config struct {
+	Results  Results           `mapstructure:"results"`
 	Progress Progress          `mapstructure:"progress"`
 	Planner  realroutes.Config `mapstructure:"planner"`
 	Airports Airports          `mapstructure:"airports"`
@@ -52,6 +54,7 @@ type Airports struct {
 
 // Progress transport is separate from Cabinet's request topic.
 type Progress struct {
+	Sources      []string      `mapstructure:"sources"`
 	Brokers      []string      `mapstructure:"brokers"`
 	Topic        string        `mapstructure:"topic"`
 	GroupID      string        `mapstructure:"group_id"`
@@ -59,4 +62,11 @@ type Progress struct {
 	Timeout      time.Duration `mapstructure:"timeout"`
 	Lease        time.Duration `mapstructure:"lease"`
 	MaxAttempts  int           `mapstructure:"max_attempts"`
+}
+
+type Results struct {
+	Address         string        `mapstructure:"address"`
+	Timeout         time.Duration `mapstructure:"timeout"`
+	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
+	TLS             mtls.Config   `mapstructure:"tls"`
 }

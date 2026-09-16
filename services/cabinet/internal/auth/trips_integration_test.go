@@ -59,7 +59,7 @@ func testTripStorage(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 	if _, err := store.GetTrip(ctx, user, "99999999-9999-9999-9999-999999999999"); !errors.Is(err, storage.ErrNotFound) {
 		t.Fatal("missing trip not handled", err)
 	}
-	otherTrips, _, err := store.ListTrips(ctx, otherUser, 0)
+	otherTrips, _, err := store.ListTrips(ctx, otherUser, 0, false)
 	if err != nil || len(otherTrips) != 0 {
 		t.Fatal("foreign trips listed", err)
 	}
@@ -99,11 +99,11 @@ func testTripStorage(t *testing.T, ctx context.Context, owner, app *sql.DB) {
  SELECT $1,gen_random_uuid(),$2,$3,'2027-01-01','2027-01-02',1 FROM generate_series(1,20)`, user, ids[0], ids[1]); err != nil {
 		t.Fatal(err)
 	}
-	first, more, err := store.ListTrips(ctx, user, 0)
+	first, more, err := store.ListTrips(ctx, user, 0, false)
 	if err != nil || len(first) != 20 || !more {
 		t.Fatal("first page", err)
 	}
-	second, more, err := store.ListTrips(ctx, user, 20)
+	second, more, err := store.ListTrips(ctx, user, 20, false)
 	if err != nil || len(second) != 1 || more {
 		t.Fatal("second page", err)
 	}
@@ -111,6 +111,26 @@ func testTripStorage(t *testing.T, ctx context.Context, owner, app *sql.DB) {
 		if item.ID == second[0].ID {
 			t.Fatal("overlapping pages")
 		}
+	}
+
+	// Inactive rows must be excluded before LIMIT, including the next-page flag.
+	if _, err := owner.ExecContext(ctx, `UPDATE trip_requests SET status=CASE WHEN id=$2 THEN 'cancelled' ELSE 'completed' END, cancelled_at=CASE WHEN id=$2 THEN now() ELSE NULL END WHERE user_id=$1 AND id IN ($2,$3)`, user, first[0].ID, first[1].ID); err != nil {
+		t.Fatal(err)
+	}
+	active, more, err := store.ListTrips(ctx, user, 0, false)
+	if err != nil || len(active) != 19 || more {
+		t.Fatal("active filter and pagination", len(active), more, err)
+	}
+	all, more, err := store.ListTrips(ctx, user, 0, true)
+	if err != nil || len(all) != 20 || !more {
+		t.Fatal("history first page", err)
+	}
+	last, more, err := store.ListTrips(ctx, user, 20, true)
+	if err != nil || len(last) != 1 || more {
+		t.Fatal("history second page", err)
+	}
+	if _, err := store.GetTrip(ctx, user, first[0].ID); err != nil {
+		t.Fatal("cancelled trip remains readable", err)
 	}
 
 	testTripOutbox(t, ctx, owner, app, user, ids[0], ids[1])

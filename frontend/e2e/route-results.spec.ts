@@ -1,0 +1,61 @@
+import {test,expect} from '@playwright/test';
+const id='11111111-1111-4111-8111-111111111111';
+const trip={id,origin:{name:'Курск'},destination:{name:'Паттайя'},departureFrom:'2027-01-01',departureTo:'2027-01-02',adults:1,status:'TRIP_STATUS_RUNNING',buildingStage:'building',history:[]};
+test('saved schemes paginate independently, survive errors and update only on progress',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ let revision=1;let offline=false;let calls=0;
+ await page.route('**/travelwatch.cabinet.v1.AuthService/*',r=>r.fulfill({json:{user:{id:'owner',email:'test@example.com'}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({json:{trip:{...trip,history:[{revision:String(revision),stage:'building',plannerId:'all'}]}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>{
+  calls++;
+  if(offline)return r.fulfill({status:503,json:{code:'unavailable'}});
+  const q=r.request().postDataJSON();const offset=q.offset||0;
+  const sources=[
+   {plannerId:'graph',stage:'awaiting_schedules',total:7,offset,hasMore:offset===0,incomplete:true,warnings:['Collector thread failed','Incomplete provider page: thread','Provider coverage and timetable compatibility are not complete; transfers are assumptions'],routes:Array.from({length:offset?2:5},(_,i)=>({steps:[{description:`Курск → Москва, вариант ${offset+i+1}`,mode:'train',evidence:'Связь найдена в Яндекс Расписаниях'},{description:'Вокзал → аэропорт',mode:'transfer',evidence:'Предполагаемый переезд'}],warnings:['Время переезда требует проверки']}))},
+   {plannerId:'gemini',stage:revision>1?'awaiting_schedules':'building',total:revision>1?1:0,incomplete:true,routes:revision>1?[{steps:[{description:'Независимая схема Gemini через другой город'}],warnings:[]}]:[]},
+  ].filter(source=>!q.plannerId || source.plannerId===q.plannerId);
+  return r.fulfill({json:{result:{revision:String(revision),stage:'building',sources}}});
+ });
+ await page.goto('/#/trips/'+id);
+ const graph=page.getByRole('region',{name:'Маршруты: Наш алгоритм'});
+ await expect(graph.getByText('Вариантов: 7')).toBeVisible();
+ await expect(page.getByText('Номер заявки: '+id,{exact:true})).toBeVisible();
+ await expect(graph.getByText('Частичный результат',{exact:true})).toBeVisible();
+ await expect(graph.getByText('Не удалось получить остановки части рейсов или поездов.',{exact:false})).toBeVisible();
+ await expect(graph).not.toContainText('Collector thread failed');
+ await expect(graph.getByRole('button',{name:/Вариант 1 ·/})).toContainText('Курск → Москва, вариант 1');
+ await expect(graph.getByRole('button',{name:/Вариант 2 ·/})).toContainText('Курск → Москва, вариант 2');
+ await graph.getByRole('button',{name:/Вариант 1 ·/}).click();
+ await expect(graph.getByText('Предполагаемый переезд',{exact:true}).first()).toBeVisible();
+ const before=calls;
+ await page.waitForTimeout(5500);
+ expect(calls).toBe(before);
+ await page.getByRole('textbox',{name:'Комментарий к заявке'}).fill('Черновик');
+ await graph.getByRole('button',{name:'Следующие варианты'}).click();
+ await expect(graph.getByRole('button',{name:/Вариант 6 ·/})).toBeVisible();
+ await expect(graph.getByRole('button',{name:'Следующие варианты'})).toBeDisabled();
+ offline=true;revision=2;
+ await expect(page.getByText('Не удалось обновить маршруты.',{exact:false})).toBeVisible({timeout:12000});
+ await expect(graph.getByRole('button',{name:/Вариант 6 ·/})).toBeVisible();
+ await expect(page.getByRole('textbox',{name:'Комментарий к заявке'})).toHaveValue('Черновик');
+ offline=false;
+ await page.getByRole('button',{name:'Повторить загрузку маршрутов'}).click();
+ const gemini=page.getByRole('region',{name:'Маршруты: Gemini'});
+ await expect(gemini.getByText('Вариантов: 1')).toBeVisible();
+ await gemini.getByRole('button',{name:/Вариант 1 ·/}).click();
+ await expect(gemini.getByText('Независимая схема Gemini через другой город',{exact:true}).last()).toBeVisible();
+ await expect(gemini.getByText('Предложения модели. Транспортные связи не подтверждены.')).toBeVisible();
+ const beforeSwitch=calls;
+ await page.getByRole('button',{name:'Этап 3: Стыковки',exact:true}).click();
+ await expect(page.getByText('Проверка расписаний и стыковок пока не подключена.',{exact:false})).toBeVisible();
+ await expect(graph).toBeHidden();
+ await expect(page.getByText('Номер заявки: '+id,{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Этап 1: Заявка',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Параметры заявки'})).toBeVisible();
+ await page.getByRole('button',{name:'Этап 2: Схемы',exact:true}).click();
+ await expect(graph.getByRole('button',{name:/Вариант 6 ·/})).toBeVisible();
+ expect(calls).toBe(beforeSwitch);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ await page.getByRole('navigation',{name:'Этапы заявки'}).scrollIntoViewIfNeeded();
+ await page.screenshot({path:'test-results/route-stages-mobile.png',fullPage:true});
+});

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -73,8 +74,14 @@ func (p *Planner) Search(ctx context.Context, q routeexperiment.Query) (paths []
 		}
 		UsageMetadata Usage
 	}
-	if json.Unmarshal(raw, &response) != nil || len(response.Candidates) != 1 || response.Candidates[0].FinishReason != "STOP" {
-		return nil, errors.New("independent response blocked or incomplete")
+	if json.Unmarshal(raw, &response) != nil {
+		return nil, errors.New("invalid independent response envelope")
+	}
+	if len(response.Candidates) != 1 {
+		return nil, errors.New("independent response has no unique candidate")
+	}
+	if response.Candidates[0].FinishReason != "STOP" {
+		return nil, fmt.Errorf("independent response incomplete; finish_reason=%s", sanitize(response.Candidates[0].FinishReason, p.cfg.APIKey, 100))
 	}
 	if p.Observe != nil {
 		p.Observe(response.UsageMetadata)

@@ -45,6 +45,19 @@ func testProgress(t *testing.T, ctx context.Context, app *sql.DB, user, origin, 
 	if err != nil || trip.BuildingStage != "awaiting_schedules" || trip.Status != "running" || len(trip.History) != 3 {
 		t.Fatal("projection regressed or history duplicated", err)
 	}
+	// A source's later revision must not advance or block the aggregate projection.
+	source := event(10, eventsv1.RouteBuildingStage_ROUTE_BUILDING_STAGE_FAILED)
+	source.SchemaVersion = 2
+	source.PlannerId = "gemini"
+	apply(source)
+	aggregate := event(9, eventsv1.RouteBuildingStage_ROUTE_BUILDING_STAGE_BUILDING)
+	aggregate.SchemaVersion = 2
+	aggregate.PlannerId = "all"
+	apply(aggregate)
+	updated, readErr := s.GetTrip(ctx, user, id)
+	if readErr != nil || updated.BuildingStage != "building" {
+		t.Fatal("source event advanced aggregate revision", readErr)
+	}
 	conflict := proto.Clone(ready).(*eventsv1.TripRouteBuildingUpdated)
 	conflict.RouteCount = 5
 	b, _ := proto.Marshal(conflict)
@@ -56,7 +69,7 @@ func testProgress(t *testing.T, ctx context.Context, app *sql.DB, user, origin, 
 	}
 	apply(event(4, eventsv1.RouteBuildingStage_ROUTE_BUILDING_STAGE_BUILDING))
 	trip, err = s.GetTrip(ctx, user, id)
-	if err != nil || trip.Status != "cancelled" || len(trip.History) != 4 {
+	if err != nil || trip.Status != "cancelled" || len(trip.History) != 6 {
 		t.Fatal("late result revived cancellation", err)
 	}
 	if _, err = s.GetTrip(ctx, uuid.NewString(), id); err == nil {

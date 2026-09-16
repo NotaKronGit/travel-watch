@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+test.beforeEach(async ({page})=>{ await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>r.fulfill({json:{result:{sources:[]}}})); });
 
 test('route progress refreshes history and duration without losing a comment draft',async({page})=>{
  let ready=false;
@@ -25,4 +26,29 @@ test('route progress refreshes history and duration without losing a comment dra
  await expect(page.getByText(/Прошло:/)).toHaveCount(0);
  await expect(page.getByRole('textbox',{name:'Комментарий к заявке'})).toHaveValue('Черновик сохраняется');
  await expect(page.getByText('Найдено схем до проверки стыковок: 4')).toHaveCount(1);
+});
+
+test('source result leaves the overall stage building until the other source finishes',async({page})=>{
+ let done=false;
+ const started=new Date(Date.now()-3000).toISOString();
+ await page.route('**/travelwatch.cabinet.v1.AuthService/*',r=>r.fulfill({json:{user:{id:'user',email:'test@example.com'}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({json:{trip:{id:'multi',status:'TRIP_STATUS_RUNNING',buildingStage:done?'awaiting_schedules':'building',history:[
+  {revision:'1',plannerId:'all',stage:'building',startedAt:started,attempt:1},
+  {revision:'2',plannerId:'graph',stage:'building',startedAt:started,attempt:1},
+  {revision:'3',plannerId:'gemini',stage:'failed',startedAt:started,finishedAt:started,outcome:'timeout',incomplete:true,attempt:1},
+  ...(done?[
+   {revision:'4',plannerId:'graph',stage:'awaiting_schedules',startedAt:started,finishedAt:started,routeCount:3,attempt:1},
+   {revision:'5',plannerId:'all',stage:'awaiting_schedules',startedAt:started,finishedAt:started,routeCount:3,incomplete:true,attempt:1},
+  ]:[])
+ ]}}}));
+ await page.goto('/#/trips/multi');
+ await expect(page.getByText('Источник не ответил за отведённое время.',{exact:false})).toBeVisible();
+ await expect(page.getByText('Планировщик: Gemini',{exact:true})).toBeVisible();
+ await expect(page.getByText('Планировщик: Общий этап',{exact:true})).toBeVisible();
+ await expect(page.getByText(/Прошло:/)).toHaveCount(2);
+ await expect(page.getByText('Маршруты построены, ожидает проверки расписаний',{exact:true})).toHaveCount(0);
+ done=true;
+ await expect(page.getByText('Маршруты построены, ожидает проверки расписаний',{exact:true})).toHaveCount(3,{timeout:12000});
+ await expect(page.getByText(/Прошло:/)).toHaveCount(0);
+ await expect(page.getByText('Найдено схем до проверки стыковок: 3',{exact:true})).toHaveCount(2);
 });

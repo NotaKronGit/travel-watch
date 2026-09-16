@@ -4,7 +4,7 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY gen ./gen
-COPY api/progress ./api/progress
+COPY api ./api
 COPY services/cabinet ./services/cabinet
 ARG TARGETOS
 ARG TARGETARCH

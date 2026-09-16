@@ -11,6 +11,7 @@ type Job struct {
 	RequestID, Token string
 	Payload          []byte
 	Attempt          int
+	Sources          []string
 }
 type Message struct {
 	ID, RequestID, Token string
