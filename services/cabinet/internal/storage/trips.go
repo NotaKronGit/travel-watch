@@ -132,6 +132,8 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 var ErrPastDeparture = errors.New("departure in the past")
 
 type TripDetails struct {
+	BuildingStage              string
+	History                    []*eventsv1.TripRouteBuildingUpdated
 	Status, Comment            string
 	CancelledAt                sql.NullTime
 	ID                         string
@@ -147,7 +149,7 @@ func tripReadQuery(user string) *goqu.SelectDataset {
 		q = q.Join(goqu.T("catalog_cities").As(side.alias), goqu.On(goqu.I(side.alias+".id").Eq(goqu.I("t."+side.column))))
 		q = q.Join(goqu.T("catalog_countries").As(side.alias+"n"), goqu.On(goqu.I(side.alias+"n.code").Eq(goqu.I(side.alias+".country_code"))))
 	}
-	columns := []interface{}{goqu.I("t.id"), goqu.L("t.departure_from::text"), goqu.L("t.departure_to::text"), goqu.I("t.adults"), goqu.I("t.created_at"), goqu.I("t.status"), goqu.I("t.comment"), goqu.I("t.cancelled_at")}
+	columns := []interface{}{goqu.I("t.id"), goqu.L("t.departure_from::text"), goqu.L("t.departure_to::text"), goqu.I("t.adults"), goqu.I("t.created_at"), goqu.I("t.status"), goqu.I("t.comment"), goqu.I("t.cancelled_at"), goqu.I("t.building_stage")}
 	for _, alias := range []string{"o", "d"} {
 		columns = append(columns, goqu.I(alias+".id"), goqu.I(alias+".name_ru"), goqu.L("COALESCE(NULLIF(?, ''), ?)", goqu.I(alias+"n.name_ru"), goqu.I(alias+"n.name")), goqu.I(alias+".region_name"), goqu.I(alias+".timezone"), goqu.I(alias+".iata_code"))
 	}
@@ -156,7 +158,7 @@ func tripReadQuery(user string) *goqu.SelectDataset {
 }
 func scanTrip(row interface{ Scan(...any) error }) (TripDetails, error) {
 	var t TripDetails
-	err := row.Scan(&t.ID, &t.DepartureFrom, &t.DepartureTo, &t.Adults, &t.CreatedAt, &t.Status, &t.Comment, &t.CancelledAt,
+	err := row.Scan(&t.ID, &t.DepartureFrom, &t.DepartureTo, &t.Adults, &t.CreatedAt, &t.Status, &t.Comment, &t.CancelledAt, &t.BuildingStage,
 		&t.Origin.ID, &t.Origin.Name, &t.Origin.Country, &t.Origin.Region, &t.Origin.Timezone, &t.Origin.IATACode,
 		&t.Destination.ID, &t.Destination.Name, &t.Destination.Country, &t.Destination.Region, &t.Destination.Timezone, &t.Destination.IATACode)
 	return t, err
@@ -169,6 +171,9 @@ func (s *Store) GetTrip(ctx context.Context, user, id string) (TripDetails, erro
 	t, err := scanTrip(s.db.QueryRowContext(ctx, q, args...))
 	if errors.Is(err, sql.ErrNoRows) {
 		err = ErrNotFound
+	}
+	if err == nil {
+		t.History, err = s.tripHistory(ctx, id)
 	}
 	return t, err
 }

@@ -2,8 +2,8 @@
 // @generated from file travelwatch/events/v1/trip_request.proto (package travelwatch.events.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file travelwatch/events/v1/trip_request.proto.
  */
 export const file_travelwatch_events_v1_trip_request: GenFile = /*@__PURE__*/
-  fileDesc("Cih0cmF2ZWx3YXRjaC9ldmVudHMvdjEvdHJpcF9yZXF1ZXN0LnByb3RvEhV0cmF2ZWx3YXRjaC5ldmVudHMudjEipwEKCFRyaXBDaXR5EgoKAmlkGAEgASgJEg4KBnNvdXJjZRgCIAEoCRIRCglzb3VyY2VfaWQYAyABKAMSDAoEbmFtZRgEIAEoCRIUCgxjb3VudHJ5X2NvZGUYBSABKAkSEAoIbGF0aXR1ZGUYBiABKAESEQoJbG9uZ2l0dWRlGAcgASgBEhAKCHRpbWV6b25lGAggASgJEhEKCWlhdGFfY29kZRgJIAEoCSKoAgoSVHJpcFJlcXVlc3RDcmVhdGVkEhAKCGV2ZW50X2lkGAEgASgJEhYKDnNjaGVtYV92ZXJzaW9uGAIgASgNEhIKCnJlcXVlc3RfaWQYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KBm9yaWdpbhgFIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRI0CgtkZXN0aW5hdGlvbhgGIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRIWCg5kZXBhcnR1cmVfZnJvbRgHIAEoCRIUCgxkZXBhcnR1cmVfdG8YCCABKAkSDgoGYWR1bHRzGAkgASgFIoUBChRUcmlwUmVxdWVzdENhbmNlbGxlZBIQCghldmVudF9pZBgBIAEoCRIWCg5zY2hlbWFfdmVyc2lvbhgCIAEoDRISCgpyZXF1ZXN0X2lkGAMgASgJEi8KC29jY3VycmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEJIWkZnaXRodWIuY29tL05vdGFLcm9uR2l0L3RyYXZlbC13YXRjaC9nZW4vdHJhdmVsd2F0Y2gvZXZlbnRzL3YxO2V2ZW50c3YxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Cih0cmF2ZWx3YXRjaC9ldmVudHMvdjEvdHJpcF9yZXF1ZXN0LnByb3RvEhV0cmF2ZWx3YXRjaC5ldmVudHMudjEipwEKCFRyaXBDaXR5EgoKAmlkGAEgASgJEg4KBnNvdXJjZRgCIAEoCRIRCglzb3VyY2VfaWQYAyABKAMSDAoEbmFtZRgEIAEoCRIUCgxjb3VudHJ5X2NvZGUYBSABKAkSEAoIbGF0aXR1ZGUYBiABKAESEQoJbG9uZ2l0dWRlGAcgASgBEhAKCHRpbWV6b25lGAggASgJEhEKCWlhdGFfY29kZRgJIAEoCSKoAgoSVHJpcFJlcXVlc3RDcmVhdGVkEhAKCGV2ZW50X2lkGAEgASgJEhYKDnNjaGVtYV92ZXJzaW9uGAIgASgNEhIKCnJlcXVlc3RfaWQYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KBm9yaWdpbhgFIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRI0CgtkZXN0aW5hdGlvbhgGIAEoCzIfLnRyYXZlbHdhdGNoLmV2ZW50cy52MS5UcmlwQ2l0eRIWCg5kZXBhcnR1cmVfZnJvbRgHIAEoCRIUCgxkZXBhcnR1cmVfdG8YCCABKAkSDgoGYWR1bHRzGAkgASgFIoUBChRUcmlwUmVxdWVzdENhbmNlbGxlZBIQCghldmVudF9pZBgBIAEoCRIWCg5zY2hlbWFfdmVyc2lvbhgCIAEoDRISCgpyZXF1ZXN0X2lkGAMgASgJEi8KC29jY3VycmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKZAwoYVHJpcFJvdXRlQnVpbGRpbmdVcGRhdGVkEhAKCGV2ZW50X2lkGAEgASgJEhYKDnNjaGVtYV92ZXJzaW9uGAIgASgNEhIKCnJlcXVlc3RfaWQYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhAKCHJldmlzaW9uGAUgASgDEjgKBXN0YWdlGAYgASgOMikudHJhdmVsd2F0Y2guZXZlbnRzLnYxLlJvdXRlQnVpbGRpbmdTdGFnZRIPCgdhdHRlbXB0GAcgASgFEi4KCnN0YXJ0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgtkdXJhdGlvbl9tcxgKIAEoAxITCgtyb3V0ZV9jb3VudBgLIAEoBRISCgppbmNvbXBsZXRlGAwgASgIEhIKCnBsYW5uZXJfaWQYDSABKAkqlAIKElJvdXRlQnVpbGRpbmdTdGFnZRIkCiBST1VURV9CVUlMRElOR19TVEFHRV9VTlNQRUNJRklFRBAAEh8KG1JPVVRFX0JVSUxESU5HX1NUQUdFX1FVRVVFRBABEiEKHVJPVVRFX0JVSUxESU5HX1NUQUdFX0JVSUxESU5HEAISKwonUk9VVEVfQlVJTERJTkdfU1RBR0VfQVdBSVRJTkdfU0NIRURVTEVTEAMSIgoeUk9VVEVfQlVJTERJTkdfU1RBR0VfTk9fUk9VVEVTEAQSHwobUk9VVEVfQlVJTERJTkdfU1RBR0VfRkFJTEVEEAUSIgoeUk9VVEVfQlVJTERJTkdfU1RBR0VfQ0FOQ0VMTEVEEAZCSFpGZ2l0aHViLmNvbS9Ob3RhS3JvbkdpdC90cmF2ZWwtd2F0Y2gvZ2VuL3RyYXZlbHdhdGNoL2V2ZW50cy92MTtldmVudHN2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * Geographic snapshot, not a promise of transport availability.
@@ -169,4 +169,129 @@ export type TripRequestCancelled = Message<"travelwatch.events.v1.TripRequestCan
  */
 export const TripRequestCancelledSchema: GenMessage<TripRequestCancelled> = /*@__PURE__*/
   messageDesc(file_travelwatch_events_v1_trip_request, 2);
+
+/**
+ * @generated from message travelwatch.events.v1.TripRouteBuildingUpdated
+ */
+export type TripRouteBuildingUpdated = Message<"travelwatch.events.v1.TripRouteBuildingUpdated"> & {
+  /**
+   * @generated from field: string event_id = 1;
+   */
+  eventId: string;
+
+  /**
+   * @generated from field: uint32 schema_version = 2;
+   */
+  schemaVersion: number;
+
+  /**
+   * @generated from field: string request_id = 3;
+   */
+  requestId: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp occurred_at = 4;
+   */
+  occurredAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: int64 revision = 5;
+   */
+  revision: bigint;
+
+  /**
+   * @generated from field: travelwatch.events.v1.RouteBuildingStage stage = 6;
+   */
+  stage: RouteBuildingStage;
+
+  /**
+   * @generated from field: int32 attempt = 7;
+   */
+  attempt: number;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp started_at = 8;
+   */
+  startedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp finished_at = 9;
+   */
+  finishedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: int64 duration_ms = 10;
+   */
+  durationMs: bigint;
+
+  /**
+   * @generated from field: int32 route_count = 11;
+   */
+  routeCount: number;
+
+  /**
+   * @generated from field: bool incomplete = 12;
+   */
+  incomplete: boolean;
+
+  /**
+   * @generated from field: string planner_id = 13;
+   */
+  plannerId: string;
+};
+
+/**
+ * Describes the message travelwatch.events.v1.TripRouteBuildingUpdated.
+ * Use `create(TripRouteBuildingUpdatedSchema)` to create a new message.
+ */
+export const TripRouteBuildingUpdatedSchema: GenMessage<TripRouteBuildingUpdated> = /*@__PURE__*/
+  messageDesc(file_travelwatch_events_v1_trip_request, 3);
+
+/**
+ * Search-owned progress. Monotonic revision per request; duplicates are harmless.
+ *
+ * @generated from enum travelwatch.events.v1.RouteBuildingStage
+ */
+export enum RouteBuildingStage {
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_QUEUED = 1;
+   */
+  QUEUED = 1,
+
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_BUILDING = 2;
+   */
+  BUILDING = 2,
+
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_AWAITING_SCHEDULES = 3;
+   */
+  AWAITING_SCHEDULES = 3,
+
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_NO_ROUTES = 4;
+   */
+  NO_ROUTES = 4,
+
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_FAILED = 5;
+   */
+  FAILED = 5,
+
+  /**
+   * @generated from enum value: ROUTE_BUILDING_STAGE_CANCELLED = 6;
+   */
+  CANCELLED = 6,
+}
+
+/**
+ * Describes the enum travelwatch.events.v1.RouteBuildingStage.
+ */
+export const RouteBuildingStageSchema: GenEnum<RouteBuildingStage> = /*@__PURE__*/
+  enumDesc(file_travelwatch_events_v1_trip_request, 0);
 

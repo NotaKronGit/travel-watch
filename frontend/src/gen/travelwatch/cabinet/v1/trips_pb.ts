@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file travelwatch/cabinet/v1/trips.proto.
  */
 export const file_travelwatch_cabinet_v1_trips: GenFile = /*@__PURE__*/
-  fileDesc("CiJ0cmF2ZWx3YXRjaC9jYWJpbmV0L3YxL3RyaXBzLnByb3RvEhZ0cmF2ZWx3YXRjaC5jYWJpbmV0LnYxImwKCkNpdHlPcHRpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdjb3VudHJ5GAMgASgJEg4KBnJlZ2lvbhgEIAEoCRIQCgh0aW1lem9uZRgFIAEoCRIRCglpYXRhX2NvZGUYBiABKAkiJAoTU2VhcmNoQ2l0aWVzUmVxdWVzdBINCgVxdWVyeRgBIAEoCSJKChRTZWFyY2hDaXRpZXNSZXNwb25zZRIyCgZjaXRpZXMYASADKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24ikAEKEUNyZWF0ZVRyaXBSZXF1ZXN0EhIKCnJlcXVlc3RfaWQYASABKAkSEQoJb3JpZ2luX2lkGAIgASgJEhYKDmRlc3RpbmF0aW9uX2lkGAMgASgJEhYKDmRlcGFydHVyZV9mcm9tGAQgASgJEhQKDGRlcGFydHVyZV90bxgFIAEoCRIOCgZhZHVsdHMYBiABKAUiIAoSQ3JlYXRlVHJpcFJlc3BvbnNlEgoKAmlkGAEgASgJIh8KEUNhbmNlbFRyaXBSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkNhbmNlbFRyaXBSZXNwb25zZSI3ChhVcGRhdGVUcmlwQ29tbWVudFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29tbWVudBgCIAEoCSIbChlVcGRhdGVUcmlwQ29tbWVudFJlc3BvbnNlIusCCgtUcmlwRGV0YWlscxIKCgJpZBgBIAEoCRIyCgZvcmlnaW4YAiABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SNwoLZGVzdGluYXRpb24YAyABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SFgoOZGVwYXJ0dXJlX2Zyb20YBCABKAkSFAoMZGVwYXJ0dXJlX3RvGAUgASgJEg4KBmFkdWx0cxgGIAEoBRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZzdGF0dXMYCCABKA4yIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGF0dXMSDwoHY29tbWVudBgJIAEoCRIwCgxjYW5jZWxsZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIiIKEExpc3RUcmlwc1JlcXVlc3QSDgoGb2Zmc2V0GAEgASgFIlkKEUxpc3RUcmlwc1Jlc3BvbnNlEjIKBXRyaXBzGAEgAygLMiMudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5UcmlwRGV0YWlscxIQCghoYXNfbW9yZRgCIAEoCCIcCg5HZXRUcmlwUmVxdWVzdBIKCgJpZBgBIAEoCSJECg9HZXRUcmlwUmVzcG9uc2USMQoEdHJpcBgBIAEoCzIjLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVHJpcERldGFpbHMqjwEKClRyaXBTdGF0dXMSGwoXVFJJUF9TVEFUVVNfVU5TUEVDSUZJRUQQABIVChFUUklQX1NUQVRVU19TQVZFRBABEhcKE1RSSVBfU1RBVFVTX1JVTk5JTkcQAhIZChVUUklQX1NUQVRVU19DQU5DRUxMRUQQAxIZChVUUklQX1NUQVRVU19DT01QTEVURUQQBDL6BAoLVHJpcFNlcnZpY2USaQoMU2VhcmNoQ2l0aWVzEisudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5TZWFyY2hDaXRpZXNSZXF1ZXN0GiwudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5TZWFyY2hDaXRpZXNSZXNwb25zZRJgCglMaXN0VHJpcHMSKC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkxpc3RUcmlwc1JlcXVlc3QaKS50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkxpc3RUcmlwc1Jlc3BvbnNlEloKB0dldFRyaXASJi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkdldFRyaXBSZXF1ZXN0GicudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5HZXRUcmlwUmVzcG9uc2USYwoKQ2FuY2VsVHJpcBIpLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuQ2FuY2VsVHJpcFJlcXVlc3QaKi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNhbmNlbFRyaXBSZXNwb25zZRJ4ChFVcGRhdGVUcmlwQ29tbWVudBIwLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVXBkYXRlVHJpcENvbW1lbnRSZXF1ZXN0GjEudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5VcGRhdGVUcmlwQ29tbWVudFJlc3BvbnNlEmMKCkNyZWF0ZVRyaXASKS50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNyZWF0ZVRyaXBSZXF1ZXN0GioudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DcmVhdGVUcmlwUmVzcG9uc2VCSlpIZ2l0aHViLmNvbS9Ob3RhS3JvbkdpdC90cmF2ZWwtd2F0Y2gvZ2VuL3RyYXZlbHdhdGNoL2NhYmluZXQvdjE7Y2FiaW5ldHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("CiJ0cmF2ZWx3YXRjaC9jYWJpbmV0L3YxL3RyaXBzLnByb3RvEhZ0cmF2ZWx3YXRjaC5jYWJpbmV0LnYxImwKCkNpdHlPcHRpb24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIPCgdjb3VudHJ5GAMgASgJEg4KBnJlZ2lvbhgEIAEoCRIQCgh0aW1lem9uZRgFIAEoCRIRCglpYXRhX2NvZGUYBiABKAkiJAoTU2VhcmNoQ2l0aWVzUmVxdWVzdBINCgVxdWVyeRgBIAEoCSJKChRTZWFyY2hDaXRpZXNSZXNwb25zZRIyCgZjaXRpZXMYASADKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24ikAEKEUNyZWF0ZVRyaXBSZXF1ZXN0EhIKCnJlcXVlc3RfaWQYASABKAkSEQoJb3JpZ2luX2lkGAIgASgJEhYKDmRlc3RpbmF0aW9uX2lkGAMgASgJEhYKDmRlcGFydHVyZV9mcm9tGAQgASgJEhQKDGRlcGFydHVyZV90bxgFIAEoCRIOCgZhZHVsdHMYBiABKAUiIAoSQ3JlYXRlVHJpcFJlc3BvbnNlEgoKAmlkGAEgASgJIh8KEUNhbmNlbFRyaXBSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkNhbmNlbFRyaXBSZXNwb25zZSI3ChhVcGRhdGVUcmlwQ29tbWVudFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29tbWVudBgCIAEoCSIbChlVcGRhdGVUcmlwQ29tbWVudFJlc3BvbnNlIr4DCgtUcmlwRGV0YWlscxIKCgJpZBgBIAEoCRIyCgZvcmlnaW4YAiABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SNwoLZGVzdGluYXRpb24YAyABKAsyIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNpdHlPcHRpb24SFgoOZGVwYXJ0dXJlX2Zyb20YBCABKAkSFAoMZGVwYXJ0dXJlX3RvGAUgASgJEg4KBmFkdWx0cxgGIAEoBRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIyCgZzdGF0dXMYCCABKA4yIi50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGF0dXMSDwoHY29tbWVudBgJIAEoCRIwCgxjYW5jZWxsZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhYKDmJ1aWxkaW5nX3N0YWdlGAsgASgJEjkKB2hpc3RvcnkYDCADKAsyKC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBTdGFnZUhpc3RvcnkiIgoQTGlzdFRyaXBzUmVxdWVzdBIOCgZvZmZzZXQYASABKAUiWQoRTGlzdFRyaXBzUmVzcG9uc2USMgoFdHJpcHMYASADKAsyIy50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlRyaXBEZXRhaWxzEhAKCGhhc19tb3JlGAIgASgIIhwKDkdldFRyaXBSZXF1ZXN0EgoKAmlkGAEgASgJIkQKD0dldFRyaXBSZXNwb25zZRIxCgR0cmlwGAEgASgLMiMudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5UcmlwRGV0YWlscyKoAgoQVHJpcFN0YWdlSGlzdG9yeRIQCghyZXZpc2lvbhgBIAEoAxINCgVzdGFnZRgCIAEoCRIvCgtvY2N1cnJlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHYXR0ZW1wdBgEIAEoBRIuCgpzdGFydGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLZHVyYXRpb25fbXMYByABKAMSEwoLcm91dGVfY291bnQYCCABKAUSEgoKaW5jb21wbGV0ZRgJIAEoCBISCgpwbGFubmVyX2lkGAogASgJKo8BCgpUcmlwU3RhdHVzEhsKF1RSSVBfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFQoRVFJJUF9TVEFUVVNfU0FWRUQQARIXChNUUklQX1NUQVRVU19SVU5OSU5HEAISGQoVVFJJUF9TVEFUVVNfQ0FOQ0VMTEVEEAMSGQoVVFJJUF9TVEFUVVNfQ09NUExFVEVEEAQy+gQKC1RyaXBTZXJ2aWNlEmkKDFNlYXJjaENpdGllcxIrLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuU2VhcmNoQ2l0aWVzUmVxdWVzdBosLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuU2VhcmNoQ2l0aWVzUmVzcG9uc2USYAoJTGlzdFRyaXBzEigudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5MaXN0VHJpcHNSZXF1ZXN0GikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5MaXN0VHJpcHNSZXNwb25zZRJaCgdHZXRUcmlwEiYudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5HZXRUcmlwUmVxdWVzdBonLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuR2V0VHJpcFJlc3BvbnNlEmMKCkNhbmNlbFRyaXASKS50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLkNhbmNlbFRyaXBSZXF1ZXN0GioudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DYW5jZWxUcmlwUmVzcG9uc2USeAoRVXBkYXRlVHJpcENvbW1lbnQSMC50cmF2ZWx3YXRjaC5jYWJpbmV0LnYxLlVwZGF0ZVRyaXBDb21tZW50UmVxdWVzdBoxLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuVXBkYXRlVHJpcENvbW1lbnRSZXNwb25zZRJjCgpDcmVhdGVUcmlwEikudHJhdmVsd2F0Y2guY2FiaW5ldC52MS5DcmVhdGVUcmlwUmVxdWVzdBoqLnRyYXZlbHdhdGNoLmNhYmluZXQudjEuQ3JlYXRlVHJpcFJlc3BvbnNlQkpaSGdpdGh1Yi5jb20vTm90YUtyb25HaXQvdHJhdmVsLXdhdGNoL2dlbi90cmF2ZWx3YXRjaC9jYWJpbmV0L3YxO2NhYmluZXR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message travelwatch.cabinet.v1.CityOption
@@ -271,6 +271,18 @@ export type TripDetails = Message<"travelwatch.cabinet.v1.TripDetails"> & {
    * @generated from field: google.protobuf.Timestamp cancelled_at = 10;
    */
   cancelledAt?: Timestamp | undefined;
+
+  /**
+   * Search stage is independent from the overall trip lifecycle.
+   *
+   * @generated from field: string building_stage = 11;
+   */
+  buildingStage: string;
+
+  /**
+   * @generated from field: repeated travelwatch.cabinet.v1.TripStageHistory history = 12;
+   */
+  history: TripStageHistory[];
 };
 
 /**
@@ -352,6 +364,68 @@ export type GetTripResponse = Message<"travelwatch.cabinet.v1.GetTripResponse"> 
  */
 export const GetTripResponseSchema: GenMessage<GetTripResponse> = /*@__PURE__*/
   messageDesc(file_travelwatch_cabinet_v1_trips, 13);
+
+/**
+ * @generated from message travelwatch.cabinet.v1.TripStageHistory
+ */
+export type TripStageHistory = Message<"travelwatch.cabinet.v1.TripStageHistory"> & {
+  /**
+   * @generated from field: int64 revision = 1;
+   */
+  revision: bigint;
+
+  /**
+   * @generated from field: string stage = 2;
+   */
+  stage: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp occurred_at = 3;
+   */
+  occurredAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: int32 attempt = 4;
+   */
+  attempt: number;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp started_at = 5;
+   */
+  startedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp finished_at = 6;
+   */
+  finishedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: int64 duration_ms = 7;
+   */
+  durationMs: bigint;
+
+  /**
+   * @generated from field: int32 route_count = 8;
+   */
+  routeCount: number;
+
+  /**
+   * @generated from field: bool incomplete = 9;
+   */
+  incomplete: boolean;
+
+  /**
+   * @generated from field: string planner_id = 10;
+   */
+  plannerId: string;
+};
+
+/**
+ * Describes the message travelwatch.cabinet.v1.TripStageHistory.
+ * Use `create(TripStageHistorySchema)` to create a new message.
+ */
+export const TripStageHistorySchema: GenMessage<TripStageHistory> = /*@__PURE__*/
+  messageDesc(file_travelwatch_cabinet_v1_trips, 14);
 
 /**
  * @generated from enum travelwatch.cabinet.v1.TripStatus

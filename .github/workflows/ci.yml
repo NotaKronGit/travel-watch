@@ -78,6 +78,8 @@ jobs:
         run: make test-int
       - name: Kafka outbox delivery and recovery
         run: make test-kafka
+      - name: Route building end-to-end and process recovery
+        run: make test-progress-e2e
       - name: Stop test Kafka
         if: always()
         run: docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml down -v

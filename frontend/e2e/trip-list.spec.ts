@@ -35,6 +35,23 @@ test('empty list, retry and unavailable detail are explicit',async ({page})=>{
  await expect(page.getByText('Курск → Бангкок')).toHaveCount(0);
 });
 
+test('failed loading of another list page offers retry',async ({page})=>{
+ let fail=true;
+ await page.route('**/travelwatch.cabinet.v1.TripService/ListTrips',r=>{
+  const second=!!r.request().postDataJSON().offset;
+  return r.fulfill(second && fail ? {status:503,json:{code:'unavailable'}} : {json:{trips:second ? [] : [trip],hasMore:!second}});
+ });
+ await page.goto('/#/trips');
+ await expect(page.getByText('Курск → Бангкок')).toBeVisible();
+ await page.getByRole('button',{name:'Далее',exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText('Не удалось загрузить');
+ await expect(page.getByText('Курск → Бангкок')).toHaveCount(0);
+ fail=false;
+ await page.getByRole('button',{name:'Повторить загрузку'}).click();
+ await expect(page.getByText('У вас пока нет заявок')).toBeVisible();
+ await expect(page.getByText('Страница 2')).toBeVisible();
+});
+
 test('cancel keeps history and private comment, supports retry after lost response', async ({page}) => {
   await page.route('**/travelwatch.cabinet.v1.AuthService/*', route=>route.fulfill({json:{user:{id:'test-user',email:'test@example.com'}}}));
   const trip = {id:'cancel-test',origin:{name:'Курск'},destination:{name:'Москва'},departureFrom:'2027-01-01',departureTo:'2027-01-02',adults:1,status:'TRIP_STATUS_SAVED',comment:'',cancelledAt:undefined as string|undefined};

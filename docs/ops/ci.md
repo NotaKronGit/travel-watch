@@ -3,7 +3,7 @@
 Workflow `ci.yml` запускается на PR и push в `main`. Проверки выполняются параллельно на отдельных GitHub-hosted runners:
 
 - `checks`: формат Go, воспроизводимость Protobuf, golangci-lint/gosec, Go-тесты с race detector, типизация/сборка frontend и frontend-тесты, проверка Compose.
-- `integration`: отдельная PostgreSQL, миграции, `make test-int`, затем `make test-kafka` с тестовым брокером.
+- `integration`: отдельная PostgreSQL, миграции, `make test-int`, `make test-kafka` с тестовым брокером, затем `make test-progress-e2e` с реальными процессами Cabinet/Search и управляемым транспортным провайдером. Проверка аварийного перезапуска действительно ждёт минутную аренду; внешние API не вызываются.
 - `browser`: отдельная PostgreSQL и Cabinet, установка headless Chromium, браузерные тесты. Kafka этому job не нужна.
 
 Установка зависимостей, инструментов и выполнение тестов разделены на шаги, чтобы по времени шага было видно, что именно замедляет CI. Локальная команда `make check` остаётся без изменений; в CI её проверки запускаются отдельными командами.

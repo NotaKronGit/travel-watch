@@ -42,6 +42,62 @@ services:
     depends_on:
       search-migrate: {condition: service_completed_successfully}
       kafka-init: {condition: service_completed_successfully}
+  progress-topic-init:
+    extends: {file: ../compose/kafka.yaml, service: progress-topic-init}
+    networks: [events]
+  progress-publisher:
+    image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/search:${IMAGE_TAG:-dev-latest}
+    command: [publish-progress]
+    restart: unless-stopped
+    environment:
+      SEARCH_DATABASE_HOST: postgres
+      SEARCH_DATABASE_PORT: "5432"
+      SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
+      SEARCH_PROGRESS_BROKERS: kafka:9092
+      SEARCH_PROGRESS_TOPIC: ${ROUTE_BUILDING_TOPIC:-travelwatch.route-building.v1}
+    networks: [database, events]
+    depends_on:
+      search-migrate: {condition: service_completed_successfully}
+      progress-topic-init: {condition: service_completed_successfully}
+  progress-consumer:
+    <<: *cabinet-image
+    command: [consume-progress]
+    restart: unless-stopped
+    environment:
+      CABINET_DATABASE_HOST: postgres
+      CABINET_DATABASE_PORT: "5432"
+      CABINET_DATABASE_APP_PASSWORD: ${CABINET_DATABASE_APP_PASSWORD:?Set CABINET_DATABASE_APP_PASSWORD}
+      CABINET_PROGRESS_BROKERS: kafka:9092
+      CABINET_PROGRESS_TOPIC: ${ROUTE_BUILDING_TOPIC:-travelwatch.route-building.v1}
+    networks: [database, events]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      progress-topic-init: {condition: service_completed_successfully}
+  route-builder:
+    image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/search:${IMAGE_TAG:-dev-latest}
+    profiles: [planning]
+    command: [build-routes]
+    restart: unless-stopped
+    environment:
+      SEARCH_DATABASE_HOST: postgres
+      SEARCH_DATABASE_PORT: "5432"
+      SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
+      COLLECTOR_YANDEX_API_KEY: ${COLLECTOR_YANDEX_API_KEY:-}
+    networks: [database, application]
+    depends_on:
+      search-migrate: {condition: service_completed_successfully}
+  airports-sync:
+    image: ${IMAGE_PREFIX:-ghcr.io/notakrongit/travel-watch}/search:${IMAGE_TAG:-dev-latest}
+    profiles: [tools]
+    command: [airports-sync]
+    restart: "no"
+    environment:
+      SEARCH_DATABASE_HOST: postgres
+      SEARCH_DATABASE_PORT: "5432"
+      SEARCH_DATABASE_APP_PASSWORD: ${SEARCH_DATABASE_APP_PASSWORD:?Set SEARCH_DATABASE_APP_PASSWORD}
+    networks: [database, application]
+    depends_on:
+      search-migrate: {condition: service_completed_successfully}
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped

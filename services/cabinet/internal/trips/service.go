@@ -3,6 +3,7 @@ package trips
 import (
 	"context"
 	"errors"
+	contract "github.com/NotaKronGit/travel-watch/api/progress"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"net/http"
 	"regexp"
@@ -120,7 +121,11 @@ func tripView(t storage.TripDetails) *v1.TripDetails {
 	if t.CancelledAt.Valid {
 		cancelled = timestamppb.New(t.CancelledAt.Time)
 	}
-	return &v1.TripDetails{Status: status, Comment: t.Comment, CancelledAt: cancelled, Id: t.ID, Origin: cityView(t.Origin), Destination: cityView(t.Destination), DepartureFrom: t.DepartureFrom, DepartureTo: t.DepartureTo, Adults: t.Adults, CreatedAt: timestamppb.New(t.CreatedAt)}
+	history := make([]*v1.TripStageHistory, 0, len(t.History))
+	for _, e := range t.History {
+		history = append(history, &v1.TripStageHistory{PlannerId: e.PlannerId, Revision: e.Revision, Stage: contract.Stages[e.Stage], OccurredAt: e.OccurredAt, Attempt: e.Attempt, StartedAt: e.StartedAt, FinishedAt: e.FinishedAt, DurationMs: e.DurationMs, RouteCount: e.RouteCount, Incomplete: e.Incomplete})
+	}
+	return &v1.TripDetails{BuildingStage: t.BuildingStage, History: history, Status: status, Comment: t.Comment, CancelledAt: cancelled, Id: t.ID, Origin: cityView(t.Origin), Destination: cityView(t.Destination), DepartureFrom: t.DepartureFrom, DepartureTo: t.DepartureTo, Adults: t.Adults, CreatedAt: timestamppb.New(t.CreatedAt)}
 }
 func (s *Service) GetTrip(ctx context.Context, req *connect.Request[v1.GetTripRequest]) (*connect.Response[v1.GetTripResponse], error) {
 	user, err := s.user(ctx, req.Header())

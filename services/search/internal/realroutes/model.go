@@ -54,14 +54,15 @@ type Candidate struct {
 	Warnings []string `json:"warnings"`
 }
 type Result struct {
-	Query        Query       `json:"query"`
-	ObservedAt   time.Time   `json:"observed_at"`
-	Source       string      `json:"source"`
-	Complete     bool        `json:"complete"`
-	LimitReached bool        `json:"limit_reached"`
-	Requests     int         `json:"requests"`
-	Issues       []string    `json:"issues"`
-	Candidates   []Candidate `json:"candidates"`
+	Query            Query       `json:"query"`
+	ObservedAt       time.Time   `json:"observed_at"`
+	Source           string      `json:"source"`
+	Complete         bool        `json:"complete"`
+	LimitReached     bool        `json:"limit_reached"`
+	ProviderFailures int         `json:"provider_failures"`
+	Requests         int         `json:"requests"`
+	Issues           []string    `json:"issues"`
+	Candidates       []Candidate `json:"candidates"`
 }
 type Planner struct {
 	Provider Provider

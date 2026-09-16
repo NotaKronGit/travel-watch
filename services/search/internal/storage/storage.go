@@ -74,5 +74,35 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 	if err != nil {
 		return err
 	}
+	if e.Type == consumer.Created {
+		// Only genuinely new creations enter the queue, never migrated history or tombstones.
+		r, err := tx.ExecContext(ctx, `INSERT INTO route_building(request_id,stage) SELECT request_id,'queued' FROM search_requests WHERE request_id=$1 AND status='pending' ON CONFLICT DO NOTHING`, e.RequestID)
+		if err != nil {
+			return err
+		}
+		n, err := r.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n > 0 {
+			if err = progressEvent(ctx, tx, e.RequestID, 0, false); err != nil {
+				return err
+			}
+		}
+	} else {
+		r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage='cancelled',finished_at=CASE WHEN started_at IS NOT NULL THEN GREATEST(clock_timestamp(),started_at) END,lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND stage<>'cancelled'`, e.RequestID)
+		if err != nil {
+			return err
+		}
+		n, err := r.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n > 0 {
+			if err = progressEvent(ctx, tx, e.RequestID, 0, true); err != nil {
+				return err
+			}
+		}
+	}
 	return tx.Commit()
 }

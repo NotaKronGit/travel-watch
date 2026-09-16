@@ -68,6 +68,20 @@ func run() error {
 		}
 		return nil
 	}
+	if command == "build-routes" {
+		err := buildRoutes(ctx, db, cfg)
+		if ctx.Err() != nil {
+			return nil
+		}
+		return err
+	}
+	if command == "publish-progress" {
+		err := publishProgress(ctx, db, cfg)
+		if ctx.Err() != nil {
+			return nil
+		}
+		return err
+	}
 	if command == "plan-route" {
 		return planRealRoute(ctx, db, cfg, os.Args[2:])
 	}

@@ -3,6 +3,7 @@ package config
 import "time"
 
 type Config struct {
+	Progress Progress `mapstructure:"progress"`
 	Outbox   Outbox   `mapstructure:"outbox"`
 	Server   Server   `mapstructure:"server"`
 	Database Database `mapstructure:"database"`
@@ -78,4 +79,15 @@ type Outbox struct {
 	LeaseDuration  time.Duration `mapstructure:"lease_duration"`
 	RetryMin       time.Duration `mapstructure:"retry_min"`
 	RetryMax       time.Duration `mapstructure:"retry_max"`
+}
+
+// Progress transport is separate from Cabinet's request topic.
+type Progress struct {
+	Brokers      []string      `mapstructure:"brokers"`
+	Topic        string        `mapstructure:"topic"`
+	GroupID      string        `mapstructure:"group_id"`
+	PollInterval time.Duration `mapstructure:"poll_interval"`
+	Timeout      time.Duration `mapstructure:"timeout"`
+	Lease        time.Duration `mapstructure:"lease"`
+	MaxAttempts  int           `mapstructure:"max_attempts"`
 }

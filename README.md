@@ -34,3 +34,5 @@ MVP допускает максимум два основных участка: 
 [Независимое сравнение GraphPlanner и Gemini: текущий статус и ограничения](docs/research/planner-comparison/README.md).
 
 [Самостоятельный поиск схем маршрута на связях Яндекса](docs/ops/route-planner.md).
+
+[Этапы построения новых заявок и история с таймерами](docs/ops/route-building-progress.md).

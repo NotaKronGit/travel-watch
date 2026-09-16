@@ -15,6 +15,7 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/catalog"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/config"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/outbox"
+	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/progress"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/storage"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/internal/trips"
 	"github.com/NotaKronGit/travel-watch/services/cabinet/migrations"
@@ -32,7 +33,7 @@ func run() error {
 	if len(os.Args) > 1 {
 		command = os.Args[1]
 	}
-	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" {
+	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" && command != "consume-progress" {
 		return errors.New("usage: cabinet [serve|migrate|sync-cities|publish-outbox]")
 	}
 	configPath := os.Getenv("CABINET_CONFIG")
@@ -69,6 +70,15 @@ func run() error {
 		return goose.UpContext(migrationCtx, db, ".")
 	}
 	store := storage.New(db)
+	if command == "consume-progress" {
+		reader := progress.NewReader(cfg.Progress)
+		defer reader.Close()
+		err := (progress.Consumer{Reader: reader, Repository: store, Timeout: cfg.Progress.Timeout}).Run(ctx)
+		if ctx.Err() != nil {
+			return nil
+		}
+		return err
+	}
 	if command == "publish-outbox" {
 		publisher := outbox.NewKafkaPublisher(cfg.Outbox)
 		defer func() {
