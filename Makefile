@@ -108,3 +108,7 @@ search-migrate:
 
 search:
 	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search consume
+
+.PHONY: search-compare
+search-compare:
+	SEARCH_CONFIG=services/search/config.yaml go run ./services/search/cmd/search compare-planners
