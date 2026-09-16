@@ -85,3 +85,28 @@ func (s *Store) FindAirports(ctx context.Context, iata string) ([]AirportRecord,
 	}
 	return result, rows.Err()
 }
+
+// PlannerAirports reads only Search-owned active reference data; no provider network call.
+func (s *Store) PlannerAirports(ctx context.Context) ([]airports.Airport, error) {
+	q, args, err := postgres.From("catalog_airports").Select("source_id", "ident", "name", "type", "latitude", "longitude", "country", "region", "municipality", "iata", "icao", "scheduled").Where(goqu.Ex{"active": true, "scheduled": true}).Order(goqu.C("source_id").Asc()).Limit(200001).Prepared(true).ToSQL()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := []airports.Airport{}
+	for rows.Next() {
+		var a airports.Airport
+		if err = rows.Scan(&a.SourceID, &a.Ident, &a.Name, &a.Type, &a.Latitude, &a.Longitude, &a.Country, &a.Region, &a.Municipality, &a.IATA, &a.ICAO, &a.Scheduled); err != nil {
+			return nil, err
+		}
+		result = append(result, a)
+	}
+	if len(result) > 200000 {
+		return nil, errors.New("airport catalog exceeds planner bound")
+	}
+	return result, rows.Err()
+}

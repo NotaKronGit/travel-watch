@@ -18,6 +18,9 @@ import (
 )
 
 func run() error {
+	if len(os.Args) == 2 && os.Args[1] == "transport-stdio" {
+		return transportStdio()
+	}
 	if len(os.Args) < 2 || os.Args[1] != "stations-find" {
 		return errors.New("usage: collector stations-find -lat N -lon N [-radius 20] [-limit 20]")
 	}

@@ -68,6 +68,9 @@ func run() error {
 		}
 		return nil
 	}
+	if command == "plan-route" {
+		return planRealRoute(ctx, db, cfg, os.Args[2:])
+	}
 	if command == "airports-sync" || command == "airports-find" {
 		return runAirports(ctx, db, cfg, command, os.Args[2:])
 	}

@@ -20,8 +20,8 @@ func (c Config) Validate(command string) error {
 		return c.Gemini.Validate()
 	}
 	d := c.Database
-	if command != "consume" && command != "migrate" && command != "airports-sync" && command != "airports-find" {
-		return errors.New("usage: search [consume|migrate|compare-planners|airports-sync|airports-find]")
+	if command != "consume" && command != "migrate" && command != "airports-sync" && command != "airports-find" && command != "plan-route" {
+		return errors.New("usage: search [consume|migrate|compare-planners|compare-real-routes|airports-sync|airports-find|plan-route]")
 	}
 	if d.Host == "" || d.Name == "" || d.Port < 1 || d.Port > 65535 || d.MaxOpenConns < 1 || d.MaxIdleConns < 0 || d.MaxIdleConns > d.MaxOpenConns {
 		return errors.New("invalid Search database settings")
@@ -45,6 +45,9 @@ func (c Config) Validate(command string) error {
 	}
 	if d.AppUser == "" || d.AppPassword == "" {
 		return errors.New("Search database app credentials required")
+	}
+	if command == "plan-route" {
+		return c.Planner.Validate()
 	}
 	if command == "airports-find" {
 		return nil

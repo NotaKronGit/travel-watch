@@ -2,14 +2,16 @@ package config
 
 import (
 	"github.com/NotaKronGit/travel-watch/services/search/internal/gemini"
+	"github.com/NotaKronGit/travel-watch/services/search/internal/realroutes"
 	"time"
 )
 
 type Config struct {
-	Airports Airports      `mapstructure:"airports"`
-	Gemini   gemini.Config `mapstructure:"gemini"`
-	Database Database      `mapstructure:"database"`
-	Consumer Consumer      `mapstructure:"consumer"`
+	Planner  realroutes.Config `mapstructure:"planner"`
+	Airports Airports          `mapstructure:"airports"`
+	Gemini   gemini.Config     `mapstructure:"gemini"`
+	Database Database          `mapstructure:"database"`
+	Consumer Consumer          `mapstructure:"consumer"`
 }
 type Database struct {
 	Host             string        `mapstructure:"host"`
