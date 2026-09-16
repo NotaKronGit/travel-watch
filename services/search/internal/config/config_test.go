@@ -50,3 +50,25 @@ func TestComparisonConfig(t *testing.T) {
 		t.Fatal("missing key accepted")
 	}
 }
+
+func TestAirportConfig(t *testing.T) {
+	t.Setenv("SEARCH_DATABASE_APP_PASSWORD", "test-placeholder")
+	t.Setenv("SEARCH_CONSUMER_BROKERS", "")
+	t.Setenv("SEARCH_AIRPORTS_MIN_ROWS", "2")
+	c, err := Load("../../config.yaml", "airports-sync")
+	if err != nil || c.Airports.MinRows != 2 {
+		t.Fatal(err)
+	}
+	t.Setenv("SEARCH_AIRPORTS_MIN_RETAINED_PERCENT", "0")
+	if _, err = Load("../../config.yaml", "airports-sync"); err == nil {
+		t.Fatal("invalid retention accepted")
+	}
+	if _, err = Load("../../config.yaml", "airports-find"); err != nil {
+		t.Fatal("lookup requires import settings", err)
+	}
+	t.Setenv("SEARCH_AIRPORTS_MIN_RETAINED_PERCENT", "90")
+	t.Setenv("SEARCH_AIRPORTS_URL", "http://example.com/airports.csv")
+	if _, err = Load("../../config.yaml", "airports-sync"); err == nil {
+		t.Fatal("insecure URL accepted")
+	}
+}

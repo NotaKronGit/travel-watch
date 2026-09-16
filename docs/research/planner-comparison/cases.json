@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ryazan-phuket",
+    "title": "Рязань → Пхукет",
+    "origin": "Рязань",
+    "destination": "Пхукет"
+  },
+  {
+    "id": "moscow-bangkok",
+    "title": "Москва → Бангкок",
+    "origin": "Москва",
+    "destination": "Бангкок"
+  },
+  {
+    "id": "vladivostok-phuket",
+    "title": "Владивосток → Пхукет",
+    "origin": "Владивосток",
+    "destination": "Пхукет"
+  },
+  {
+    "id": "kursk-pattaya",
+    "title": "Курск → Паттайя",
+    "origin": "Курск",
+    "destination": "Паттайя"
+  }
+]

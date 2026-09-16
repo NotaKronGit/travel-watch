@@ -3,18 +3,25 @@ package config
 import (
 	"errors"
 	"net"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func (c Config) Validate(command string) error {
+	if command == "compare-real-routes" {
+		if c.Gemini.APIKey == "" {
+			return nil
+		}
+		return c.Gemini.Validate()
+	}
 	if command == "compare-planners" {
 		return c.Gemini.Validate()
 	}
 	d := c.Database
-	if command != "consume" && command != "migrate" {
-		return errors.New("usage: search [consume|migrate|compare-planners]")
+	if command != "consume" && command != "migrate" && command != "airports-sync" && command != "airports-find" {
+		return errors.New("usage: search [consume|migrate|compare-planners|airports-sync|airports-find]")
 	}
 	if d.Host == "" || d.Name == "" || d.Port < 1 || d.Port > 65535 || d.MaxOpenConns < 1 || d.MaxIdleConns < 0 || d.MaxIdleConns > d.MaxOpenConns {
 		return errors.New("invalid Search database settings")
@@ -38,6 +45,20 @@ func (c Config) Validate(command string) error {
 	}
 	if d.AppUser == "" || d.AppPassword == "" {
 		return errors.New("Search database app credentials required")
+	}
+	if command == "airports-find" {
+		return nil
+	}
+	if command == "airports-sync" {
+		a := c.Airports
+		u, err := url.Parse(a.URL)
+		if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+			return errors.New("invalid airports HTTPS URL")
+		}
+		if a.DownloadTimeout < time.Second || a.DownloadTimeout > 10*time.Minute || a.ImportTimeout < time.Second || a.ImportTimeout > 30*time.Minute || a.MaxBytes < 1024 || a.MaxBytes > 100*1024*1024 || a.MinRows < 1 || a.MaxRows < a.MinRows || a.MaxRows > 200000 || a.MinRetainedPercent < 1 || a.MinRetainedPercent > 100 {
+			return errors.New("invalid airports import limits")
+		}
+		return nil
 	}
 	if c.Consumer.Topic == "" || c.Consumer.GroupID == "" || len(c.Consumer.Brokers) == 0 {
 		return errors.New("Search Kafka topic, group_id and brokers required")

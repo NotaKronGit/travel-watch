@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Airports Airports      `mapstructure:"airports"`
 	Gemini   gemini.Config `mapstructure:"gemini"`
 	Database Database      `mapstructure:"database"`
 	Consumer Consumer      `mapstructure:"consumer"`
@@ -34,4 +35,14 @@ type Consumer struct {
 	DBTimeout     time.Duration `mapstructure:"db_timeout"`
 	CommitTimeout time.Duration `mapstructure:"commit_timeout"`
 	DialTimeout   time.Duration `mapstructure:"dial_timeout"`
+}
+
+type Airports struct {
+	URL                string        `mapstructure:"url"`
+	DownloadTimeout    time.Duration `mapstructure:"download_timeout"`
+	ImportTimeout      time.Duration `mapstructure:"import_timeout"`
+	MaxBytes           int64         `mapstructure:"max_bytes"`
+	MinRows            int           `mapstructure:"min_rows"`
+	MaxRows            int           `mapstructure:"max_rows"`
+	MinRetainedPercent int           `mapstructure:"min_retained_percent"`
 }

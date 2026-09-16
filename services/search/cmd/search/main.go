@@ -36,6 +36,9 @@ func run() error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if command == "compare-real-routes" {
+		return compareRealRoutes(ctx, cfg, os.Args[2:])
+	}
 	if command == "compare-planners" {
 		return comparePlanners(ctx, cfg)
 	}
@@ -64,6 +67,9 @@ func run() error {
 			return errors.New("Search migration failed")
 		}
 		return nil
+	}
+	if command == "airports-sync" || command == "airports-find" {
+		return runAirports(ctx, db, cfg, command, os.Args[2:])
 	}
 	reader := consumer.NewReader(cfg.Consumer)
 	defer func() {

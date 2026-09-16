@@ -115,6 +115,10 @@ func (GraphPlanner) Plan(ctx context.Context, snapshot Snapshot, q Query, limits
 }
 
 func prepare(ctx context.Context, s Snapshot, limits Limits) (map[string]Node, []Link, error) {
+	return prepareMode(ctx, s, limits, false)
+}
+
+func prepareMode(ctx context.Context, s Snapshot, limits Limits, allowLocalTrain bool) (map[string]Node, []Link, error) {
 	if len(s.Cities) > limits.MaxNodes || len(s.Nodes) > limits.MaxNodes-len(s.Cities) || len(s.Links) > limits.MaxLinks {
 		return nil, nil, ErrSnapshotTooLarge
 	}
@@ -154,7 +158,7 @@ func prepare(ctx context.Context, s Snapshot, limits Limits) (map[string]Node, [
 		case Flight:
 			valid = from.Kind == Airport && to.Kind == Airport && from.CityID != to.CityID
 		case Train:
-			valid = from.Kind == Station && to.Kind == Station && from.CityID != to.CityID
+			valid = from.Kind == Station && to.Kind == Station && (allowLocalTrain || from.CityID != to.CityID)
 		case Transfer:
 			valid = from.Kind == CityPoint && (to.Kind == Airport || to.Kind == Station) ||
 				to.Kind == CityPoint && (from.Kind == Airport || from.Kind == Station) ||
