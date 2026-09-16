@@ -27,3 +27,11 @@ gemini:
   max_output_tokens: 1024
   max_request_bytes: 32768
   max_response_bytes: 65536
+airports:
+  url: https://davidmegginson.github.io/ourairports-data/airports.csv
+  download_timeout: 1m
+  import_timeout: 5m
+  max_bytes: 33554432
+  min_rows: 70000
+  max_rows: 200000
+  min_retained_percent: 90

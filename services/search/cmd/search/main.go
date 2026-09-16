@@ -65,6 +65,9 @@ func run() error {
 		}
 		return nil
 	}
+	if command == "airports-sync" || command == "airports-find" {
+		return runAirports(ctx, db, cfg, command, os.Args[2:])
+	}
 	reader := consumer.NewReader(cfg.Consumer)
 	defer func() {
 		if err := reader.Close(); err != nil {

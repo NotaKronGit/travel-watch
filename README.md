@@ -24,3 +24,7 @@ MVP допускает максимум два основных участка: 
 - [Правила работы агентов](AGENTS.md)
 
 Эксперимент с Gemini: [сравнение двух Planner на пяти синтетических направлениях](docs/ops/search.md#сравнение-graphplanner-и-gemini).
+
+[Каталог аэропортов Search: импорт и проверка](docs/ops/airport-catalog.md).
+
+[Collector: интерфейсы ЖД-провайдеров и синтетические тесты](docs/services/collector.md).

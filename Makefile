@@ -112,3 +112,10 @@ search:
 .PHONY: search-compare
 search-compare:
 	SEARCH_CONFIG=services/search/config.yaml go run ./services/search/cmd/search compare-planners
+
+.PHONY: search-airports-sync search-airports-find
+search-airports-sync:
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search airports-sync
+
+search-airports-find:
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search airports-find "$(IATA)"

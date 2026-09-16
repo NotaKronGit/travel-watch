@@ -1,0 +1,3 @@
+id,ident,name,type,latitude_deg,longitude_deg,iso_country,iso_region,municipality,iata_code,icao_code,scheduled_service
+1,TEST1,Test airport one,medium_airport,57,41,RU,RU-IVA,Test city,TST,,yes
+2,TEST2,Test airport two,closed,35,140,JP,JP-12,Other city,TWO,,no
