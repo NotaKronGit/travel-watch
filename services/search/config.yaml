@@ -20,3 +20,10 @@ consumer:
   db_timeout: 5s
   commit_timeout: 10s
   dial_timeout: 5s
+gemini:
+  model: gemini-3.5-flash-lite
+  api_key: ""
+  timeout: 30s
+  max_output_tokens: 1024
+  max_request_bytes: 32768
+  max_response_bytes: 65536

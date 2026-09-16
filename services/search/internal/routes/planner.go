@@ -67,6 +67,18 @@ func run(ctx context.Context, p Planner, s Snapshot, q Query, l Limits) (Result,
 	if err = ctx.Err(); err != nil {
 		return Result{}, err
 	}
+	return ValidateResult(ctx, s, q, l, r)
+}
+
+// ValidateResult applies the same topology rules to planner and schedule inputs.
+func ValidateResult(ctx context.Context, s Snapshot, q Query, l Limits, r Result) (Result, error) {
+	if !validInput(q, l) {
+		return Result{}, ErrInvalidInput
+	}
+	if _, _, err := prepare(ctx, s, l); err != nil {
+		return Result{}, err
+	}
+	var err error
 	if len(r.Candidates) > l.MaxCandidates {
 		return Result{}, ErrInvalidPlan
 	}

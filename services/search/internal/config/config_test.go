@@ -28,3 +28,25 @@ func TestConfig(t *testing.T) {
 		t.Fatal("unknown key accepted")
 	}
 }
+
+func TestComparisonConfig(t *testing.T) {
+	t.Setenv("SEARCH_DATABASE_APP_PASSWORD", "")
+	t.Setenv("SEARCH_GEMINI_API_KEY", "test-placeholder")
+	t.Setenv("SEARCH_GEMINI_MAX_OUTPUT_TOKENS", "512")
+	c, err := Load("../../config.yaml", "compare-planners")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.Gemini.MaxOutputTokens != 512 {
+		t.Fatal("Gemini env override lost")
+	}
+	t.Setenv("SEARCH_GEMINI_MAX_OUTPUT_TOKENS", "99999")
+	if _, err = Load("../../config.yaml", "compare-planners"); err == nil {
+		t.Fatal("unbounded tokens accepted")
+	}
+	t.Setenv("SEARCH_GEMINI_MAX_OUTPUT_TOKENS", "512")
+	t.Setenv("SEARCH_GEMINI_API_KEY", "")
+	if _, err = Load("../../config.yaml", "compare-planners"); err == nil {
+		t.Fatal("missing key accepted")
+	}
+}

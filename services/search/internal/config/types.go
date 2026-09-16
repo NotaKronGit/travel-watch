@@ -1,10 +1,14 @@
 package config
 
-import "time"
+import (
+	"github.com/NotaKronGit/travel-watch/services/search/internal/gemini"
+	"time"
+)
 
 type Config struct {
-	Database Database `mapstructure:"database"`
-	Consumer Consumer `mapstructure:"consumer"`
+	Gemini   gemini.Config `mapstructure:"gemini"`
+	Database Database      `mapstructure:"database"`
+	Consumer Consumer      `mapstructure:"consumer"`
 }
 type Database struct {
 	Host             string        `mapstructure:"host"`

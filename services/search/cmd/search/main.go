@@ -34,6 +34,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	if command == "compare-planners" {
+		return comparePlanners(ctx, cfg)
+	}
 	db, err := sql.Open("pgx", cfg.Database.URL(command == "migrate"))
 	if err != nil {
 		return errors.New("cannot initialize Search database")
@@ -42,8 +47,6 @@ func run() error {
 	db.SetMaxOpenConns(cfg.Database.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.Database.MaxIdleConns)
 	db.SetConnMaxLifetime(cfg.Database.ConnMaxLifetime)
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 	ping, cancel := context.WithTimeout(ctx, cfg.Database.PingTimeout)
 	err = db.PingContext(ping)
 	cancel()

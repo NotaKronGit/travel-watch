@@ -9,9 +9,12 @@ import (
 )
 
 func (c Config) Validate(command string) error {
+	if command == "compare-planners" {
+		return c.Gemini.Validate()
+	}
 	d := c.Database
 	if command != "consume" && command != "migrate" {
-		return errors.New("usage: search [consume|migrate]")
+		return errors.New("usage: search [consume|migrate|compare-planners]")
 	}
 	if d.Host == "" || d.Name == "" || d.Port < 1 || d.Port > 65535 || d.MaxOpenConns < 1 || d.MaxIdleConns < 0 || d.MaxIdleConns > d.MaxOpenConns {
 		return errors.New("invalid Search database settings")
