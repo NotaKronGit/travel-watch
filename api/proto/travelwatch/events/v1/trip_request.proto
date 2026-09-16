@@ -41,3 +41,29 @@ message TripRequestCancelled {
   string request_id = 3;
   google.protobuf.Timestamp occurred_at = 4;
 }
+
+// Search-owned progress. Monotonic revision per request; duplicates are harmless.
+enum RouteBuildingStage {
+  ROUTE_BUILDING_STAGE_UNSPECIFIED = 0;
+  ROUTE_BUILDING_STAGE_QUEUED = 1;
+  ROUTE_BUILDING_STAGE_BUILDING = 2;
+  ROUTE_BUILDING_STAGE_AWAITING_SCHEDULES = 3;
+  ROUTE_BUILDING_STAGE_NO_ROUTES = 4;
+  ROUTE_BUILDING_STAGE_FAILED = 5;
+  ROUTE_BUILDING_STAGE_CANCELLED = 6;
+}
+message TripRouteBuildingUpdated {
+  string event_id = 1;
+  uint32 schema_version = 2;
+  string request_id = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+  int64 revision = 5;
+  RouteBuildingStage stage = 6;
+  int32 attempt = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp finished_at = 9;
+  int64 duration_ms = 10;
+  int32 route_count = 11;
+  bool incomplete = 12;
+  string planner_id = 13;
+}

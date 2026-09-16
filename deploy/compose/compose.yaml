@@ -1,5 +1,7 @@
 name: travel-watch
 services:
+  progress-topic-init:
+    extends: {file: kafka.yaml, service: progress-topic-init}
   search-db-init:
     image: postgres:17-alpine
     restart: "no"

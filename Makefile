@@ -90,6 +90,7 @@ publish-outbox:
 kafka-up:
 	$(COMPOSE) up -d --wait --wait-timeout 180 kafka
 	$(COMPOSE) run --rm kafka-init
+	$(COMPOSE) run --rm progress-topic-init
 
 kafka-stop:
 	$(COMPOSE) stop kafka
@@ -98,6 +99,11 @@ test-kafka:
 	docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml up -d --wait --wait-timeout 180 kafka
 	go test -race -tags=integration,kafka ./services/cabinet/internal/auth -run '^TestKafkaOutbox$$' -count=1 -timeout=3m
 	go test -race -tags=integration,kafka ./services/search/internal/storage -run '^TestKafkaInbox$$' -count=1 -timeout=2m
+
+.PHONY: test-progress-e2e
+test-progress-e2e:
+	docker compose -p travel-watch-kafka-test -f deploy/test/compose.yaml up -d --wait --wait-timeout 180 kafka
+	go test -race -tags=integration,kafka ./tests/progress -run '^TestProgressFlow$$' -count=1 -timeout=5m -v
 
 .PHONY: search-db-init search-migrate search
 search-db-init:
@@ -133,3 +139,23 @@ search-plan-route:
 	@mkdir -p bin
 	@go build -o bin/collector ./services/collector/cmd/collector
 	@SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search plan-route -from "$(FROM)" -to "$(TO)" -from-lat "$(FROM_LAT)" -from-lon "$(FROM_LON)" -to-lat "$(TO_LAT)" -to-lon "$(TO_LON)"
+
+.PHONY: search-build-routes search-publish-progress cabinet-consume-progress stage-local-building-up stage-local-airports-sync
+search-build-routes:
+	@mkdir -p bin
+	@go build -o bin/collector ./services/collector/cmd/collector
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search build-routes
+search-publish-progress:
+	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search publish-progress
+cabinet-consume-progress:
+	CABINET_CONFIG=$${CABINET_CONFIG:-services/cabinet/config.yaml} go run ./services/cabinet/cmd/cabinet consume-progress
+stage-local-building-up:
+	$(STAGE_LOCAL) --profile planning up --build -d route-builder progress-publisher progress-consumer
+stage-local-airports-sync:
+	$(STAGE_LOCAL) --profile tools run --build --rm airports-sync
+
+.PHONY: dev-building-up dev-airports-sync
+dev-building-up:
+	$(DEV) --profile planning up -d --no-build route-builder progress-publisher progress-consumer
+dev-airports-sync:
+	$(DEV) --profile tools run --rm airports-sync

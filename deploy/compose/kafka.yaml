@@ -36,3 +36,11 @@ services:
     command: [--bootstrap-server, kafka:9092, --create, --if-not-exists, --topic, "${CABINET_OUTBOX_TOPIC:-travelwatch.trip-requests.v1}", --partitions, "1", --replication-factor, "1", --config, min.insync.replicas=1]
     depends_on:
       kafka: {condition: service_healthy}
+
+  progress-topic-init:
+    image: apache/kafka:4.1.2
+    restart: "no"
+    entrypoint: [/opt/kafka/bin/kafka-topics.sh]
+    command: [--bootstrap-server, kafka:9092, --create, --if-not-exists, --topic, "${ROUTE_BUILDING_TOPIC:-travelwatch.route-building.v1}", --partitions, "1", --replication-factor, "1", --config, min.insync.replicas=1]
+    depends_on:
+      kafka: {condition: service_healthy}

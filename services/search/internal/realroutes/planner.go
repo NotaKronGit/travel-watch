@@ -232,6 +232,7 @@ func (s *run) call(ctx context.Context, q transport.Request) (transport.Response
 	s.r.Requests++
 	r, err := s.p.Provider.Call(ctx, q)
 	if err != nil {
+		s.r.ProviderFailures++
 		s.failures[key] = true
 		s.issue(fmt.Sprintf("Collector %s failed", q.Method))
 		return r, false

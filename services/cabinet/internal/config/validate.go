@@ -10,7 +10,7 @@ import (
 )
 
 func (c Config) Validate(command string) error {
-	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" {
+	if command != "serve" && command != "migrate" && command != "sync-cities" && command != "publish-outbox" && command != "consume-progress" {
 		return errors.New("unknown Cabinet command")
 	}
 	d := c.Database
@@ -20,7 +20,7 @@ func (c Config) Validate(command string) error {
 	if d.AppUser == "" || d.OwnerUser == "" || d.AppUser == d.OwnerUser {
 		return errors.New("database app and owner users must be distinct and nonempty")
 	}
-	if (command == "serve" || command == "publish-outbox") && d.AppPassword == "" {
+	if (command == "serve" || command == "publish-outbox" || command == "consume-progress") && d.AppPassword == "" {
 		return errors.New("database.app_password is required")
 	}
 	if (command == "migrate" || command == "sync-cities") && d.OwnerPassword == "" {
@@ -41,6 +41,9 @@ func (c Config) Validate(command string) error {
 		if value <= 0 {
 			return fmt.Errorf("%s must be positive", key)
 		}
+	}
+	if command == "consume-progress" {
+		return c.Progress.Validate()
 	}
 	if command == "publish-outbox" {
 		return c.Outbox.Validate()

@@ -57,3 +57,12 @@ outbox:
   lease_duration: 30s
   retry_min: 1s
   retry_max: 1m
+
+progress:
+  brokers: [127.0.0.1:9092]
+  topic: travelwatch.route-building.v1
+  group_id: travelwatch-cabinet-progress-v1
+  poll_interval: 2s
+  timeout: 10s
+  lease: 10m
+  max_attempts: 3

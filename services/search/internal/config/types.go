@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Progress Progress          `mapstructure:"progress"`
 	Planner  realroutes.Config `mapstructure:"planner"`
 	Airports Airports          `mapstructure:"airports"`
 	Gemini   gemini.Config     `mapstructure:"gemini"`
@@ -47,4 +48,15 @@ type Airports struct {
 	MinRows            int           `mapstructure:"min_rows"`
 	MaxRows            int           `mapstructure:"max_rows"`
 	MinRetainedPercent int           `mapstructure:"min_retained_percent"`
+}
+
+// Progress transport is separate from Cabinet's request topic.
+type Progress struct {
+	Brokers      []string      `mapstructure:"brokers"`
+	Topic        string        `mapstructure:"topic"`
+	GroupID      string        `mapstructure:"group_id"`
+	PollInterval time.Duration `mapstructure:"poll_interval"`
+	Timeout      time.Duration `mapstructure:"timeout"`
+	Lease        time.Duration `mapstructure:"lease"`
+	MaxAttempts  int           `mapstructure:"max_attempts"`
 }

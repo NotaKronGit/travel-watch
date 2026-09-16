@@ -22,6 +22,68 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Search-owned progress. Monotonic revision per request; duplicates are harmless.
+type RouteBuildingStage int32
+
+const (
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_UNSPECIFIED        RouteBuildingStage = 0
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_QUEUED             RouteBuildingStage = 1
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_BUILDING           RouteBuildingStage = 2
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_AWAITING_SCHEDULES RouteBuildingStage = 3
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_NO_ROUTES          RouteBuildingStage = 4
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_FAILED             RouteBuildingStage = 5
+	RouteBuildingStage_ROUTE_BUILDING_STAGE_CANCELLED          RouteBuildingStage = 6
+)
+
+// Enum value maps for RouteBuildingStage.
+var (
+	RouteBuildingStage_name = map[int32]string{
+		0: "ROUTE_BUILDING_STAGE_UNSPECIFIED",
+		1: "ROUTE_BUILDING_STAGE_QUEUED",
+		2: "ROUTE_BUILDING_STAGE_BUILDING",
+		3: "ROUTE_BUILDING_STAGE_AWAITING_SCHEDULES",
+		4: "ROUTE_BUILDING_STAGE_NO_ROUTES",
+		5: "ROUTE_BUILDING_STAGE_FAILED",
+		6: "ROUTE_BUILDING_STAGE_CANCELLED",
+	}
+	RouteBuildingStage_value = map[string]int32{
+		"ROUTE_BUILDING_STAGE_UNSPECIFIED":        0,
+		"ROUTE_BUILDING_STAGE_QUEUED":             1,
+		"ROUTE_BUILDING_STAGE_BUILDING":           2,
+		"ROUTE_BUILDING_STAGE_AWAITING_SCHEDULES": 3,
+		"ROUTE_BUILDING_STAGE_NO_ROUTES":          4,
+		"ROUTE_BUILDING_STAGE_FAILED":             5,
+		"ROUTE_BUILDING_STAGE_CANCELLED":          6,
+	}
+)
+
+func (x RouteBuildingStage) Enum() *RouteBuildingStage {
+	p := new(RouteBuildingStage)
+	*p = x
+	return p
+}
+
+func (x RouteBuildingStage) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RouteBuildingStage) Descriptor() protoreflect.EnumDescriptor {
+	return file_travelwatch_events_v1_trip_request_proto_enumTypes[0].Descriptor()
+}
+
+func (RouteBuildingStage) Type() protoreflect.EnumType {
+	return &file_travelwatch_events_v1_trip_request_proto_enumTypes[0]
+}
+
+func (x RouteBuildingStage) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RouteBuildingStage.Descriptor instead.
+func (RouteBuildingStage) EnumDescriptor() ([]byte, []int) {
+	return file_travelwatch_events_v1_trip_request_proto_rawDescGZIP(), []int{0}
+}
+
 // Geographic snapshot, not a promise of transport availability.
 type TripCity struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -312,6 +374,146 @@ func (x *TripRequestCancelled) GetOccurredAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type TripRouteBuildingUpdated struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	SchemaVersion uint32                 `protobuf:"varint,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	RequestId     string                 `protobuf:"bytes,3,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	Revision      int64                  `protobuf:"varint,5,opt,name=revision,proto3" json:"revision,omitempty"`
+	Stage         RouteBuildingStage     `protobuf:"varint,6,opt,name=stage,proto3,enum=travelwatch.events.v1.RouteBuildingStage" json:"stage,omitempty"`
+	Attempt       int32                  `protobuf:"varint,7,opt,name=attempt,proto3" json:"attempt,omitempty"`
+	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	FinishedAt    *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
+	DurationMs    int64                  `protobuf:"varint,10,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
+	RouteCount    int32                  `protobuf:"varint,11,opt,name=route_count,json=routeCount,proto3" json:"route_count,omitempty"`
+	Incomplete    bool                   `protobuf:"varint,12,opt,name=incomplete,proto3" json:"incomplete,omitempty"`
+	PlannerId     string                 `protobuf:"bytes,13,opt,name=planner_id,json=plannerId,proto3" json:"planner_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripRouteBuildingUpdated) Reset() {
+	*x = TripRouteBuildingUpdated{}
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripRouteBuildingUpdated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripRouteBuildingUpdated) ProtoMessage() {}
+
+func (x *TripRouteBuildingUpdated) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripRouteBuildingUpdated.ProtoReflect.Descriptor instead.
+func (*TripRouteBuildingUpdated) Descriptor() ([]byte, []int) {
+	return file_travelwatch_events_v1_trip_request_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TripRouteBuildingUpdated) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *TripRouteBuildingUpdated) GetSchemaVersion() uint32 {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return 0
+}
+
+func (x *TripRouteBuildingUpdated) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *TripRouteBuildingUpdated) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
+func (x *TripRouteBuildingUpdated) GetRevision() int64 {
+	if x != nil {
+		return x.Revision
+	}
+	return 0
+}
+
+func (x *TripRouteBuildingUpdated) GetStage() RouteBuildingStage {
+	if x != nil {
+		return x.Stage
+	}
+	return RouteBuildingStage_ROUTE_BUILDING_STAGE_UNSPECIFIED
+}
+
+func (x *TripRouteBuildingUpdated) GetAttempt() int32 {
+	if x != nil {
+		return x.Attempt
+	}
+	return 0
+}
+
+func (x *TripRouteBuildingUpdated) GetStartedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartedAt
+	}
+	return nil
+}
+
+func (x *TripRouteBuildingUpdated) GetFinishedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.FinishedAt
+	}
+	return nil
+}
+
+func (x *TripRouteBuildingUpdated) GetDurationMs() int64 {
+	if x != nil {
+		return x.DurationMs
+	}
+	return 0
+}
+
+func (x *TripRouteBuildingUpdated) GetRouteCount() int32 {
+	if x != nil {
+		return x.RouteCount
+	}
+	return 0
+}
+
+func (x *TripRouteBuildingUpdated) GetIncomplete() bool {
+	if x != nil {
+		return x.Incomplete
+	}
+	return false
+}
+
+func (x *TripRouteBuildingUpdated) GetPlannerId() string {
+	if x != nil {
+		return x.PlannerId
+	}
+	return ""
+}
+
 var File_travelwatch_events_v1_trip_request_proto protoreflect.FileDescriptor
 
 const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
@@ -345,7 +547,39 @@ const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
 	"\n" +
 	"request_id\x18\x03 \x01(\tR\trequestId\x12;\n" +
 	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"occurredAtBHZFgithub.com/NotaKronGit/travel-watch/gen/travelwatch/events/v1;eventsv1b\x06proto3"
+	"occurredAt\"\xa8\x04\n" +
+	"\x18TripRouteBuildingUpdated\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12%\n" +
+	"\x0eschema_version\x18\x02 \x01(\rR\rschemaVersion\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x03 \x01(\tR\trequestId\x12;\n" +
+	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"occurredAt\x12\x1a\n" +
+	"\brevision\x18\x05 \x01(\x03R\brevision\x12?\n" +
+	"\x05stage\x18\x06 \x01(\x0e2).travelwatch.events.v1.RouteBuildingStageR\x05stage\x12\x18\n" +
+	"\aattempt\x18\a \x01(\x05R\aattempt\x129\n" +
+	"\n" +
+	"started_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12;\n" +
+	"\vfinished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"finishedAt\x12\x1f\n" +
+	"\vduration_ms\x18\n" +
+	" \x01(\x03R\n" +
+	"durationMs\x12\x1f\n" +
+	"\vroute_count\x18\v \x01(\x05R\n" +
+	"routeCount\x12\x1e\n" +
+	"\n" +
+	"incomplete\x18\f \x01(\bR\n" +
+	"incomplete\x12\x1d\n" +
+	"\n" +
+	"planner_id\x18\r \x01(\tR\tplannerId*\x94\x02\n" +
+	"\x12RouteBuildingStage\x12$\n" +
+	" ROUTE_BUILDING_STAGE_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bROUTE_BUILDING_STAGE_QUEUED\x10\x01\x12!\n" +
+	"\x1dROUTE_BUILDING_STAGE_BUILDING\x10\x02\x12+\n" +
+	"'ROUTE_BUILDING_STAGE_AWAITING_SCHEDULES\x10\x03\x12\"\n" +
+	"\x1eROUTE_BUILDING_STAGE_NO_ROUTES\x10\x04\x12\x1f\n" +
+	"\x1bROUTE_BUILDING_STAGE_FAILED\x10\x05\x12\"\n" +
+	"\x1eROUTE_BUILDING_STAGE_CANCELLED\x10\x06BHZFgithub.com/NotaKronGit/travel-watch/gen/travelwatch/events/v1;eventsv1b\x06proto3"
 
 var (
 	file_travelwatch_events_v1_trip_request_proto_rawDescOnce sync.Once
@@ -359,23 +593,30 @@ func file_travelwatch_events_v1_trip_request_proto_rawDescGZIP() []byte {
 	return file_travelwatch_events_v1_trip_request_proto_rawDescData
 }
 
-var file_travelwatch_events_v1_trip_request_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_travelwatch_events_v1_trip_request_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_travelwatch_events_v1_trip_request_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_travelwatch_events_v1_trip_request_proto_goTypes = []any{
-	(*TripCity)(nil),              // 0: travelwatch.events.v1.TripCity
-	(*TripRequestCreated)(nil),    // 1: travelwatch.events.v1.TripRequestCreated
-	(*TripRequestCancelled)(nil),  // 2: travelwatch.events.v1.TripRequestCancelled
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(RouteBuildingStage)(0),          // 0: travelwatch.events.v1.RouteBuildingStage
+	(*TripCity)(nil),                 // 1: travelwatch.events.v1.TripCity
+	(*TripRequestCreated)(nil),       // 2: travelwatch.events.v1.TripRequestCreated
+	(*TripRequestCancelled)(nil),     // 3: travelwatch.events.v1.TripRequestCancelled
+	(*TripRouteBuildingUpdated)(nil), // 4: travelwatch.events.v1.TripRouteBuildingUpdated
+	(*timestamppb.Timestamp)(nil),    // 5: google.protobuf.Timestamp
 }
 var file_travelwatch_events_v1_trip_request_proto_depIdxs = []int32{
-	3, // 0: travelwatch.events.v1.TripRequestCreated.occurred_at:type_name -> google.protobuf.Timestamp
-	0, // 1: travelwatch.events.v1.TripRequestCreated.origin:type_name -> travelwatch.events.v1.TripCity
-	0, // 2: travelwatch.events.v1.TripRequestCreated.destination:type_name -> travelwatch.events.v1.TripCity
-	3, // 3: travelwatch.events.v1.TripRequestCancelled.occurred_at:type_name -> google.protobuf.Timestamp
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	5, // 0: travelwatch.events.v1.TripRequestCreated.occurred_at:type_name -> google.protobuf.Timestamp
+	1, // 1: travelwatch.events.v1.TripRequestCreated.origin:type_name -> travelwatch.events.v1.TripCity
+	1, // 2: travelwatch.events.v1.TripRequestCreated.destination:type_name -> travelwatch.events.v1.TripCity
+	5, // 3: travelwatch.events.v1.TripRequestCancelled.occurred_at:type_name -> google.protobuf.Timestamp
+	5, // 4: travelwatch.events.v1.TripRouteBuildingUpdated.occurred_at:type_name -> google.protobuf.Timestamp
+	0, // 5: travelwatch.events.v1.TripRouteBuildingUpdated.stage:type_name -> travelwatch.events.v1.RouteBuildingStage
+	5, // 6: travelwatch.events.v1.TripRouteBuildingUpdated.started_at:type_name -> google.protobuf.Timestamp
+	5, // 7: travelwatch.events.v1.TripRouteBuildingUpdated.finished_at:type_name -> google.protobuf.Timestamp
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_events_v1_trip_request_proto_init() }
@@ -388,13 +629,14 @@ func file_travelwatch_events_v1_trip_request_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_travelwatch_events_v1_trip_request_proto_rawDesc), len(file_travelwatch_events_v1_trip_request_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   3,
+			NumEnums:      1,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_travelwatch_events_v1_trip_request_proto_goTypes,
 		DependencyIndexes: file_travelwatch_events_v1_trip_request_proto_depIdxs,
+		EnumInfos:         file_travelwatch_events_v1_trip_request_proto_enumTypes,
 		MessageInfos:      file_travelwatch_events_v1_trip_request_proto_msgTypes,
 	}.Build()
 	File_travelwatch_events_v1_trip_request_proto = out.File
