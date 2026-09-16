@@ -65,6 +65,7 @@ function TripContent({id}: {id?: string}) {
     void load();
     return () => {controller.abort();if(timer)clearTimeout(timer);};
   },[id,offset,retry,navigate]);
+  const hasResult = result?.offset === offset;
   const title = id === undefined ? 'Мои заявки' : 'Заявка';
   return <Box sx={{maxWidth:1000,mx:'auto',p:{xs:2,md:4}}}>
     <Title title={title}/>
@@ -73,7 +74,7 @@ function TripContent({id}: {id?: string}) {
       <Button component={Link} to="/trips/create" variant="contained">Создать заявку</Button>
     </Stack>
     {id !== undefined && <Button component={Link} to="/trips" sx={{mb:2}}>← Мои заявки</Button>}
-    {loading ? <Typography role="status">Загружаем заявки…</Typography> : (missing || (error && !result)) ? <Stack spacing={2}><Alert severity={missing ? 'info' : 'error'}>{error}</Alert>{!missing && <Button onClick={() => setRetry(n=>n+1)}>Повторить загрузку</Button>}</Stack> : result?.offset === offset && <Stack spacing={2}>
+    {loading ? <Typography role="status">Загружаем заявки…</Typography> : (missing || (error && !hasResult)) ? <Stack spacing={2}><Alert severity={missing ? 'info' : 'error'}>{missing ? error : 'Не удалось загрузить данные. Повторите попытку.'}</Alert>{!missing && <Button onClick={() => setRetry(n=>n+1)}>Повторить загрузку</Button>}</Stack> : result?.offset === offset && <Stack spacing={2}>
       {error && <Alert severity="warning">{error}</Alert>}
       {result.trips.length === 0 && <Paper variant="outlined" sx={{p:4,borderRadius:4}}><Typography variant="h6">У вас пока нет заявок</Typography><Typography color="text.secondary" sx={{mt:1}}>Создайте первую заявку, чтобы сохранить параметры поездки.</Typography></Paper>}
       {result.trips.map(trip => <Paper key={trip.id} variant="outlined" sx={{p:{xs:2,md:3},borderRadius:4}}>
