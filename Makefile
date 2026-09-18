@@ -138,7 +138,7 @@ search-compare-real:
 search-plan-route:
 	@mkdir -p bin
 	@go build -o bin/collector ./services/collector/cmd/collector
-	@SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search plan-route -from "$(FROM)" -to "$(TO)" -from-lat "$(FROM_LAT)" -from-lon "$(FROM_LON)" -to-lat "$(TO_LAT)" -to-lon "$(TO_LON)"
+	@SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search plan-route -from "$(FROM)" -to "$(TO)" -from-lat "$(FROM_LAT)" -from-lon "$(FROM_LON)" -to-lat "$(TO_LAT)" -to-lon "$(TO_LON)" $(ARGS)
 
 .PHONY: search-build-routes search-publish-progress cabinet-consume-progress stage-local-building-up stage-local-airports-sync
 search-build-routes:
@@ -166,3 +166,13 @@ tls-init:
 
 search-results:
 	SEARCH_CONFIG=$${SEARCH_CONFIG:-services/search/config.yaml} go run ./services/search/cmd/search serve-results
+
+# Optional local Google Flights experiment. Python >=3.10 is required.
+FLI_PYTHON ?= python3
+.PHONY: flights-setup flights-find
+flights-setup:
+	$(FLI_PYTHON) -m venv .local/fli-venv
+	.local/fli-venv/bin/python -m pip install -r services/collector/tools/fli/requirements.txt
+
+flights-find:
+	go run ./services/collector/cmd/collector flights-find $(ARGS)

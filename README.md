@@ -31,6 +31,8 @@ MVP допускает максимум два основных участка: 
 
 [Поиск ближайших ЖД-станций через Яндекс Расписания](docs/ops/rail-stations.md).
 
+[Экспериментальный поиск перелётов Google Flights/Fli](docs/ops/flight-search.md).
+
 [Независимое сравнение GraphPlanner и Gemini: текущий статус и ограничения](docs/research/planner-comparison/README.md).
 
 [Самостоятельный поиск схем маршрута на связях Яндекса](docs/ops/route-planner.md).

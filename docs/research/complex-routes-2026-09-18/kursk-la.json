@@ -1,0 +1,1510 @@
+{
+  "flight_checks": [
+    {
+      "from": "DME",
+      "to": "HHR",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "DME",
+      "to": "HHR",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "DME",
+      "to": "HHR",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "DME",
+      "to": "LAX",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "DME",
+      "to": "LAX",
+      "date": "2026-10-18",
+      "outcome": "observed"
+    },
+    {
+      "from": "DME",
+      "to": "LAX",
+      "date": "2026-10-22",
+      "outcome": "observed"
+    },
+    {
+      "from": "DME",
+      "to": "BUR",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "DME",
+      "to": "BUR",
+      "date": "2026-10-18",
+      "outcome": "observed"
+    },
+    {
+      "from": "DME",
+      "to": "BUR",
+      "date": "2026-10-22",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "HHR",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKO",
+      "to": "HHR",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKO",
+      "to": "HHR",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKO",
+      "to": "LAX",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "LAX",
+      "date": "2026-10-18",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "LAX",
+      "date": "2026-10-22",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "BUR",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "BUR",
+      "date": "2026-10-18",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "BUR",
+      "date": "2026-10-22",
+      "outcome": "observed"
+    },
+    {
+      "from": "ZIA",
+      "to": "HHR",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "HHR",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "HHR",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "LAX",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "LAX",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "LAX",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "BUR",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "BUR",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "BUR",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "SVO",
+      "to": "HHR",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SVO",
+      "to": "HHR",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "SVO",
+      "to": "HHR",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    }
+  ],
+  "query": {
+    "departure_from": "2026-10-15",
+    "departure_to": "2026-10-22",
+    "adults": 1,
+    "origin_name": "Курск",
+    "destination_name": "Лос-Анджелес",
+    "origin": {
+      "latitude": 51.7373,
+      "longitude": 36.1874
+    },
+    "destination": {
+      "latitude": 34.0522,
+      "longitude": -118.2437
+    }
+  },
+  "observed_at": "2026-09-18T14:03:38.027781Z",
+  "source": "Yandex Rasp + Google Flights/Fli + OurAirports",
+  "complete": false,
+  "limit_reached": true,
+  "provider_failures": 13,
+  "requests": 211,
+  "issues": [
+    "Collector thread failed",
+    "Incomplete provider page: thread",
+    "Google Flights samples departure dates; route coverage and timetable compatibility are incomplete",
+    "Google Flights request budget reached",
+    "Provider coverage and timetable compatibility are not complete; transfers are assumptions"
+  ],
+  "candidates": [
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000005",
+          "from": "Курск",
+          "to": "Москва (Павелецкий вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "143Й"
+        },
+        {
+          "from": "Москва (Павелецкий вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:CAI",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Cairo International Airport (CAI)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:CAI",
+          "to_code": "iata:LAX",
+          "from": "Cairo International Airport (CAI)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000001",
+          "from": "Курск",
+          "to": "Москва (Курский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "202Я"
+        },
+        {
+          "from": "Москва (Курский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:CAI",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Cairo International Airport (CAI)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:CAI",
+          "to_code": "iata:LAX",
+          "from": "Cairo International Airport (CAI)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000007",
+          "from": "Курск",
+          "to": "Москва (Киевский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "474С"
+        },
+        {
+          "from": "Москва (Киевский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:CAI",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Cairo International Airport (CAI)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:CAI",
+          "to_code": "iata:LAX",
+          "from": "Cairo International Airport (CAI)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s9879173",
+          "from": "Курск",
+          "to": "Москва (Восточный вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "072В"
+        },
+        {
+          "from": "Москва (Восточный вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:CAI",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Cairo International Airport (CAI)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:CAI",
+          "to_code": "iata:LAX",
+          "from": "Cairo International Airport (CAI)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000005",
+          "from": "Курск",
+          "to": "Москва (Павелецкий вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "143Й"
+        },
+        {
+          "from": "Москва (Павелецкий вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:ORD",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Chicago O'Hare International Airport (ORD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:ORD",
+          "to_code": "iata:LAX",
+          "from": "Chicago O'Hare International Airport (ORD)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000001",
+          "from": "Курск",
+          "to": "Москва (Курский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "202Я"
+        },
+        {
+          "from": "Москва (Курский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:ORD",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Chicago O'Hare International Airport (ORD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:ORD",
+          "to_code": "iata:LAX",
+          "from": "Chicago O'Hare International Airport (ORD)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000007",
+          "from": "Курск",
+          "to": "Москва (Киевский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "474С"
+        },
+        {
+          "from": "Москва (Киевский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:ORD",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Chicago O'Hare International Airport (ORD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:ORD",
+          "to_code": "iata:LAX",
+          "from": "Chicago O'Hare International Airport (ORD)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s9879173",
+          "from": "Курск",
+          "to": "Москва (Восточный вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "072В"
+        },
+        {
+          "from": "Москва (Восточный вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:ORD",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Chicago O'Hare International Airport (ORD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18"
+          ],
+          "from_code": "iata:ORD",
+          "to_code": "iata:LAX",
+          "from": "Chicago O'Hare International Airport (ORD)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000005",
+          "from": "Курск",
+          "to": "Москва (Павелецкий вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "143Й"
+        },
+        {
+          "from": "Москва (Павелецкий вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:DXB",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:LAX",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000001",
+          "from": "Курск",
+          "to": "Москва (Курский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "202Я"
+        },
+        {
+          "from": "Москва (Курский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:DXB",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:LAX",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000007",
+          "from": "Курск",
+          "to": "Москва (Киевский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "474С"
+        },
+        {
+          "from": "Москва (Киевский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:DXB",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:LAX",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s9879173",
+          "from": "Курск",
+          "to": "Москва (Восточный вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "072В"
+        },
+        {
+          "from": "Москва (Восточный вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:DXB",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:LAX",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000005",
+          "from": "Курск",
+          "to": "Москва (Павелецкий вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "143Й"
+        },
+        {
+          "from": "Москва (Павелецкий вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:DFW",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Dallas Fort Worth International Airport (DFW)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DFW",
+          "to_code": "iata:LAX",
+          "from": "Dallas Fort Worth International Airport (DFW)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000001",
+          "from": "Курск",
+          "to": "Москва (Курский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "202Я"
+        },
+        {
+          "from": "Москва (Курский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:DFW",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Dallas Fort Worth International Airport (DFW)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DFW",
+          "to_code": "iata:LAX",
+          "from": "Dallas Fort Worth International Airport (DFW)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000007",
+          "from": "Курск",
+          "to": "Москва (Киевский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "474С"
+        },
+        {
+          "from": "Москва (Киевский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:DFW",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Dallas Fort Worth International Airport (DFW)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DFW",
+          "to_code": "iata:LAX",
+          "from": "Dallas Fort Worth International Airport (DFW)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s9879173",
+          "from": "Курск",
+          "to": "Москва (Восточный вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "072В"
+        },
+        {
+          "from": "Москва (Восточный вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:DFW",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "Dallas Fort Worth International Airport (DFW)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DFW",
+          "to_code": "iata:LAX",
+          "from": "Dallas Fort Worth International Airport (DFW)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000005",
+          "from": "Курск",
+          "to": "Москва (Павелецкий вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "143Й"
+        },
+        {
+          "from": "Москва (Павелецкий вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:JFK",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "John F. Kennedy International Airport (JFK)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:JFK",
+          "to_code": "iata:LAX",
+          "from": "John F. Kennedy International Airport (JFK)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000001",
+          "from": "Курск",
+          "to": "Москва (Курский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "202Я"
+        },
+        {
+          "from": "Москва (Курский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:JFK",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "John F. Kennedy International Airport (JFK)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:JFK",
+          "to_code": "iata:LAX",
+          "from": "John F. Kennedy International Airport (JFK)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s2000007",
+          "from": "Курск",
+          "to": "Москва (Киевский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "474С"
+        },
+        {
+          "from": "Москва (Киевский вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:JFK",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "John F. Kennedy International Airport (JFK)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:JFK",
+          "to_code": "iata:LAX",
+          "from": "John F. Kennedy International Airport (JFK)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Курск",
+          "to": "Курск",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600816",
+          "to_code": "s9879173",
+          "from": "Курск",
+          "to": "Москва (Восточный вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "072В"
+        },
+        {
+          "from": "Москва (Восточный вокзал)",
+          "to": "Domodedovo International Airport (DME)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DME",
+          "to_code": "iata:AMM",
+          "from": "Domodedovo International Airport (DME)",
+          "to": "Queen Alia International Airport (AMM)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:AMM",
+          "to_code": "iata:JFK",
+          "from": "Queen Alia International Airport (AMM)",
+          "to": "John F. Kennedy International Airport (JFK)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:JFK",
+          "to_code": "iata:LAX",
+          "from": "John F. Kennedy International Airport (JFK)",
+          "to": "Los Angeles International Airport (LAX)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Los Angeles International Airport (LAX)",
+          "to": "Лос-Анджелес",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    }
+  ]
+}

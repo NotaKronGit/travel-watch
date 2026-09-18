@@ -1,0 +1,431 @@
+{
+  "flight_checks": [
+    {
+      "from": "CSY",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "SYD",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "SYD",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "NTL",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "NTL",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "BHS",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "BHS",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "KZN",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "KZN",
+      "to": "SYD",
+      "date": "2026-10-18",
+      "outcome": "observed"
+    },
+    {
+      "from": "KZN",
+      "to": "SYD",
+      "date": "2026-10-22",
+      "outcome": "observed"
+    },
+    {
+      "from": "KZN",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "failed"
+    },
+    {
+      "from": "KZN",
+      "to": "NTL",
+      "date": "2026-10-18",
+      "outcome": "failed"
+    },
+    {
+      "from": "KZN",
+      "to": "NTL",
+      "date": "2026-10-22",
+      "outcome": "failed"
+    },
+    {
+      "from": "KZN",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "KZN",
+      "to": "BHS",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "KZN",
+      "to": "BHS",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "SYD",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "SYD",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "NTL",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "NTL",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "BHS",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "BHS",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "SKX",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SKX",
+      "to": "SYD",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "SKX",
+      "to": "SYD",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    }
+  ],
+  "query": {
+    "departure_from": "2026-10-15",
+    "departure_to": "2026-10-22",
+    "adults": 1,
+    "origin_name": "Йошкар-Ола",
+    "destination_name": "Сидней",
+    "origin": {
+      "latitude": 56.6344,
+      "longitude": 47.8998
+    },
+    "destination": {
+      "latitude": -33.8688,
+      "longitude": 151.2093
+    }
+  },
+  "observed_at": "2026-09-18T14:04:54.094358Z",
+  "source": "Yandex Rasp + Google Flights/Fli + OurAirports",
+  "complete": false,
+  "limit_reached": true,
+  "provider_failures": 12,
+  "requests": 199,
+  "issues": [
+    "Incomplete provider page: thread",
+    "Collector thread failed",
+    "Collector search failed",
+    "Google Flights samples departure dates; route coverage and timetable compatibility are incomplete",
+    "Google Flights request failed",
+    "Google Flights request budget reached",
+    "Provider coverage and timetable compatibility are not complete; transfers are assumptions"
+  ],
+  "candidates": [
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9624402",
+          "from": "Казань",
+          "to": "Абу-Даби",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "EY 840"
+        },
+        {
+          "from_code": "s9624402",
+          "to_code": "s9632384",
+          "from": "Абу-Даби",
+          "to": "Кингсфорд Смит",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "EY 450"
+        },
+        {
+          "from": "Кингсфорд Смит",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600417",
+          "from": "Казань",
+          "to": "Пудун",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "MU 5066"
+        },
+        {
+          "from_code": "s9600417",
+          "to_code": "s9632384",
+          "from": "Пудун",
+          "to": "Кингсфорд Смит",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "HO 1669"
+        },
+        {
+          "from": "Кингсфорд Смит",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Kazan International Airport (KZN)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:KZN",
+          "to_code": "iata:DXB",
+          "from": "Kazan International Airport (KZN)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-18",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SYD",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Kazan International Airport (KZN)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-22"
+          ],
+          "from_code": "iata:KZN",
+          "to_code": "iata:DXB",
+          "from": "Kazan International Airport (KZN)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-22"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:MEL",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Melbourne Airport (MEL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15",
+            "2026-10-22"
+          ],
+          "from_code": "iata:MEL",
+          "to_code": "iata:SYD",
+          "from": "Melbourne Airport (MEL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Kazan International Airport (KZN)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-18"
+          ],
+          "from_code": "iata:KZN",
+          "to_code": "iata:PVG",
+          "from": "Kazan International Airport (KZN)",
+          "to": "Shanghai Pudong International Airport (PVG)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-18"
+          ],
+          "from_code": "iata:PVG",
+          "to_code": "iata:SYD",
+          "from": "Shanghai Pudong International Airport (PVG)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    }
+  ]
+}

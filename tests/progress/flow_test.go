@@ -275,6 +275,7 @@ func TestProgressFlow(t *testing.T) {
 	}
 	add("SEARCH_PLANNER_COLLECTOR_BINARY", executable)
 	add("SEARCH_PLANNER_TIMEOUT", "20s")
+	add("SEARCH_PLANNER_GOOGLE_FLIGHTS_ENABLED", "false")
 	gate := filepath.Join(dir, "gate")
 	marker := filepath.Join(dir, "marker")
 	add("TW_TEST_GATE", gate)
