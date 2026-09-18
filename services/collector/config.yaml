@@ -2,3 +2,10 @@ yandex:
   api_key: ""
   timeout: 15s
   max_response_bytes: 1048576
+
+# Optional local experiment; not started by transport-stdio or Docker.
+fli:
+  python: .local/fli-venv/bin/python
+  bridge: services/collector/tools/fli/bridge.py
+  timeout: 45s
+  max_response_bytes: 1048576

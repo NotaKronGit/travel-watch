@@ -23,3 +23,16 @@ func TestYAMLEnv(t *testing.T) {
 		t.Fatal("empty key accepted")
 	}
 }
+
+func TestFliConfigurationDoesNotRequireYandexKey(t *testing.T) {
+	t.Setenv("COLLECTOR_YANDEX_API_KEY", "")
+	t.Setenv("COLLECTOR_FLI_TIMEOUT", "5s")
+	c, err := LoadFlights("../../config.yaml")
+	if err != nil || c.Fli.Timeout != 5*time.Second {
+		t.Fatal(c.Fli, err)
+	}
+	t.Setenv("COLLECTOR_FLI_TIMEOUT", "0s")
+	if _, err = LoadFlights("../../config.yaml"); err == nil {
+		t.Fatal("invalid timeout accepted")
+	}
+}

@@ -11,7 +11,14 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/search/internal/airports"
 )
 
+type FlightConfig struct {
+	Enabled     bool `mapstructure:"enabled"`
+	MaxRequests int  `mapstructure:"max_requests"`
+	MaxOptions  int  `mapstructure:"max_options"`
+}
+
 type Config struct {
+	GoogleFlights   FlightConfig  `mapstructure:"google_flights"`
 	CollectorBinary string        `mapstructure:"collector_binary"`
 	Timeout         time.Duration `mapstructure:"timeout"`
 	AirportRadiusKM float64       `mapstructure:"airport_radius_km"`
@@ -25,6 +32,9 @@ type Config struct {
 }
 
 func (c Config) Validate() error {
+	if c.GoogleFlights.Enabled && (c.GoogleFlights.MaxRequests < 1 || c.GoogleFlights.MaxRequests > 120 || c.GoogleFlights.MaxOptions < 1 || c.GoogleFlights.MaxOptions > 50) {
+		return errors.New("invalid Google Flights planner limits")
+	}
 	if c.HubRadiusKM <= 0 || c.HubRadiusKM > 2000 || math.IsNaN(c.HubRadiusKM) || c.CollectorBinary == "" || c.Timeout < time.Second || c.Timeout > 15*time.Minute || c.AirportRadiusKM <= 0 || c.AirportRadiusKM > 300 || math.IsNaN(c.AirportRadiusKM) || c.RailRadiusKM <= 0 || c.RailRadiusKM > 50 || math.IsNaN(c.RailRadiusKM) || c.MaxAirports < 1 || c.MaxAirports > 10 || c.MaxHubs < 1 || c.MaxHubs > 30 || c.MaxPages < 1 || c.MaxPages > 5 || c.MaxRequests < 1 || c.MaxRequests > 300 || c.MaxCandidates < 1 || c.MaxCandidates > 50 {
 		return errors.New("invalid real planner limits")
 	}
@@ -32,6 +42,9 @@ func (c Config) Validate() error {
 }
 
 type Query struct {
+	DepartureFrom   string          `json:"departure_from,omitempty"`
+	DepartureTo     string          `json:"departure_to,omitempty"`
+	Adults          int             `json:"adults,omitempty"`
 	OriginName      string          `json:"origin_name"`
 	DestinationName string          `json:"destination_name"`
 	Origin          transport.Point `json:"origin"`
@@ -41,28 +54,36 @@ type Provider interface {
 	Call(context.Context, transport.Request) (transport.Response, error)
 }
 type Step struct {
-	FromCode string `json:"from_code,omitempty"`
-	ToCode   string `json:"to_code,omitempty"`
-	From     string `json:"from"`
-	To       string `json:"to"`
-	Mode     string `json:"mode"`
-	Evidence string `json:"evidence"`
-	Number   string `json:"number,omitempty"`
+	ObservedDates []string `json:"observed_dates,omitempty"`
+	FromCode      string   `json:"from_code,omitempty"`
+	ToCode        string   `json:"to_code,omitempty"`
+	From          string   `json:"from"`
+	To            string   `json:"to"`
+	Mode          string   `json:"mode"`
+	Evidence      string   `json:"evidence"`
+	Number        string   `json:"number,omitempty"`
 }
 type Candidate struct {
 	Steps    []Step   `json:"steps"`
 	Warnings []string `json:"warnings"`
 }
+type FlightCheck struct {
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Date    string `json:"date"`
+	Outcome string `json:"outcome"`
+}
 type Result struct {
-	Query            Query       `json:"query"`
-	ObservedAt       time.Time   `json:"observed_at"`
-	Source           string      `json:"source"`
-	Complete         bool        `json:"complete"`
-	LimitReached     bool        `json:"limit_reached"`
-	ProviderFailures int         `json:"provider_failures"`
-	Requests         int         `json:"requests"`
-	Issues           []string    `json:"issues"`
-	Candidates       []Candidate `json:"candidates"`
+	FlightChecks     []FlightCheck `json:"flight_checks,omitempty"`
+	Query            Query         `json:"query"`
+	ObservedAt       time.Time     `json:"observed_at"`
+	Source           string        `json:"source"`
+	Complete         bool          `json:"complete"`
+	LimitReached     bool          `json:"limit_reached"`
+	ProviderFailures int           `json:"provider_failures"`
+	Requests         int           `json:"requests"`
+	Issues           []string      `json:"issues"`
+	Candidates       []Candidate   `json:"candidates"`
 }
 type Planner struct {
 	Provider Provider

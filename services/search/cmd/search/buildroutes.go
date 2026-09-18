@@ -38,7 +38,7 @@ func buildRoutes(ctx context.Context, db *sql.DB, c config.Config) error {
 			return realroutes.Result{}, err
 		}
 		defer provider.Close()
-		q := realroutes.Query{OriginName: e.Origin.Name, DestinationName: e.Destination.Name, Origin: transport.Point{Latitude: e.Origin.Latitude, Longitude: e.Origin.Longitude}, Destination: transport.Point{Latitude: e.Destination.Latitude, Longitude: e.Destination.Longitude}}
+		q := realroutes.Query{DepartureFrom: e.DepartureFrom, DepartureTo: e.DepartureTo, Adults: int(e.Adults), OriginName: e.Origin.Name, DestinationName: e.Destination.Name, Origin: transport.Point{Latitude: e.Origin.Latitude, Longitude: e.Origin.Longitude}, Destination: transport.Point{Latitude: e.Destination.Latitude, Longitude: e.Destination.Longitude}}
 		return (realroutes.Planner{Provider: provider, Airports: catalog, Config: c.Planner}).Plan(ctx, q)
 	}
 	sources := map[string]planning.Source{

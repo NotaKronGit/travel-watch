@@ -14,7 +14,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// ReadRoutes reads a stable snapshot and slices JSON arrays in PostgreSQL.
+// ReadRoutes reads a stable snapshot. Graph rail-access variants are grouped
+// before pagination; other sources are paginated in PostgreSQL.
 // It never runs a planner or reads Cabinet's database.
 func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.GetRoutesResponse, error) {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
@@ -38,7 +39,7 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
  SELECT *,CASE WHEN jsonb_typeof(CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END)='array' THEN CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END ELSE '[]'::jsonb END AS routes FROM source_data
  )
  SELECT planner_id,stage,outcome,attempt,started_at,finished_at,route_count,incomplete,COALESCE(result->'issues','[]'::jsonb),
- COALESCE((SELECT jsonb_agg(value ORDER BY ordinal) FROM (SELECT value,ordinal FROM jsonb_array_elements(routes) WITH ORDINALITY AS r(value,ordinal) ORDER BY ordinal OFFSET $3 LIMIT $4) AS page),'[]'::jsonb)
+ COALESCE((SELECT jsonb_agg(value ORDER BY ordinal) FROM (SELECT value,ordinal FROM jsonb_array_elements(routes) WITH ORDINALITY AS r(value,ordinal) ORDER BY ordinal OFFSET CASE WHEN planner_id='graph' THEN 0 ELSE $3 END LIMIT CASE WHEN planner_id='graph' THEN 51 ELSE $4 END) AS page),'[]'::jsonb)
  FROM arrays WHERE ($2='' OR planner_id=$2) ORDER BY planner_id`, q.RequestId, q.PlannerId, q.Offset, q.PageSize)
 	if err != nil {
 		return nil, err
@@ -68,7 +69,18 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 			if json.Unmarshal(raw, &candidates) != nil {
 				return nil, errors.New("invalid saved graph result")
 			}
-			for _, c := range candidates {
+			// GraphPlanner is bounded to 50 candidates. Keep the read bounded too.
+			if len(candidates) > 50 {
+				return nil, errors.New("saved graph result exceeds candidate limit")
+			}
+			candidates = groupRailAccess(candidates)
+			source.Total = 0
+			for range candidates {
+				source.Total++
+			}
+			start := min(int(q.Offset), len(candidates))
+			end := min(start+int(q.PageSize), len(candidates))
+			for _, c := range candidates[start:end] {
 				scheme := &v1.RouteScheme{Warnings: c.Warnings}
 				for _, step := range c.Steps {
 					text := step.From + " → " + step.To
@@ -77,8 +89,15 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 					}
 					evidence := ""
 					switch step.Evidence {
+					case "rail-access":
+						evidence = "Железнодорожные связи найдены; вокзал, переезд в аэропорт и стыковки ещё не выбраны"
 					case "assumed":
 						evidence = "Предполагаемый переезд; доступность и длительность не проверены"
+					case "google-flights-fli":
+						evidence = "Цепочка найдена в Google Flights; стыковки с поездом и переезды не проверены"
+						if len(step.ObservedDates) > 0 {
+							evidence += ". Даты наблюдаемого вылета: " + strings.Join(step.ObservedDates, ", ")
+						}
 					case "yandex-rasp":
 						evidence = "Связь найдена в Яндекс Расписаниях; даты и стыковки не проверены"
 					default:

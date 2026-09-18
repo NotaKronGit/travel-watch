@@ -36,6 +36,10 @@ airports:
   max_rows: 200000
   min_retained_percent: 90
 planner:
+  google_flights:
+    enabled: true
+    max_requests: 30
+    max_options: 20
   collector_binary: bin/collector
   timeout: 8m
   airport_radius_km: 180

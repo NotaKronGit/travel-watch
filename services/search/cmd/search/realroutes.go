@@ -17,6 +17,9 @@ import (
 func planRealRoute(ctx context.Context, db *sql.DB, c config.Config, args []string) error {
 	flags := flag.NewFlagSet("plan-route", flag.ContinueOnError)
 	q := realroutes.Query{}
+	flags.StringVar(&q.DepartureFrom, "departure-from", "", "first date for flight discovery")
+	flags.StringVar(&q.DepartureTo, "departure-to", "", "last date for flight discovery")
+	flags.IntVar(&q.Adults, "adults", 2, "adult passengers")
 	flags.StringVar(&q.OriginName, "from", "", "origin display name")
 	flags.StringVar(&q.DestinationName, "to", "", "destination display name")
 	flags.Float64Var(&q.Origin.Latitude, "from-lat", math.NaN(), "origin latitude")

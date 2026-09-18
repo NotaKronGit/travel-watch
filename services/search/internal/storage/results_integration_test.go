@@ -64,3 +64,46 @@ func TestSavedResultPages(t *testing.T) {
 		t.Fatal("not yet received", err)
 	}
 }
+
+func TestRailGroupingBeforePagination(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	_, db := testDB(t, ctx)
+	s := NewBuilder(db, []string{"graph"})
+	id := uuid.NewString()
+	if err := s.Apply(ctx, consumer.Event{ID: uuid.NewString(), RequestID: id, Type: consumer.Created, OccurredAt: time.Now(), Payload: []byte("snapshot")}); err != nil {
+		t.Fatal(err)
+	}
+	j, ok, err := s.ClaimBuilding(ctx, time.Minute, 3)
+	if err != nil || !ok {
+		t.Fatal(err)
+	}
+	// Matching variants straddle the raw page boundary and are interleaved.
+	raw, _ := json.Marshal(realroutes.Result{Candidates: []realroutes.Candidate{
+		railCandidate("a", "hub-a"), railCandidate("b", "hub-b"), railCandidate("c", "hub-a"), railCandidate("d", "hub-a"), railCandidate("e", "hub-a"),
+	}})
+	if err = s.FinishSource(ctx, j, "graph", planning.SourceResult{Data: raw, Count: 5, Incomplete: true}); err != nil {
+		t.Fatal(err)
+	}
+	for offset := int32(0); offset < 3; offset++ {
+		res, err := s.ReadRoutes(ctx, &v1.GetRoutesRequest{RequestId: id, PlannerId: "graph", Offset: offset, PageSize: 1})
+		if err != nil {
+			t.Fatal(err)
+		}
+		source := res.Sources[0]
+		if source.Total != 2 || source.HasMore != (offset == 0) || len(source.Routes) != min(1, 2-int(offset)) {
+			t.Fatalf("wrong grouped page: %+v", source)
+		}
+		if offset == 0 && len(source.Routes[0].Steps) != 3 {
+			t.Fatal("rail variants not grouped")
+		}
+	}
+	var saved []byte
+	if err = db.QueryRowContext(ctx, "SELECT result FROM planner_runs WHERE request_id=$1 AND planner_id='graph'", id).Scan(&saved); err != nil {
+		t.Fatal(err)
+	}
+	var result realroutes.Result
+	if err = json.Unmarshal(saved, &result); err != nil || len(result.Candidates) != 5 {
+		t.Fatal("raw variants lost", err)
+	}
+}

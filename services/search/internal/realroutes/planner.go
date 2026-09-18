@@ -14,16 +14,22 @@ import (
 )
 
 type run struct {
-	p        Planner
-	r        Result
-	cache    map[string]transport.Response
-	failures map[string]bool
-	seen     map[string]bool
+	flightRequests int
+	p              Planner
+	r              Result
+	cache          map[string]transport.Response
+	failures       map[string]bool
+	seen           map[string]bool
 }
 
 func (p Planner) Plan(ctx context.Context, q Query) (Result, error) {
 	if err := p.Config.Validate(); err != nil {
 		return Result{}, err
+	}
+	if p.Config.GoogleFlights.Enabled {
+		if _, err := sampleDates(q); err != nil {
+			return Result{}, err
+		}
 	}
 	if p.Provider == nil || q.OriginName == "" || q.DestinationName == "" {
 		return Result{}, errors.New("invalid route query")
@@ -199,6 +205,9 @@ func (p Planner) Plan(ctx context.Context, q Query) (Result, error) {
 			}
 		}
 	}
+	if p.Config.GoogleFlights.Enabled && ctx.Err() == nil {
+		s.googlePaths(ctx, q, origin, dest, geographic, cityCode)
+	}
 	if err := ctx.Err(); err != nil {
 		return s.r, err
 	}
@@ -225,7 +234,7 @@ func (s *run) call(ctx context.Context, q transport.Request) (transport.Response
 	if ctx.Err() != nil {
 		return transport.Response{}, false
 	}
-	if s.r.Requests >= s.p.Config.MaxRequests {
+	if s.r.Requests-s.flightRequests >= s.p.Config.MaxRequests {
 		s.r.LimitReached = true
 		return transport.Response{}, false
 	}

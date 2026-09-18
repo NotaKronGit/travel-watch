@@ -6,6 +6,9 @@ type Point struct {
 	Longitude float64 `json:"longitude"`
 }
 type Request struct {
+	Date    string  `json:"date,omitempty"`
+	Adults  int     `json:"adults,omitempty"`
+	Limit   int     `json:"limit,omitempty"`
 	Version int     `json:"version"`
 	Method  string  `json:"method"`
 	Code    string  `json:"code,omitempty"`
@@ -33,7 +36,11 @@ type Connection struct {
 	Mode   string  `json:"mode"`
 	Number string  `json:"number"`
 }
+type FlightPath struct {
+	Legs []Connection `json:"legs"`
+}
 type Response struct {
+	FlightPaths []FlightPath `json:"flight_paths,omitempty"`
 	Version     int          `json:"version"`
 	Error       string       `json:"error,omitempty"`
 	Total       int          `json:"total"`
