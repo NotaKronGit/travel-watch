@@ -31,97 +31,121 @@ func sampleDates(q Query) ([]string, error) {
 	return dates, nil
 }
 
+type flightPair struct {
+	from, to airports.Airport
+	paths    []Candidate
+	seen     map[string]int
+	accesses [][]Step
+}
+
 func (s *run) googlePaths(ctx context.Context, q Query, origin, dest, hubs []airports.Airport, cityCode string) {
-	dates, _ := sampleDates(q) // Validated before any provider calls.
+	dates, _ := sampleDates(q)
 	s.r.Source = "Yandex Rasp + Google Flights/Fli + OurAirports"
 	s.issue("Google Flights samples departure dates; route coverage and timetable compatibility are incomplete")
-	departures := append(append([]airports.Airport(nil), origin...), hubs...)
-	seenPairs := map[string]bool{}
-	requests := 0
-	for _, a := range departures {
-		for _, b := range dest {
-			pair := a.IATA + "/" + b.IATA
-			if a.IATA == b.IATA || seenPairs[pair] {
-				continue
+	departures := diverseAirports(append(append([]airports.Airport(nil), origin...), hubs...), q.Origin)
+	pairs := []flightPair{}
+	// All departure hubs get the first destination before a second destination.
+	for _, b := range dest {
+		for _, a := range departures {
+			if a.IATA != b.IATA {
+				pairs = append(pairs, flightPair{from: a, to: b, seen: map[string]int{}})
 			}
-			seenPairs[pair] = true
-			// Each independent flight chain is retained once across sampled dates.
-			paths := []Candidate{}
-			seenPaths := map[string]int{}
-			for _, date := range dates {
-				if ctx.Err() != nil {
-					return
-				}
-				if requests >= s.p.Config.GoogleFlights.MaxRequests {
-					s.r.LimitReached = true
-					s.issue("Google Flights request budget reached")
-					break
-				}
-				requests++
-				s.flightRequests++
-				s.r.Requests++
-				reply, err := s.p.Provider.Call(ctx, transport.Request{Method: "flight-paths", From: a.IATA, To: b.IATA, Date: date, Adults: q.Adults, Limit: s.p.Config.GoogleFlights.MaxOptions})
-				check := FlightCheck{From: a.IATA, To: b.IATA, Date: date, Outcome: "observed"}
-				if err != nil {
-					check.Outcome = "failed"
-					s.r.ProviderFailures++
-					s.issue("Google Flights request failed")
-					s.r.FlightChecks = append(s.r.FlightChecks, check)
-					continue
-				}
+		}
+	}
+	requests := 0
+discovery:
+	for _, date := range dates {
+		for i := range pairs {
+			if ctx.Err() != nil {
+				break discovery
+			}
+			if requests >= s.p.Config.GoogleFlights.MaxRequests {
+				s.r.LimitReached = true
+				s.issue("Google Flights request budget reached")
+				break discovery
+			}
+			pair := &pairs[i]
+			requests++
+			s.flightRequests++
+			s.r.Requests++
+			reply, err := s.p.Provider.Call(ctx, transport.Request{Method: "flight-paths", From: pair.from.IATA, To: pair.to.IATA, Date: date, Adults: q.Adults, Limit: s.p.Config.GoogleFlights.MaxOptions})
+			check := FlightCheck{From: pair.from.IATA, To: pair.to.IATA, Date: date, Outcome: "observed"}
+			if err != nil {
+				check.Outcome = "failed"
+				s.r.ProviderFailures++
+				s.issue("Google Flights request failed")
+			} else if len(reply.FlightPaths) > s.p.Config.GoogleFlights.MaxOptions {
+				check.Outcome = "failed"
+				s.r.ProviderFailures++
+				s.issue("Invalid Google Flights route response")
+			} else {
 				if len(reply.FlightPaths) == 0 {
 					check.Outcome = "empty"
 				}
-				s.r.FlightChecks = append(s.r.FlightChecks, check)
-				if len(reply.FlightPaths) > s.p.Config.GoogleFlights.MaxOptions {
-					s.issue("Invalid Google Flights route response")
-					s.r.ProviderFailures++
-					continue
-				}
 				for _, path := range reply.FlightPaths {
-					if !validFlightPath(path, a.IATA, b.IATA) {
-						s.issue("Invalid Google Flights route response")
+					if !validFlightPath(path, pair.from.IATA, pair.to.IATA) {
+						check.Outcome = "failed"
 						s.r.ProviderFailures++
+						s.issue("Invalid Google Flights route response")
 						continue
 					}
-					keyParts := []string{}
 					steps := []Step{}
-					for i, leg := range path.Legs {
-						if i > 0 && path.Legs[i-1].To.IATA != leg.From.IATA {
-							steps = append(steps, transfer(s.airportName(path.Legs[i-1].To.IATA), s.airportName(leg.From.IATA)))
+					keyParts := []string{}
+					for j, leg := range path.Legs {
+						if j > 0 && path.Legs[j-1].To.IATA != leg.From.IATA {
+							steps = append(steps, transfer(s.airportName(path.Legs[j-1].To.IATA), s.airportName(leg.From.IATA)))
 						}
 						keyParts = append(keyParts, leg.From.IATA, leg.To.IATA)
 						steps = append(steps, Step{FromCode: "iata:" + leg.From.IATA, ToCode: "iata:" + leg.To.IATA, From: s.airportName(leg.From.IATA), To: s.airportName(leg.To.IATA), Mode: "plane", Evidence: "google-flights-fli", ObservedDates: []string{date}})
 					}
 					encoded, _ := json.Marshal(keyParts)
 					key := string(encoded)
-					if index, ok := seenPaths[key]; ok {
-						for i := range paths[index].Steps {
-							step := &paths[index].Steps[i]
+					if index, ok := pair.seen[key]; ok {
+						for j := range pair.paths[index].Steps {
+							step := &pair.paths[index].Steps[j]
 							if step.Evidence == "google-flights-fli" && step.ObservedDates[len(step.ObservedDates)-1] != date {
 								step.ObservedDates = append(step.ObservedDates, date)
 							}
 						}
-						continue
+					} else {
+						pair.seen[key] = len(pair.paths)
+						pair.paths = append(pair.paths, Candidate{Steps: steps})
 					}
-					seenPaths[key] = len(paths)
-					paths = append(paths, Candidate{Steps: steps})
 				}
 			}
-			// Find access only once for all chains/dates for this departure airport.
-			accesses := s.flightAccess(ctx, q, a, origin, cityCode, len(paths) > 0)
-			for _, path := range paths {
-				for _, access := range accesses {
-					steps := append(append([]Step(nil), access...), path.Steps...)
-					steps = append(steps, transfer(s.airportName(b.IATA), q.DestinationName))
-					s.add(steps)
-				}
+			s.r.FlightChecks = append(s.r.FlightChecks, check)
+		}
+	}
+	// Resolve feeder access only for observed chains, once per departure airport.
+	accessCache := map[string][][]Step{}
+	for i := range pairs {
+		pair := &pairs[i]
+		if len(pair.paths) == 0 {
+			continue
+		}
+		access, ok := accessCache[pair.from.IATA]
+		if !ok {
+			access = s.flightAccess(ctx, q, pair.from, origin, cityCode, true)
+			accessCache[pair.from.IATA] = access
+		}
+		pair.accesses = access
+	}
+	// Preserve diversity across pairs when the unique-scheme cap is small.
+	for round := 0; ; round++ {
+		added := false
+		for _, pair := range pairs {
+			if round >= len(pair.paths) {
+				continue
 			}
-			if requests >= s.p.Config.GoogleFlights.MaxRequests {
-				s.r.LimitReached = true
-				s.issue("Google Flights request budget reached")
-				return
+			added = true
+			for _, access := range pair.accesses {
+				steps := append(append([]Step(nil), access...), pair.paths[round].Steps...)
+				steps = append(steps, transfer(s.airportName(pair.to.IATA), q.DestinationName))
+				s.add(steps)
 			}
+		}
+		if !added {
+			break
 		}
 	}
 }

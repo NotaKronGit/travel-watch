@@ -32,6 +32,8 @@ const errors: Record<string,string> = {
 };
 
 const warningLabels: Record<string,string> = {
+ 'Rail access variant limit reached':'Достигнут лимит вариантов подвоза поездом для одной схемы. Сохранены не все вокзалы.',
+ 'Unique route scheme limit reached':'Достигнут лимит разных схем поездки. Выборка неполная.',
  'Google Flights samples departure dates; route coverage and timetable compatibility are incomplete':'Google Flights проверен на выборочных датах. Показаны схемы; время стыковок и доступность на другие даты не подтверждены.',
  'Google Flights request budget reached':'Достигнут лимит запросов Google Flights. Некоторые направления или даты не проверены.',
  'Google Flights request failed':'Часть запросов Google Flights завершилась ошибкой. Результаты Яндекса сохранены.',

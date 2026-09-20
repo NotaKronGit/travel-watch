@@ -1,0 +1,212 @@
+{
+  "flight_checks": [
+    {
+      "from": "SGC",
+      "to": "KEF",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "NJC",
+      "to": "KEF",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "NSK",
+      "to": "KEF",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKT",
+      "to": "KEF",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SLY",
+      "to": "KEF",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SGC",
+      "to": "RKV",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "NJC",
+      "to": "RKV",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "NSK",
+      "to": "RKV",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKT",
+      "to": "RKV",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SLY",
+      "to": "RKV",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SGC",
+      "to": "KEF",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "NJC",
+      "to": "KEF",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "NSK",
+      "to": "KEF",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKT",
+      "to": "KEF",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "SLY",
+      "to": "KEF",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "SGC",
+      "to": "RKV",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "NJC",
+      "to": "RKV",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "NSK",
+      "to": "RKV",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKT",
+      "to": "RKV",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "SLY",
+      "to": "RKV",
+      "date": "2026-10-18",
+      "outcome": "empty"
+    },
+    {
+      "from": "SGC",
+      "to": "KEF",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "NJC",
+      "to": "KEF",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "NSK",
+      "to": "KEF",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKT",
+      "to": "KEF",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "SLY",
+      "to": "KEF",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "SGC",
+      "to": "RKV",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "NJC",
+      "to": "RKV",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "NSK",
+      "to": "RKV",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "VKT",
+      "to": "RKV",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    },
+    {
+      "from": "SLY",
+      "to": "RKV",
+      "date": "2026-10-22",
+      "outcome": "empty"
+    }
+  ],
+  "query": {
+    "departure_from": "2026-10-15",
+    "departure_to": "2026-10-22",
+    "adults": 1,
+    "origin_name": "Воркута",
+    "destination_name": "Рейкьявик",
+    "origin": {
+      "latitude": 67.4974,
+      "longitude": 64.0611
+    },
+    "destination": {
+      "latitude": 64.1466,
+      "longitude": -21.9426
+    }
+  },
+  "observed_at": "2026-09-18T14:35:39.659022Z",
+  "source": "Yandex Rasp + Google Flights/Fli + OurAirports",
+  "complete": false,
+  "limit_reached": true,
+  "provider_failures": 16,
+  "requests": 171,
+  "issues": [
+    "Collector thread failed",
+    "Incomplete provider page: thread",
+    "Google Flights samples departure dates; route coverage and timetable compatibility are incomplete",
+    "Provider coverage and timetable compatibility are not complete; transfers are assumptions"
+  ],
+  "candidates": []
+}

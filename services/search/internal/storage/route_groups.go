@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/NotaKronGit/travel-watch/services/search/internal/realroutes"
@@ -20,7 +19,7 @@ func groupRailAccess(candidates []realroutes.Candidate) []realroutes.Candidate {
 	for _, c := range candidates {
 		key := railAccessKey(c)
 		if i, ok := seen[key]; key != "" && ok {
-			groups[i].count++
+			groups[i].count += max(1, len(c.RailAccessVariants))
 			for _, warning := range c.Warnings {
 				found := false
 				for _, old := range groups[i].candidate.Warnings {
@@ -40,19 +39,19 @@ func groupRailAccess(candidates []realroutes.Candidate) []realroutes.Candidate {
 		}
 		c.Steps = append([]realroutes.Step(nil), c.Steps...)
 		c.Warnings = append([]string(nil), c.Warnings...)
-		groups = append(groups, group{candidate: c, count: 1})
+		groups = append(groups, group{candidate: c, count: max(1, len(c.RailAccessVariants))})
 	}
 	result := make([]realroutes.Candidate, 0, len(groups))
 	for _, g := range groups {
 		c := g.candidate
-		if g.count > 1 {
+		if g.count > 1 && railAccessKey(c) != "" {
 			steps := c.Steps
-			flight := steps[3]
-			flight.Number = "" // Specific services are selected at the timetable stage.
-			c.Steps = []realroutes.Step{
-				{From: steps[0].From, To: flight.From + " (поезд до вокзала и переезд в аэропорт)", Mode: "train", Evidence: "rail-access"},
-				flight, steps[4],
+			tail := append([]realroutes.Step(nil), steps[3:]...)
+			for i := range tail {
+				tail[i].Number = ""
 			}
+			c.Steps = append([]realroutes.Step{{From: steps[0].From, To: steps[3].From + " (поезд до вокзала и переезд в аэропорт)", Mode: "train", Evidence: "rail-access"}}, tail...)
+
 			c.Warnings = append(c.Warnings, fmt.Sprintf("Объединено вариантов подвоза поездом: %d. Конкретные поезда, вокзалы и время переезда будут проверены на этапе стыковок.", g.count))
 		}
 		result = append(result, c)
@@ -60,18 +59,4 @@ func groupRailAccess(candidates []realroutes.Candidate) []realroutes.Candidate {
 	return result
 }
 
-func railAccessKey(c realroutes.Candidate) string {
-	s := c.Steps
-	if len(s) != 5 || s[0].Mode != "transfer" || s[1].Mode != "train" || s[2].Mode != "transfer" || (s[3].Mode != "plane" && s[3].Mode != "flight") || s[4].Mode != "transfer" {
-		return ""
-	}
-	if s[0].From == "" || s[1].FromCode == "" || s[3].FromCode == "" || s[3].ToCode == "" || s[4].To == "" {
-		return ""
-	}
-	// Require a continuous original scheme before abstracting station details.
-	if s[0].To != s[1].From || s[1].To != s[2].From || s[2].To != s[3].From || s[3].To != s[4].From {
-		return ""
-	}
-	key, _ := json.Marshal([]string{s[0].From, s[1].FromCode, s[3].FromCode, s[3].ToCode, s[4].To, s[0].Evidence, s[1].Evidence, s[2].Evidence, s[3].Evidence, s[4].Evidence})
-	return string(key)
-}
+func railAccessKey(c realroutes.Candidate) string { return realroutes.RailAccessKey(c) }
