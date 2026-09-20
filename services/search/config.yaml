@@ -50,6 +50,7 @@ planner:
   max_pages: 5
   max_requests: 240
   max_candidates: 20
+  max_rail_access_variants: 5
 
 progress:
   sources: [graph, gemini]

@@ -1,0 +1,1556 @@
+{
+  "flight_checks": [
+    {
+      "from": "KZN",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "GOJ",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SKX",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "KUF",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "IAR",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "PEE",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "UFA",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "GSV",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "URA",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "VKO",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "observed"
+    },
+    {
+      "from": "MQF",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "SYD",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "KZN",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "failed"
+    },
+    {
+      "from": "GOJ",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SKX",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "KUF",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "failed"
+    },
+    {
+      "from": "IAR",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "PEE",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "UFA",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "failed"
+    },
+    {
+      "from": "GSV",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "ZIA",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "URA",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "failed"
+    },
+    {
+      "from": "VKO",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "failed"
+    },
+    {
+      "from": "MQF",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "CSY",
+      "to": "NTL",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "KZN",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "GOJ",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "SKX",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    },
+    {
+      "from": "KUF",
+      "to": "BHS",
+      "date": "2026-10-15",
+      "outcome": "empty"
+    }
+  ],
+  "query": {
+    "departure_from": "2026-10-15",
+    "departure_to": "2026-10-22",
+    "adults": 1,
+    "origin_name": "Йошкар-Ола",
+    "destination_name": "Сидней",
+    "origin": {
+      "latitude": 56.6344,
+      "longitude": 47.8998
+    },
+    "destination": {
+      "latitude": -33.8688,
+      "longitude": 151.2093
+    }
+  },
+  "observed_at": "2026-09-18T14:35:42.524818Z",
+  "source": "Yandex Rasp + Google Flights/Fli + OurAirports",
+  "complete": false,
+  "limit_reached": true,
+  "provider_failures": 13,
+  "requests": 260,
+  "issues": [
+    "Incomplete provider page: thread",
+    "Collector thread failed",
+    "Collector search failed",
+    "Google Flights samples departure dates; route coverage and timetable compatibility are incomplete",
+    "Google Flights request failed",
+    "Google Flights request budget reached",
+    "Unique route scheme limit reached",
+    "Provider coverage and timetable compatibility are not complete; transfers are assumptions"
+  ],
+  "candidates": [
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9624402",
+          "from": "Казань",
+          "to": "Абу-Даби",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "EY 840"
+        },
+        {
+          "from_code": "s9624402",
+          "to_code": "s9632384",
+          "from": "Абу-Даби",
+          "to": "Кингсфорд Смит",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "EY 450"
+        },
+        {
+          "from": "Кингсфорд Смит",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600417",
+          "from": "Казань",
+          "to": "Пудун",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "MU 5066"
+        },
+        {
+          "from_code": "s9600417",
+          "to_code": "s9632384",
+          "from": "Пудун",
+          "to": "Кингсфорд Смит",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "HO 1669"
+        },
+        {
+          "from": "Кингсфорд Смит",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Kazan International Airport (KZN)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KZN",
+          "to_code": "iata:DXB",
+          "from": "Kazan International Airport (KZN)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SYD",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600380",
+          "from": "Казань",
+          "to": "Курумоч",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "RT 585"
+        },
+        {
+          "from": "Курумоч",
+          "to": "Kurumoch International Airport (KUF)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUF",
+          "to_code": "iata:DXB",
+          "from": "Kurumoch International Airport (KUF)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SYD",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600393",
+          "from": "Казань",
+          "to": "Уфа",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "Y7 3103"
+        },
+        {
+          "from": "Уфа",
+          "to": "Ufa International Airport (UFA)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:UFA",
+          "to_code": "iata:DXB",
+          "from": "Ufa International Airport (UFA)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SYD",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "rail_access_variants": [
+        [
+          {
+            "from": "Йошкар-Ола",
+            "to": "Йошкар-Ола",
+            "mode": "transfer",
+            "evidence": "assumed"
+          },
+          {
+            "from_code": "s9612396",
+            "to_code": "s2000003",
+            "from": "Йошкар-Ола",
+            "to": "Москва (Казанский вокзал)",
+            "mode": "train",
+            "evidence": "yandex-rasp",
+            "number": "058Э"
+          },
+          {
+            "from": "Москва (Казанский вокзал)",
+            "to": "Vnukovo International Airport (VKO)",
+            "mode": "transfer",
+            "evidence": "assumed"
+          }
+        ],
+        [
+          {
+            "from": "Йошкар-Ола",
+            "to": "Йошкар-Ола",
+            "mode": "transfer",
+            "evidence": "assumed"
+          },
+          {
+            "from_code": "s9612396",
+            "to_code": "s9878548",
+            "from": "Йошкар-Ола",
+            "to": "Москва Ярославская Тур",
+            "mode": "train",
+            "evidence": "yandex-rasp",
+            "number": "940Й"
+          },
+          {
+            "from": "Москва Ярославская Тур",
+            "to": "Vnukovo International Airport (VKO)",
+            "mode": "transfer",
+            "evidence": "assumed"
+          }
+        ]
+      ],
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Йошкар-Ола",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9612396",
+          "to_code": "s2000003",
+          "from": "Йошкар-Ола",
+          "to": "Москва (Казанский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "058Э"
+        },
+        {
+          "from": "Москва (Казанский вокзал)",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:IST",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "İstanbul Airport (IST)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:IST",
+          "to_code": "iata:KUL",
+          "from": "İstanbul Airport (IST)",
+          "to": "Kuala Lumpur International Airport (KUL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUL",
+          "to_code": "iata:SYD",
+          "from": "Kuala Lumpur International Airport (KUL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600215",
+          "from": "Казань",
+          "to": "Внуково",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "6R 9810"
+        },
+        {
+          "from": "Внуково",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:IST",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "İstanbul Airport (IST)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:IST",
+          "to_code": "iata:KUL",
+          "from": "İstanbul Airport (IST)",
+          "to": "Kuala Lumpur International Airport (KUL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUL",
+          "to_code": "iata:SYD",
+          "from": "Kuala Lumpur International Airport (KUL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600213",
+          "from": "Казань",
+          "to": "Шереметьево",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "SU 1199"
+        },
+        {
+          "from": "Шереметьево",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:IST",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "İstanbul Airport (IST)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:IST",
+          "to_code": "iata:KUL",
+          "from": "İstanbul Airport (IST)",
+          "to": "Kuala Lumpur International Airport (KUL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUL",
+          "to_code": "iata:SYD",
+          "from": "Kuala Lumpur International Airport (KUL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Чебоксары",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9623358",
+          "to_code": "s9600213",
+          "from": "Чебоксары",
+          "to": "Шереметьево",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "SU 1587"
+        },
+        {
+          "from": "Шереметьево",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:IST",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "İstanbul Airport (IST)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:IST",
+          "to_code": "iata:KUL",
+          "from": "İstanbul Airport (IST)",
+          "to": "Kuala Lumpur International Airport (KUL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUL",
+          "to_code": "iata:SYD",
+          "from": "Kuala Lumpur International Airport (KUL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600216",
+          "from": "Казань",
+          "to": "Домодедово",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "S7 1156"
+        },
+        {
+          "from": "Домодедово",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:IST",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "İstanbul Airport (IST)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:IST",
+          "to_code": "iata:KUL",
+          "from": "İstanbul Airport (IST)",
+          "to": "Kuala Lumpur International Airport (KUL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUL",
+          "to_code": "iata:SYD",
+          "from": "Kuala Lumpur International Airport (KUL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Kazan International Airport (KZN)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KZN",
+          "to_code": "iata:DXB",
+          "from": "Kazan International Airport (KZN)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:MEL",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Melbourne Airport (MEL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:MEL",
+          "to_code": "iata:SYD",
+          "from": "Melbourne Airport (MEL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600380",
+          "from": "Казань",
+          "to": "Курумоч",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "RT 585"
+        },
+        {
+          "from": "Курумоч",
+          "to": "Kurumoch International Airport (KUF)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:KUF",
+          "to_code": "iata:DXB",
+          "from": "Kurumoch International Airport (KUF)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:MEL",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Melbourne Airport (MEL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:MEL",
+          "to_code": "iata:SYD",
+          "from": "Melbourne Airport (MEL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600393",
+          "from": "Казань",
+          "to": "Уфа",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "Y7 3103"
+        },
+        {
+          "from": "Уфа",
+          "to": "Ufa International Airport (UFA)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:UFA",
+          "to_code": "iata:DXB",
+          "from": "Ufa International Airport (UFA)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:MEL",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Melbourne Airport (MEL)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:MEL",
+          "to_code": "iata:SYD",
+          "from": "Melbourne Airport (MEL)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "rail_access_variants": [
+        [
+          {
+            "from": "Йошкар-Ола",
+            "to": "Йошкар-Ола",
+            "mode": "transfer",
+            "evidence": "assumed"
+          },
+          {
+            "from_code": "s9612396",
+            "to_code": "s2000003",
+            "from": "Йошкар-Ола",
+            "to": "Москва (Казанский вокзал)",
+            "mode": "train",
+            "evidence": "yandex-rasp",
+            "number": "058Э"
+          },
+          {
+            "from": "Москва (Казанский вокзал)",
+            "to": "Vnukovo International Airport (VKO)",
+            "mode": "transfer",
+            "evidence": "assumed"
+          }
+        ],
+        [
+          {
+            "from": "Йошкар-Ола",
+            "to": "Йошкар-Ола",
+            "mode": "transfer",
+            "evidence": "assumed"
+          },
+          {
+            "from_code": "s9612396",
+            "to_code": "s9878548",
+            "from": "Йошкар-Ола",
+            "to": "Москва Ярославская Тур",
+            "mode": "train",
+            "evidence": "yandex-rasp",
+            "number": "940Й"
+          },
+          {
+            "from": "Москва Ярославская Тур",
+            "to": "Vnukovo International Airport (VKO)",
+            "mode": "transfer",
+            "evidence": "assumed"
+          }
+        ]
+      ],
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Йошкар-Ола",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9612396",
+          "to_code": "s2000003",
+          "from": "Йошкар-Ола",
+          "to": "Москва (Казанский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "058Э"
+        },
+        {
+          "from": "Москва (Казанский вокзал)",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SIN",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Singapore Changi Airport (SIN)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:SIN",
+          "to_code": "iata:SYD",
+          "from": "Singapore Changi Airport (SIN)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600215",
+          "from": "Казань",
+          "to": "Внуково",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "6R 9810"
+        },
+        {
+          "from": "Внуково",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SIN",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Singapore Changi Airport (SIN)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:SIN",
+          "to_code": "iata:SYD",
+          "from": "Singapore Changi Airport (SIN)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600213",
+          "from": "Казань",
+          "to": "Шереметьево",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "SU 1199"
+        },
+        {
+          "from": "Шереметьево",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SIN",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Singapore Changi Airport (SIN)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:SIN",
+          "to_code": "iata:SYD",
+          "from": "Singapore Changi Airport (SIN)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Чебоксары",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9623358",
+          "to_code": "s9600213",
+          "from": "Чебоксары",
+          "to": "Шереметьево",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "SU 1587"
+        },
+        {
+          "from": "Шереметьево",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SIN",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Singapore Changi Airport (SIN)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:SIN",
+          "to_code": "iata:SYD",
+          "from": "Singapore Changi Airport (SIN)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600216",
+          "from": "Казань",
+          "to": "Домодедово",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "S7 1156"
+        },
+        {
+          "from": "Домодедово",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SIN",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Singapore Changi Airport (SIN)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:SIN",
+          "to_code": "iata:SYD",
+          "from": "Singapore Changi Airport (SIN)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "rail_access_variants": [
+        [
+          {
+            "from": "Йошкар-Ола",
+            "to": "Йошкар-Ола",
+            "mode": "transfer",
+            "evidence": "assumed"
+          },
+          {
+            "from_code": "s9612396",
+            "to_code": "s2000003",
+            "from": "Йошкар-Ола",
+            "to": "Москва (Казанский вокзал)",
+            "mode": "train",
+            "evidence": "yandex-rasp",
+            "number": "058Э"
+          },
+          {
+            "from": "Москва (Казанский вокзал)",
+            "to": "Vnukovo International Airport (VKO)",
+            "mode": "transfer",
+            "evidence": "assumed"
+          }
+        ],
+        [
+          {
+            "from": "Йошкар-Ола",
+            "to": "Йошкар-Ола",
+            "mode": "transfer",
+            "evidence": "assumed"
+          },
+          {
+            "from_code": "s9612396",
+            "to_code": "s9878548",
+            "from": "Йошкар-Ола",
+            "to": "Москва Ярославская Тур",
+            "mode": "train",
+            "evidence": "yandex-rasp",
+            "number": "940Й"
+          },
+          {
+            "from": "Москва Ярославская Тур",
+            "to": "Vnukovo International Airport (VKO)",
+            "mode": "transfer",
+            "evidence": "assumed"
+          }
+        ]
+      ],
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Йошкар-Ола",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9612396",
+          "to_code": "s2000003",
+          "from": "Йошкар-Ола",
+          "to": "Москва (Казанский вокзал)",
+          "mode": "train",
+          "evidence": "yandex-rasp",
+          "number": "058Э"
+        },
+        {
+          "from": "Москва (Казанский вокзал)",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SYD",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    },
+    {
+      "steps": [
+        {
+          "from": "Йошкар-Ола",
+          "to": "Казань",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "from_code": "s9600379",
+          "to_code": "s9600215",
+          "from": "Казань",
+          "to": "Внуково",
+          "mode": "plane",
+          "evidence": "yandex-rasp",
+          "number": "6R 9810"
+        },
+        {
+          "from": "Внуково",
+          "to": "Vnukovo International Airport (VKO)",
+          "mode": "transfer",
+          "evidence": "assumed"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:VKO",
+          "to_code": "iata:DXB",
+          "from": "Vnukovo International Airport (VKO)",
+          "to": "Dubai International Airport (DXB)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "observed_dates": [
+            "2026-10-15"
+          ],
+          "from_code": "iata:DXB",
+          "to_code": "iata:SYD",
+          "from": "Dubai International Airport (DXB)",
+          "to": "Sydney Kingsford Smith International Airport (SYD)",
+          "mode": "plane",
+          "evidence": "google-flights-fli"
+        },
+        {
+          "from": "Sydney Kingsford Smith International Airport (SYD)",
+          "to": "Сидней",
+          "mode": "transfer",
+          "evidence": "assumed"
+        }
+      ],
+      "warnings": [
+        "Transfers are assumed; availability and connection times are not verified"
+      ]
+    }
+  ]
+}

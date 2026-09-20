@@ -18,20 +18,24 @@ type FlightConfig struct {
 }
 
 type Config struct {
-	GoogleFlights   FlightConfig  `mapstructure:"google_flights"`
-	CollectorBinary string        `mapstructure:"collector_binary"`
-	Timeout         time.Duration `mapstructure:"timeout"`
-	AirportRadiusKM float64       `mapstructure:"airport_radius_km"`
-	HubRadiusKM     float64       `mapstructure:"hub_radius_km"`
-	RailRadiusKM    float64       `mapstructure:"rail_radius_km"`
-	MaxAirports     int           `mapstructure:"max_airports"`
-	MaxHubs         int           `mapstructure:"max_hubs"`
-	MaxPages        int           `mapstructure:"max_pages"`
-	MaxRequests     int           `mapstructure:"max_requests"`
-	MaxCandidates   int           `mapstructure:"max_candidates"`
+	GoogleFlights         FlightConfig  `mapstructure:"google_flights"`
+	CollectorBinary       string        `mapstructure:"collector_binary"`
+	Timeout               time.Duration `mapstructure:"timeout"`
+	AirportRadiusKM       float64       `mapstructure:"airport_radius_km"`
+	HubRadiusKM           float64       `mapstructure:"hub_radius_km"`
+	RailRadiusKM          float64       `mapstructure:"rail_radius_km"`
+	MaxAirports           int           `mapstructure:"max_airports"`
+	MaxHubs               int           `mapstructure:"max_hubs"`
+	MaxPages              int           `mapstructure:"max_pages"`
+	MaxRequests           int           `mapstructure:"max_requests"`
+	MaxRailAccessVariants int           `mapstructure:"max_rail_access_variants"`
+	MaxCandidates         int           `mapstructure:"max_candidates"`
 }
 
 func (c Config) Validate() error {
+	if c.MaxRailAccessVariants < 0 || c.MaxRailAccessVariants > 20 {
+		return errors.New("invalid rail access variant limit")
+	}
 	if c.GoogleFlights.Enabled && (c.GoogleFlights.MaxRequests < 1 || c.GoogleFlights.MaxRequests > 120 || c.GoogleFlights.MaxOptions < 1 || c.GoogleFlights.MaxOptions > 50) {
 		return errors.New("invalid Google Flights planner limits")
 	}
@@ -63,9 +67,13 @@ type Step struct {
 	Evidence      string   `json:"evidence"`
 	Number        string   `json:"number,omitempty"`
 }
+
+// RailAccessVariants holds all retained three-step feeder prefixes, including
+// the representative prefix in Steps. Older saved results omit this field.
 type Candidate struct {
-	Steps    []Step   `json:"steps"`
-	Warnings []string `json:"warnings"`
+	RailAccessVariants [][]Step `json:"rail_access_variants,omitempty"`
+	Steps              []Step   `json:"steps"`
+	Warnings           []string `json:"warnings"`
 }
 type FlightCheck struct {
 	From    string `json:"from"`
@@ -100,4 +108,11 @@ func distance(a, b transport.Point) float64 {
 }
 func point(a airports.Airport) transport.Point {
 	return transport.Point{Latitude: a.Latitude, Longitude: a.Longitude}
+}
+
+func (c Config) railAccessLimit() int {
+	if c.MaxRailAccessVariants == 0 {
+		return 5
+	} // Backwards-compatible YAML default.
+	return c.MaxRailAccessVariants
 }

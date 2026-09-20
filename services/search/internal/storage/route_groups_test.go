@@ -60,3 +60,27 @@ func TestRailAccessKeepsDistinctOrAmbiguousRoutes(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupedMultiFlightResultRetainsTailAndInput(t *testing.T) {
+	c := railCandidate("a", "hub")
+	c.Steps = append(c.Steps[:4], append([]realroutes.Step{{From: "Аэропорт назначения", To: "Final airport", FromCode: "arrival", ToCode: "final", Mode: "plane", Evidence: "google-flights-fli", ObservedDates: []string{"2027-01-01"}}}, realroutes.Step{From: "Final airport", To: "Город назначения", Mode: "transfer", Evidence: "assumed"})...)
+	c.RailAccessVariants = [][]realroutes.Step{append([]realroutes.Step(nil), c.Steps[:3]...), railCandidate("b", "hub").Steps[:3]}
+	before, _ := json.Marshal(c)
+	got := groupRailAccess([]realroutes.Candidate{c})
+	if len(got) != 1 || len(got[0].Steps) != 4 || got[0].Steps[2].ToCode != "final" || len(got[0].Steps[2].ObservedDates) != 1 {
+		t.Fatalf("flight tail lost: %+v", got)
+	}
+	after, _ := json.Marshal(c)
+	if string(before) != string(after) {
+		t.Fatal("saved data mutated")
+	}
+	// Historical flattened results remain readable with the same multi-flight grouping.
+	other := c
+	other.Steps = append([]realroutes.Step(nil), c.Steps...)
+	copy(other.Steps[:3], railCandidate("b", "hub").Steps[:3])
+	other.RailAccessVariants = nil
+	c.RailAccessVariants = nil
+	if got := groupRailAccess([]realroutes.Candidate{c, other}); len(got) != 1 || len(got[0].Steps) != 4 {
+		t.Fatal("legacy multi-flight grouping failed")
+	}
+}

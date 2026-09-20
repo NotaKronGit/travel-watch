@@ -20,6 +20,7 @@ type run struct {
 	cache          map[string]transport.Response
 	failures       map[string]bool
 	seen           map[string]bool
+	railGroups     map[string]int
 }
 
 func (p Planner) Plan(ctx context.Context, q Query) (Result, error) {
@@ -75,9 +76,7 @@ func (p Planner) Plan(ctx context.Context, q Query) (Result, error) {
 			geographic = append(geographic, a)
 		}
 	}
-	sort.SliceStable(geographic, func(i, j int) bool {
-		return distance(q.Origin, point(geographic[i])) < distance(q.Origin, point(geographic[j]))
-	})
+	geographic = diverseAirports(geographic, q.Origin)
 	if len(geographic) > p.Config.MaxHubs {
 		geographic = geographic[:p.Config.MaxHubs]
 		s.r.LimitReached = true
@@ -296,6 +295,9 @@ func (s *run) near(pt transport.Point, radius float64) []airports.Airport {
 		}
 	}
 	sort.Slice(a, func(i, j int) bool {
+		if a[i].Type != a[j].Type {
+			return a[i].Type == "large_airport"
+		}
 		di, dj := distance(pt, point(a[i])), distance(pt, point(a[j]))
 		if di == dj {
 			return a[i].SourceID < a[j].SourceID
@@ -313,18 +315,40 @@ func observed(c transport.Connection) Step {
 	return Step{From: c.From.Title, To: c.To.Title, FromCode: c.From.Code, ToCode: c.To.Code, Mode: c.Mode, Evidence: "yandex-rasp", Number: c.Number}
 }
 func (s *run) add(steps []Step) {
-	// Dedupe topology, not flight/train numbers or schedule variants.
-	key := ""
-	for _, v := range steps {
-		key += v.FromCode + "/" + v.ToCode + "\x00" + v.From + "\x00" + v.To + "\x00" + v.Mode + "\x00"
+	key := topologyKey(steps)
+	if s.seen == nil {
+		s.seen = map[string]bool{}
 	}
 	if s.seen[key] {
 		return
 	}
-	s.seen[key] = true
+	groupKey := RailAccessKey(Candidate{Steps: steps})
+	if groupKey != "" {
+		if s.railGroups == nil {
+			s.railGroups = map[string]int{}
+		}
+		if index, ok := s.railGroups[groupKey]; ok {
+			c := &s.r.Candidates[index]
+			if len(c.RailAccessVariants) >= s.p.Config.railAccessLimit() {
+				s.r.LimitReached = true
+				s.issue("Rail access variant limit reached")
+				return
+			}
+			c.RailAccessVariants = append(c.RailAccessVariants, cloneSteps(steps[:3]))
+			s.seen[key] = true
+			return
+		}
+	}
 	if len(s.r.Candidates) >= s.p.Config.MaxCandidates {
 		s.r.LimitReached = true
+		s.issue("Unique route scheme limit reached")
 		return
 	}
-	s.r.Candidates = append(s.r.Candidates, Candidate{Steps: steps, Warnings: []string{"Transfers are assumed; availability and connection times are not verified"}})
+	c := Candidate{Steps: cloneSteps(steps), Warnings: []string{"Transfers are assumed; availability and connection times are not verified"}}
+	if groupKey != "" {
+		s.railGroups[groupKey] = len(s.r.Candidates)
+		c.RailAccessVariants = [][]Step{cloneSteps(steps[:3])}
+	}
+	s.seen[key] = true
+	s.r.Candidates = append(s.r.Candidates, c)
 }
