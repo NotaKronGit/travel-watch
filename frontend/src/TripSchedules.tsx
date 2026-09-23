@@ -3,25 +3,15 @@ import { Alert, Box, Button, Chip, Divider, Stack, Typography } from '@mui/mater
 import { Code, ConnectError } from '@connectrpc/connect';
 import { useNavigate } from 'react-router-dom';
 import { tripClient } from './api';
-import type { ScheduleCheck, ScheduledLeg } from './gen/travelwatch/search/v1/routes_pb';
-import { formatMinutes } from './duration';
-
-const labels:Record<string,string>={pending:'Ожидает проверки',running:'Проверяем расписания',done:'Проверка выполнена',failed:'Проверка не завершена',cancelled:'Заявка отменена'};
-const schemeLabels:Record<string,string>={compatible:'Время согласуется с заданными запасами',unverified:'Не удалось подтвердить стыковку',no_match:'Подходящих сочетаний в проверенной выборке нет'};
-// Preserve station-local time and its UTC offset; browser timezone must not shift it.
-function stationTime(value:string){return value.replace('T',' ').replace(/:00(?=[+-]|Z$)/,' ');}
-// The transfer duration is the traveller's call: show what is left after check-in or boarding.
-function connection(leg:ScheduledLeg,verified:boolean){
- if(leg.transferFrom){
-  const boarding=leg.mode==='train'?'на посадку':'на регистрацию';
-  return `Переезд ${leg.transferFrom} → ${leg.transferTo}: на переезд ${formatMinutes(leg.connectionMinutes-leg.boardingMinutes)} (${formatMinutes(leg.connectionMinutes)} между участками − ${formatMinutes(leg.boardingMinutes)} ${boarding})`;
- }
- return `Между участками: ${formatMinutes(leg.connectionMinutes)} · Учтённый минимум: ${formatMinutes(leg.requiredMinutes)}${!verified?' (без неизвестных переездов)':''}`;
-}
+import type { ScheduleCheck } from './gen/travelwatch/search/v1/routes_pb';
+import { checkLabels as labels, connectionText as connection, formatScheduleExport, schemeLabels, stationTime } from './scheduleExport';
+import { copyText, downloadText } from './share';
 export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
  const [result,setResult]=useState<ScheduleCheck>();
  const [error,setError]=useState('');
  const [retry,setRetry]=useState(0);
+ const [shareMessage,setShareMessage]=useState('');
+ const [shareError,setShareError]=useState(false);
  const navigate=useNavigate();
  useEffect(()=>{
   const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;
@@ -53,6 +43,11 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
   {result?.checkedAt && <Typography variant="body2">Проверено: {new Date(Number(result.checkedAt.seconds)*1000).toLocaleString('ru-RU')} · Запросов к источнику: {result.requests}</Typography>}
   {result?.incomplete && <Alert severity="warning">Проверка неполная. Результаты относятся только к рассмотренным датам, участкам и сочетаниям.</Alert>}
   {result?.warnings.map((w,i)=><Typography variant="body2" color="text.secondary" key={i}>{w}</Typography>)}
+  {result && result.schemes.some(s=>s.journeys.length>0) && <Stack direction="row" sx={{gap:1,flexWrap:'wrap'}}>
+   <Button onClick={()=>void copyText(formatScheduleExport(result)).then(()=>{setShareError(false);setShareMessage('Стыковки скопированы. Можно переслать сообщение.');},()=>{setShareError(true);setShareMessage('Не удалось скопировать. Скачайте TXT и перешлите файл.');})}>Скопировать стыковки</Button>
+   <Button onClick={()=>{downloadText('travel-watch-connections.txt',formatScheduleExport(result));setShareMessage('');}}>Скачать стыковки TXT</Button>
+  </Stack>}
+  {shareMessage && <Alert role="status" severity={shareError?'warning':'success'}>{shareMessage}</Alert>}
   {result?.schemes.map((s,i)=><Box key={i} sx={{p:2,border:'1px solid',borderColor:'divider',borderRadius:2}}>
    <Typography variant="h6">Схема {s.schemeNumber} · Подвоз {s.accessVariant}</Typography>
    <Alert severity={s.state==='compatible'?'success':'info'} sx={{my:1}}>{schemeLabels[s.state] || s.state}</Alert>
