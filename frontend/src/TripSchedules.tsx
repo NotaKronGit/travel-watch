@@ -6,6 +6,7 @@ import { tripClient } from './api';
 import type { ScheduleCheck } from './gen/travelwatch/search/v1/routes_pb';
 import { checkLabels as labels, connectionText as connection, scheduleToJson, journeySummary, overnight, overnightBefore, overnightNote, schemeLabels, sortLabels, sortSchemes, stationTime, transferCounts, transferLimitText, type JourneyFilter, type JourneySort, expired, expiredCount } from './scheduleExport';
 import { copyText, downloadText } from './share';
+function at(ts:{seconds:bigint}){return new Date(Number(ts.seconds)*1000).toLocaleString('ru-RU');}
 // Journeys shown per scheme before "show all"; sorting decides which ones.
 const shownJourneys=3;
 export function TripSchedules({id,cancelled,expired:tripExpired=false}:{id:string;cancelled:boolean;expired?:boolean}){
@@ -15,6 +16,8 @@ export function TripSchedules({id,cancelled,expired:tripExpired=false}:{id:strin
  const [shareMessage,setShareMessage]=useState('');
  const [shareError,setShareError]=useState(false);
  const [sort,setSort]=useState<JourneySort>('wait');
+ // A re-check in progress: the previous result stays on screen.
+ const refreshing=result?.state==='running' && !!result.checkedAt;
  const [expanded,setExpanded]=useState<Set<number>>(new Set());
  // undefined: any number of transfers.
  const [maxTransfers,setMaxTransfers]=useState<number>();
@@ -35,20 +38,23 @@ export function TripSchedules({id,cancelled,expired:tripExpired=false}:{id:strin
  useEffect(()=>{
   const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;
   async function load(){
-   let again=true;
+   let again=true;let delay=5000;
    try{
     const response=await tripClient.getTripRoutes({id,pageSize:1,plannerId:'graph'},{signal:controller.signal});
     if(controller.signal.aborted)return;
     setResult(response.result?.scheduleCheck);setError('');
     const state=response.result?.scheduleCheck?.state;
-    // An expired trip gets no new checks; waiting for one would poll forever.
-    again=!cancelled && !tripExpired && (!state || state==='pending' || state==='running');
+    // An expired trip gets no new checks; waiting for one would poll forever. After a
+    // finished check the saved result is re-read once a minute to pick up re-checks;
+    // reading never runs a check.
+    again=!cancelled && !tripExpired;
+    delay=!state || state==='pending' || state==='running' ? 5000 : 60000;
    }catch(err){
     if(controller.signal.aborted)return;
     if(err instanceof ConnectError && err.code===Code.Unauthenticated){navigate('/login');return;}
     if(err instanceof ConnectError && err.code===Code.NotFound){setResult(undefined);again=false;}
     setError('Не удалось загрузить проверку стыковок. Повторите загрузку.');
-   }finally{if(!controller.signal.aborted && again)timer=setTimeout(()=>void load(),5000);}
+   }finally{if(!controller.signal.aborted && again)timer=setTimeout(()=>void load(),delay);}
   }
   void load();return()=>{controller.abort();if(timer)clearTimeout(timer);};
  },[id,cancelled,tripExpired,retry,navigate]);
@@ -56,12 +62,14 @@ export function TripSchedules({id,cancelled,expired:tripExpired=false}:{id:strin
   <Typography component="h2" variant="h5">Расписания и стыковки</Typography>
   <Typography color="text.secondary">Результаты проверки схем нашего алгоритма по датам заявки. Время отправления и прибытия указано по местному времени станции с часовым смещением.</Typography>
   {error && <Alert severity="warning" action={<Button color="inherit" onClick={()=>setRetry(n=>n+1)}>Повторить</Button>}>{error}</Alert>}
-  <Chip sx={{alignSelf:'flex-start'}} label={cancelled ? labels.cancelled : labels[result?.state || 'pending'] || 'Состояние неизвестно'}/>
+  <Chip sx={{alignSelf:'flex-start'}} label={cancelled ? labels.cancelled : refreshing ? 'Обновляем расписания' : labels[result?.state || 'pending'] || 'Состояние неизвестно'}/>
   {(!result || result.state==='pending') && tripExpired && <Alert severity="info">Проверка расписаний не выполнялась: заявка истекла.</Alert>}
   {(!result || result.state==='pending') && !cancelled && !tripExpired && <Alert severity="info">Проверка появится после сохранения схем и запуска обработчика расписаний. Открытие вкладки не запускает запросы к перевозчикам.</Alert>}
-  {result?.state==='running' && <Typography role="status">Получаем расписания и проверяем время между участками…</Typography>}
+  {result?.state==='running' && !refreshing && <Typography role="status">Получаем расписания и проверяем время между участками…</Typography>}
+  {refreshing && <Alert role="status" severity="info">Обновляем расписания. Пока показан результат предыдущей проверки.</Alert>}
+  {result?.refreshFailedAt && <Alert severity="warning">Не удалось обновить расписания {at(result.refreshFailedAt)}. Показан предыдущий результат; это не означает, что рейсов нет.</Alert>}
   {result?.state==='failed' && <Alert severity="warning">Проверку не удалось завершить. Это не означает, что рейсов нет.</Alert>}
-  {result?.checkedAt && <Typography variant="body2">Проверено: {new Date(Number(result.checkedAt.seconds)*1000).toLocaleString('ru-RU')} · Запросов к источнику: {result.requests}</Typography>}
+  {result?.checkedAt && <Typography variant="body2">Проверено: {at(result.checkedAt)} · Запросов к источнику: {result.requests}{result.nextCheckAt && !refreshing ? ` · Следующая проверка: около ${at(result.nextCheckAt)}` : ''}</Typography>}
   {result?.incomplete && <Alert severity="warning">Проверка неполная. Результаты относятся только к рассмотренным датам, участкам и сочетаниям.</Alert>}
   {result?.warnings.map((w,i)=><Typography variant="body2" color="text.secondary" key={i}>{w}</Typography>)}
   {result && result.schemes.some(s=>s.journeys.length>0) && <Stack direction="row" sx={{gap:1,flexWrap:'wrap'}}>

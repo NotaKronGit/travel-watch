@@ -54,6 +54,10 @@ message ScheduleCheck {
  int32 requests = 4;
  repeated string warnings = 5;
  repeated ScheduledScheme schemes = 6;
+ // Next periodic re-check of an active request; absent when none is planned.
+ google.protobuf.Timestamp next_check_at = 7;
+ // The last re-check failed; the previous result shown here was kept.
+ google.protobuf.Timestamp refresh_failed_at = 8;
 }
 message ScheduledScheme {
  int32 scheme_number = 1;

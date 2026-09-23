@@ -414,15 +414,19 @@ func (x *GetRoutesResponse) GetScheduleCheck() *ScheduleCheck {
 
 // Saved timetable check; reading it never invokes a supplier.
 type ScheduleCheck struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	State         string                 `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
-	CheckedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=checked_at,json=checkedAt,proto3" json:"checked_at,omitempty"`
-	Incomplete    bool                   `protobuf:"varint,3,opt,name=incomplete,proto3" json:"incomplete,omitempty"`
-	Requests      int32                  `protobuf:"varint,4,opt,name=requests,proto3" json:"requests,omitempty"`
-	Warnings      []string               `protobuf:"bytes,5,rep,name=warnings,proto3" json:"warnings,omitempty"`
-	Schemes       []*ScheduledScheme     `protobuf:"bytes,6,rep,name=schemes,proto3" json:"schemes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	State      string                 `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
+	CheckedAt  *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=checked_at,json=checkedAt,proto3" json:"checked_at,omitempty"`
+	Incomplete bool                   `protobuf:"varint,3,opt,name=incomplete,proto3" json:"incomplete,omitempty"`
+	Requests   int32                  `protobuf:"varint,4,opt,name=requests,proto3" json:"requests,omitempty"`
+	Warnings   []string               `protobuf:"bytes,5,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	Schemes    []*ScheduledScheme     `protobuf:"bytes,6,rep,name=schemes,proto3" json:"schemes,omitempty"`
+	// Next periodic re-check of an active request; absent when none is planned.
+	NextCheckAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=next_check_at,json=nextCheckAt,proto3" json:"next_check_at,omitempty"`
+	// The last re-check failed; the previous result shown here was kept.
+	RefreshFailedAt *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=refresh_failed_at,json=refreshFailedAt,proto3" json:"refresh_failed_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ScheduleCheck) Reset() {
@@ -493,6 +497,20 @@ func (x *ScheduleCheck) GetWarnings() []string {
 func (x *ScheduleCheck) GetSchemes() []*ScheduledScheme {
 	if x != nil {
 		return x.Schemes
+	}
+	return nil
+}
+
+func (x *ScheduleCheck) GetNextCheckAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.NextCheckAt
+	}
+	return nil
+}
+
+func (x *ScheduleCheck) GetRefreshFailedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RefreshFailedAt
 	}
 	return nil
 }
@@ -813,7 +831,7 @@ const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
 	"\brevision\x18\x01 \x01(\x03R\brevision\x12\x14\n" +
 	"\x05stage\x18\x02 \x01(\tR\x05stage\x12=\n" +
 	"\asources\x18\x03 \x03(\v2#.travelwatch.search.v1.SourceRoutesR\asources\x12K\n" +
-	"\x0eschedule_check\x18\x04 \x01(\v2$.travelwatch.search.v1.ScheduleCheckR\rscheduleCheck\"\xfa\x01\n" +
+	"\x0eschedule_check\x18\x04 \x01(\v2$.travelwatch.search.v1.ScheduleCheckR\rscheduleCheck\"\x82\x03\n" +
 	"\rScheduleCheck\x12\x14\n" +
 	"\x05state\x18\x01 \x01(\tR\x05state\x129\n" +
 	"\n" +
@@ -823,7 +841,9 @@ const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
 	"incomplete\x12\x1a\n" +
 	"\brequests\x18\x04 \x01(\x05R\brequests\x12\x1a\n" +
 	"\bwarnings\x18\x05 \x03(\tR\bwarnings\x12@\n" +
-	"\aschemes\x18\x06 \x03(\v2&.travelwatch.search.v1.ScheduledSchemeR\aschemes\"\xd4\x01\n" +
+	"\aschemes\x18\x06 \x03(\v2&.travelwatch.search.v1.ScheduledSchemeR\aschemes\x12>\n" +
+	"\rnext_check_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vnextCheckAt\x12F\n" +
+	"\x11refresh_failed_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x0frefreshFailedAt\"\xd4\x01\n" +
 	"\x0fScheduledScheme\x12#\n" +
 	"\rscheme_number\x18\x01 \x01(\x05R\fschemeNumber\x12%\n" +
 	"\x0eaccess_variant\x18\x02 \x01(\x05R\raccessVariant\x12\x14\n" +
@@ -887,16 +907,18 @@ var file_travelwatch_search_v1_routes_proto_depIdxs = []int32{
 	5,  // 5: travelwatch.search.v1.GetRoutesResponse.schedule_check:type_name -> travelwatch.search.v1.ScheduleCheck
 	9,  // 6: travelwatch.search.v1.ScheduleCheck.checked_at:type_name -> google.protobuf.Timestamp
 	6,  // 7: travelwatch.search.v1.ScheduleCheck.schemes:type_name -> travelwatch.search.v1.ScheduledScheme
-	7,  // 8: travelwatch.search.v1.ScheduledScheme.journeys:type_name -> travelwatch.search.v1.ScheduledJourney
-	8,  // 9: travelwatch.search.v1.ScheduledJourney.legs:type_name -> travelwatch.search.v1.ScheduledLeg
-	9,  // 10: travelwatch.search.v1.ScheduledLeg.observed_at:type_name -> google.protobuf.Timestamp
-	0,  // 11: travelwatch.search.v1.RouteResultsService.GetRoutes:input_type -> travelwatch.search.v1.GetRoutesRequest
-	4,  // 12: travelwatch.search.v1.RouteResultsService.GetRoutes:output_type -> travelwatch.search.v1.GetRoutesResponse
-	12, // [12:13] is the sub-list for method output_type
-	11, // [11:12] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	9,  // 8: travelwatch.search.v1.ScheduleCheck.next_check_at:type_name -> google.protobuf.Timestamp
+	9,  // 9: travelwatch.search.v1.ScheduleCheck.refresh_failed_at:type_name -> google.protobuf.Timestamp
+	7,  // 10: travelwatch.search.v1.ScheduledScheme.journeys:type_name -> travelwatch.search.v1.ScheduledJourney
+	8,  // 11: travelwatch.search.v1.ScheduledJourney.legs:type_name -> travelwatch.search.v1.ScheduledLeg
+	9,  // 12: travelwatch.search.v1.ScheduledLeg.observed_at:type_name -> google.protobuf.Timestamp
+	0,  // 13: travelwatch.search.v1.RouteResultsService.GetRoutes:input_type -> travelwatch.search.v1.GetRoutesRequest
+	4,  // 14: travelwatch.search.v1.RouteResultsService.GetRoutes:output_type -> travelwatch.search.v1.GetRoutesResponse
+	14, // [14:15] is the sub-list for method output_type
+	13, // [13:14] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_search_v1_routes_proto_init() }

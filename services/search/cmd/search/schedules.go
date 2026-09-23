@@ -40,7 +40,7 @@ func checkSchedules(ctx context.Context, db *sql.DB, c config.Config) error {
 	store := storage.New(db)
 	for ctx.Err() == nil {
 		op, cancel := context.WithTimeout(ctx, c.Progress.Timeout)
-		job, found, err := store.ClaimSchedules(op, c.Schedules.Timeout+3*c.Progress.Timeout)
+		job, found, err := store.ClaimSchedules(op, c.Schedules.Timeout+3*c.Progress.Timeout, c.Schedules.RecheckInterval)
 		cancel()
 		if err != nil {
 			return err
@@ -59,7 +59,7 @@ func checkSchedules(ctx context.Context, db *sql.DB, c config.Config) error {
 			return ctx.Err()
 		}
 		op, cancel = context.WithTimeout(ctx, c.Progress.Timeout)
-		err = store.FinishSchedules(op, job, result)
+		err = store.FinishSchedules(op, job, result, c.Schedules.RecheckInterval)
 		cancel()
 		if err != nil {
 			return err
