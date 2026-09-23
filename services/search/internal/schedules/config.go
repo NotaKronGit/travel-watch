@@ -4,8 +4,12 @@ package schedules
 import (
 	"errors"
 	"time"
+
+	"github.com/NotaKronGit/travel-watch/services/search/internal/realroutes"
 )
 
+// Transfer is a known directed ground transfer between endpoint codes
+// (city:<id>, Yandex station code or iata:<IATA>), never between titles.
 type Transfer struct {
 	From     string        `mapstructure:"from"`
 	To       string        `mapstructure:"to"`
@@ -53,7 +57,7 @@ func (c Config) Validate() error {
 	seen := map[[2]string]bool{}
 	for _, t := range c.Transfers {
 		k := [2]string{t.From, t.To}
-		if t.From == "" || t.To == "" || t.Source == "" || t.Duration < 0 || t.Duration > 24*time.Hour || seen[k] {
+		if !realroutes.ValidEndpointCode(t.From) || !realroutes.ValidEndpointCode(t.To) || t.Source == "" || t.Duration < 0 || t.Duration > 24*time.Hour || seen[k] {
 			return errors.New("invalid schedule transfer")
 		}
 		seen[k] = true

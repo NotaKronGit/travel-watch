@@ -143,3 +143,37 @@ func TestNestedRailVariantsRoundTrip(t *testing.T) {
 		t.Fatal("access variants lost", err)
 	}
 }
+func TestSavedTransferLabels(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	_, db := testDB(t, ctx)
+	s := NewBuilder(db, []string{"graph"})
+	id := uuid.NewString()
+	if err := s.Apply(ctx, consumer.Event{ID: uuid.NewString(), RequestID: id, Type: consumer.Created, OccurredAt: time.Now(), Payload: []byte("snapshot")}); err != nil {
+		t.Fatal(err)
+	}
+	j, ok, err := s.ClaimBuilding(ctx, time.Minute, 3)
+	if err != nil || !ok {
+		t.Fatal(err)
+	}
+	// Synthetic scheme in the format saved before transfer endpoints existed.
+	raw := json.RawMessage(`{"query":{"origin_name":"Курск","destination_name":"Паттайя"},"candidates":[{"steps":[
+ {"from":"Курск","to":"Курск","mode":"transfer","evidence":"assumed"},
+ {"from":"Курск","to":"Москва (Киевский вокзал)","from_code":"s9600816","to_code":"s2000007","mode":"train","evidence":"yandex-rasp","number":"474С"},
+ {"from":"Москва (Киевский вокзал)","to":"Шереметьево","mode":"transfer","evidence":"assumed"},
+ {"from":"Шереметьево","to":"Суварнабхуми","from_code":"s9600213","to_code":"s9623549","mode":"plane","evidence":"yandex-rasp","number":"SU 270"},
+ {"from":"Суварнабхуми","to":"Паттайя","mode":"transfer","evidence":"assumed"}],"warnings":[]}]}`)
+	if err = s.FinishSource(ctx, j, "graph", planning.SourceResult{Data: raw, Count: 1, Incomplete: true}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.ReadRoutes(ctx, &v1.GetRoutesRequest{RequestId: id, PlannerId: "graph", PageSize: 5})
+	if err != nil || len(got.Sources) != 1 || len(got.Sources[0].Routes) != 1 {
+		t.Fatal("saved scheme", err)
+	}
+	want := []string{"Курск (город) → Курск (ж/д станция)", "Курск → Москва (Киевский вокзал) · 474С", "Москва (Киевский вокзал) → Шереметьево", "Шереметьево → Суварнабхуми · SU 270", "Суварнабхуми → Паттайя (город)"}
+	for i, step := range got.Sources[0].Routes[0].Steps {
+		if step.Description != want[i] {
+			t.Fatalf("step %d: %q", i, step.Description)
+		}
+	}
+}

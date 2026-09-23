@@ -59,7 +59,7 @@ func TestOvernightConnectionBoundaryAndUnknownTransfer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			c := policy()
 			if tc.known {
-				c.Transfers = []Transfer{{From: "B", To: "C", Duration: time.Hour, Source: "synthetic"}}
+				c.Transfers = []Transfer{{From: "s2", To: "s3", Duration: time.Hour, Source: "synthetic"}}
 			}
 			r, err := (Checker{Provider: fake(tc.departure), Config: c}).Check(context.Background(), fixture(), "Europe/Moscow")
 			if err != nil {
@@ -119,7 +119,7 @@ func TestProviderErrorBudgetAndReuse(t *testing.T) {
 }
 func TestUnknownTimezoneAndInitialTransfer(t *testing.T) {
 	c := policy()
-	c.Transfers = []Transfer{{From: "B", To: "C", Duration: time.Hour, Source: "synthetic"}}
+	c.Transfers = []Transfer{{From: "s2", To: "s3", Duration: time.Hour, Source: "synthetic"}}
 	p := fake("2027-01-11T03:00:00+03:00")
 	if _, err := (Checker{Provider: p, Config: c}).Check(context.Background(), fixture(), ""); err == nil {
 		t.Fatal("invented origin timezone")
@@ -159,4 +159,41 @@ func TestDepartureWindowAndPhysicalAirportIdentity(t *testing.T) {
 	if err != nil || r.Schemes[0].State != "unverified" || len(r.Schemes[0].Journeys) != 0 {
 		t.Fatal("wrong airport accepted", err)
 	}
+}
+
+func TestTransferRulesMatchCodesNotTitles(t *testing.T) {
+	c := policy()
+	c.Transfers = []Transfer{{From: "B", To: "C", Duration: time.Hour, Source: "synthetic"}}
+	if _, err := (Checker{Provider: fake("2027-01-11T01:40:00+03:00"), Config: c}).Check(context.Background(), fixture(), "Europe/Moscow"); err == nil {
+		t.Fatal("title-based transfer rule accepted")
+	}
+	// The origin city and its station share the title "A"; only codes tell them apart.
+	q := fixture()
+	q.Query.OriginID, q.Query.OriginName = "k", "A"
+	q.Candidates[0].Steps = append([]realroutes.Step{{Mode: "transfer", From: "A", To: "A"}}, q.Candidates[0].Steps...)
+	c.Transfers = []Transfer{{From: "s2", To: "s3", Duration: time.Hour, Source: "synthetic"}, {From: "city:k", To: "s1", Duration: 30 * time.Minute, Source: "synthetic"}}
+	r, err := (Checker{Provider: fake("2027-01-11T01:40:00+03:00"), Config: c}).Check(context.Background(), q, "Europe/Moscow")
+	if err != nil || r.Schemes[0].State != "compatible" {
+		t.Fatal("coded initial transfer not applied", err, r)
+	}
+	if !contains(r.Schemes[0].Warnings, "Переезд A (город) → A (ж/д станция): 30m0s, источник оценки: synthetic") {
+		t.Fatalf("warnings %q", r.Schemes[0].Warnings)
+	}
+	// A result saved before city ids existed cannot match a coded rule.
+	q.Query.OriginID = ""
+	r, err = (Checker{Provider: fake("2027-01-11T01:40:00+03:00"), Config: c}).Check(context.Background(), q, "Europe/Moscow")
+	if err != nil || r.Schemes[0].State != "unverified" || !contains(r.Schemes[0].Warnings, "Неизвестно время переезда: A (город) → A (ж/д станция)") {
+		t.Fatal("legacy transfer treated as known", err, r)
+	}
+	if q.Candidates[0].Steps[0].FromPoint != nil {
+		t.Fatal("check mutated the saved scheme")
+	}
+}
+func contains(values []string, want string) bool {
+	for _, v := range values {
+		if v == want {
+			return true
+		}
+	}
+	return false
 }
