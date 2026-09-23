@@ -48,7 +48,8 @@ test('source result leaves the overall stage building until the other source fin
  await expect(page.getByText(/Прошло:/)).toHaveCount(2);
  await expect(page.getByText('Маршруты построены, ожидает проверки расписаний',{exact:true})).toHaveCount(0);
  done=true;
- await expect(page.getByText('Маршруты построены, ожидает проверки расписаний',{exact:true})).toHaveCount(3,{timeout:12000});
+ await expect(page.getByText('Маршруты построены, ожидает проверки расписаний',{exact:true})).toHaveCount(2,{timeout:12000});
+ await expect(page.getByText('Схемы маршрутов построены',{exact:true})).toBeVisible();
  await expect(page.getByText(/Прошло:/)).toHaveCount(0);
  await expect(page.getByText('Найдено схем до проверки стыковок: 3',{exact:true})).toHaveCount(2);
 });

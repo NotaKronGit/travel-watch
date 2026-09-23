@@ -4,17 +4,19 @@ import (
 	"github.com/NotaKronGit/travel-watch/api/mtls"
 	"github.com/NotaKronGit/travel-watch/services/search/internal/gemini"
 	"github.com/NotaKronGit/travel-watch/services/search/internal/realroutes"
+	"github.com/NotaKronGit/travel-watch/services/search/internal/schedules"
 	"time"
 )
 
 type Config struct {
-	Results  Results           `mapstructure:"results"`
-	Progress Progress          `mapstructure:"progress"`
-	Planner  realroutes.Config `mapstructure:"planner"`
-	Airports Airports          `mapstructure:"airports"`
-	Gemini   gemini.Config     `mapstructure:"gemini"`
-	Database Database          `mapstructure:"database"`
-	Consumer Consumer          `mapstructure:"consumer"`
+	Schedules schedules.Config  `mapstructure:"schedules"`
+	Results   Results           `mapstructure:"results"`
+	Progress  Progress          `mapstructure:"progress"`
+	Planner   realroutes.Config `mapstructure:"planner"`
+	Airports  Airports          `mapstructure:"airports"`
+	Gemini    gemini.Config     `mapstructure:"gemini"`
+	Database  Database          `mapstructure:"database"`
+	Consumer  Consumer          `mapstructure:"consumer"`
 }
 type Database struct {
 	Host             string        `mapstructure:"host"`

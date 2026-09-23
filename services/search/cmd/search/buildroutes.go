@@ -15,6 +15,7 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/search/internal/routeexperiment"
 	"github.com/NotaKronGit/travel-watch/services/search/internal/storage"
 	"github.com/segmentio/kafka-go"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 	"log/slog"
 	"time"
@@ -78,7 +79,14 @@ func buildRoutes(ctx context.Context, db *sql.DB, c config.Config) error {
 			return planning.SourceResult{Data: data, Count: len(paths), Incomplete: true}, err
 		},
 	}
-	return (planning.MultiWorker{Repository: store, Sources: sources, Poll: c.Progress.PollInterval, DBTimeout: c.Progress.Timeout, BuildTimeout: c.Planner.Timeout, Lease: c.Progress.Lease, MaxAttempts: c.Progress.MaxAttempts}).Run(ctx)
+	worker := planning.MultiWorker{Repository: store, Sources: sources, Poll: c.Progress.PollInterval, DBTimeout: c.Progress.Timeout, BuildTimeout: c.Planner.Timeout, Lease: c.Progress.Lease, MaxAttempts: c.Progress.MaxAttempts}
+	if !c.Schedules.Enabled {
+		return worker.Run(ctx)
+	}
+	group, work := errgroup.WithContext(ctx)
+	group.Go(func() error { return worker.Run(work) })
+	group.Go(func() error { return checkSchedules(work, db, c) })
+	return group.Wait()
 }
 func publishProgress(ctx context.Context, db *sql.DB, c config.Config) error {
 	tr := &kafka.Transport{DialTimeout: c.Progress.Timeout, MetadataTopics: []string{c.Progress.Topic}}

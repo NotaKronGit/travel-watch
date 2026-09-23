@@ -56,6 +56,11 @@ func (c Config) Validate(command string) error {
 		return c.Progress.Validate()
 	}
 	if command == "build-routes" {
+		if c.Schedules.Enabled {
+			if err := c.Schedules.Validate(); err != nil {
+				return err
+			}
+		}
 		if len(c.Progress.Sources) < 1 || len(c.Progress.Sources) > 2 {
 			return errors.New("configure one or two progress.sources")
 		}

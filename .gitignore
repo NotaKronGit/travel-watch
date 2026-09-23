@@ -9,3 +9,4 @@ bin/
 *.tsbuildinfo
 .DS_Store
 .local/
+.claude/settings.local.json

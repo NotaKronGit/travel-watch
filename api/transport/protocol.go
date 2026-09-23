@@ -1,6 +1,8 @@
 // Package transport defines the versioned JSON contract between manual Search and Collector commands.
 package transport
 
+import "time"
+
 type Point struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
@@ -39,7 +41,17 @@ type Connection struct {
 type FlightPath struct {
 	Legs []Connection `json:"legs"`
 }
+type Departure struct {
+	From      Station   `json:"from"`
+	To        Station   `json:"to"`
+	Mode      string    `json:"mode"`
+	Number    string    `json:"number"`
+	Departure time.Time `json:"departure"`
+	Arrival   time.Time `json:"arrival"`
+}
 type Response struct {
+	Departures  []Departure  `json:"departures,omitempty"`
+	ObservedAt  time.Time    `json:"observed_at,omitempty"`
 	FlightPaths []FlightPath `json:"flight_paths,omitempty"`
 	Version     int          `json:"version"`
 	Error       string       `json:"error,omitempty"`

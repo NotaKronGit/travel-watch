@@ -77,7 +77,7 @@ export function TripRoutes({sources,loading,onPage}: {sources: RouteSourceView[]
   return <Box component="section" aria-label="Маршруты этой заявки">
     <Divider sx={{mb:3}}/>
     <Typography component="h2" variant="h5" sx={{mb:1}}>Маршруты этой заявки</Typography>
-    <Typography color="text.secondary" sx={{mb:3}}>Независимые схемы поездки. Варианты подвоза поездом к одному аэропорту сгруппированы; конкретные вокзалы и поезда выбираются на этапе стыковок. Расписания и цены ещё не проверены; совпадения между источниками пока не объединены.</Typography>
+    <Typography color="text.secondary" sx={{mb:3}}>Независимые схемы поездки. Варианты подвоза поездом к одному аэропорту сгруппированы; конкретные вокзалы и поезда выбираются на этапе стыковок. Результат проверки расписаний смотрите на вкладке «Стыковки». Цены ещё не проверены; совпадения между источниками пока не объединены.</Typography>
     <Stack direction="row" sx={{gap:1,flexWrap:'wrap',mb:1}}>
       <Button disabled={loading || !sources.some(s=>s.routes.length)} onClick={()=>void copyRoutes(sources)}>Скопировать показанные маршруты</Button>
       <Button disabled={loading || !sources.some(s=>s.routes.length)} onClick={downloadRoutes}>Скачать показанные маршруты TXT</Button>
