@@ -236,3 +236,12 @@ func TestIncompleteCheckKeepsFoundJourneys(t *testing.T) {
 		t.Fatal("incompleteness not reported", r.Schemes[0].Warnings)
 	}
 }
+func TestJourneyLimitAllowsFullList(t *testing.T) {
+	c := policy()
+	for n, ok := range map[int]bool{1: true, 30: true, 50: true, 51: false, 0: false} {
+		c.MaxJourneys = n
+		if (c.Validate() == nil) != ok {
+			t.Fatalf("max_journeys %d: want valid=%v", n, ok)
+		}
+	}
+}

@@ -7,15 +7,27 @@ test('timetable tab preserves station time, shows the transfer window and stops 
  await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>{
   const q=r.request().postDataJSON();if(q.pageSize!==1)return r.fulfill({json:{result:{sources:[]}}});
   calls++;
-  return r.fulfill({json:{result:{sources:[],scheduleCheck:ready?{state:'done',incomplete:true,checkedAt:'2026-09-20T10:00:00Z',requests:12,warnings:['Тестовые расписания'],schemes:[{schemeNumber:1,accessVariant:2,state:'compatible',warnings:[],journeys:[{timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-123',departure:'2027-01-10T23:00:00+03:00',arrival:'2027-01-11T06:00:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-11T17:01:00+03:00',arrival:'2027-01-12T06:00:00+07:00',connectionMinutes:'661',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]}]}:{state:'running'}}}});
+  return r.fulfill({json:{result:{sources:[],scheduleCheck:ready?{state:'done',incomplete:true,checkedAt:'2026-09-20T10:00:00Z',requests:12,warnings:['Тестовые расписания'],schemes:[{schemeNumber:1,accessVariant:2,state:'compatible',warnings:[],journeys:[{timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-123',departure:'2027-01-10T23:00:00+03:00',arrival:'2027-01-11T06:00:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-11T17:01:00+03:00',arrival:'2027-01-12T06:00:00+07:00',connectionMinutes:'661',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]},{schemeNumber:1,accessVariant:3,state:'compatible',warnings:[],journeys:[
+   {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-ДОЛГО',departure:'2027-01-10T03:00:00+03:00',arrival:'2027-01-10T09:00:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-10T22:25:00+03:00',arrival:'2027-01-11T11:45:00+07:00',connectionMinutes:'805',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]},
+   {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-БЫСТРО',departure:'2027-01-10T09:14:00+03:00',arrival:'2027-01-10T14:37:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-10T22:25:00+03:00',arrival:'2027-01-11T11:45:00+07:00',connectionMinutes:'468',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]}]}:{state:'running'}}}});
  });
  await page.goto('/#/trips/'+id);
  await page.getByRole('button',{name:'Этап 3: Стыковки',exact:true}).click();
  await expect(page.getByText('Получаем расписания и проверяем время между участками…')).toBeVisible();ready=true;
- await expect(page.getByText('Время согласуется с заданными запасами',{exact:true})).toBeVisible({timeout:10000});
+ await expect(page.getByText('Время согласуется с заданными запасами',{exact:true}).first()).toBeVisible({timeout:10000});
  await expect(page.getByText('Схема 1 · Подвоз 2')).toBeVisible();
- await expect(page.getByText('Отправление:',{exact:false}).first()).toContainText('23:00');
- await expect(page.getByText('Отправление:',{exact:false}).first()).toContainText('+03:00');
+ // Default sort is by waiting: variant 3 (7 h 48 min) goes above variant 2 (11 h 1 min), its faster train first.
+ await expect(page.getByRole('button',{name:'Меньше ожидание',exact:true})).toHaveAttribute('aria-pressed','true');
+ const headings=page.getByText(/^Схема \d+ · Подвоз \d+$/);
+ await expect(headings.first()).toHaveText('Схема 1 · Подвоз 3');
+ await expect(page.getByText('1 пересадка, ожидание 7 ч 48 мин, в пути',{exact:false})).toBeVisible();
+ await expect(page.getByText('Пересадки',{exact:true})).toHaveCount(0);
+ const trains=page.getByText(/^Поезд ТЕСТ-/);
+ await expect(trains.first()).toContainText('ТЕСТ-БЫСТРО');
+ await page.getByRole('button',{name:'Раньше отправление',exact:true}).click();
+ await expect(trains.first()).toContainText('ТЕСТ-ДОЛГО');
+ await page.getByRole('button',{name:'Меньше ожидание',exact:true}).click();
+ await expect(page.getByText('Отправление: 2027-01-10 23:00 +03:00',{exact:false})).toBeVisible();
  await expect(page.getByText('Переезд Тестовый вокзал → Тестовый аэропорт: на переезд 8 ч 1 мин (11 ч 1 мин между участками − 3 ч на регистрацию)',{exact:true})).toBeVisible();
  await expect(page.getByText('Неизвестно время переезда:',{exact:false})).toHaveCount(0);
  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(text:string)=>{(window as unknown as {copied:string}).copied=text;}}}));

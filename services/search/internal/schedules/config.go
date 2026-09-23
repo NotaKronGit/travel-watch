@@ -43,7 +43,7 @@ type Config struct {
 }
 
 func (c Config) Validate() error {
-	if c.Timeout < time.Second || c.Timeout > 15*time.Minute || c.MaxRequests < 1 || c.MaxRequests > 300 || c.MaxDates < 1 || c.MaxDates > 31 || c.MaxCombinations < 1 || c.MaxCombinations > 100000 || c.MaxJourneys < 1 || c.MaxJourneys > 5 || c.MaxConnection < time.Hour || c.MaxConnection > 48*time.Hour || c.MaxJourney < c.MaxConnection || c.MaxJourney > 120*time.Hour {
+	if c.Timeout < time.Second || c.Timeout > 15*time.Minute || c.MaxRequests < 1 || c.MaxRequests > 300 || c.MaxDates < 1 || c.MaxDates > 31 || c.MaxCombinations < 1 || c.MaxCombinations > 100000 || c.MaxJourneys < 1 || c.MaxJourneys > 50 || c.MaxConnection < time.Hour || c.MaxConnection > 48*time.Hour || c.MaxJourney < c.MaxConnection || c.MaxJourney > 120*time.Hour {
 		return errors.New("invalid schedule limits")
 	}
 	if c.Matcher != "" && c.Matcher != "windowed" && c.Matcher != "brute" {
