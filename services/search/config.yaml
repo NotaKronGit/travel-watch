@@ -76,6 +76,8 @@ results:
 schedules:
   enabled: true
   timeout: 8m
+  # Active requests are re-checked this long after the previous check; 0 disables.
+  recheck_interval: 1h
   max_requests: 80
   max_dates: 7
   max_combinations: 10000

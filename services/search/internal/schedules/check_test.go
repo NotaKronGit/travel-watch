@@ -312,3 +312,12 @@ func TestJourneysPerDayCoverEveryDay(t *testing.T) {
 		t.Fatal("per-day limit above max_journeys accepted")
 	}
 }
+func TestRecheckIntervalBounds(t *testing.T) {
+	c := policy()
+	for d, ok := range map[time.Duration]bool{0: true, time.Hour: true, 5 * time.Minute: true, time.Minute: false, 8 * 24 * time.Hour: false} {
+		c.RecheckInterval = d
+		if (c.Validate() == nil) != ok {
+			t.Fatalf("recheck_interval %s: want valid=%v", d, ok)
+		}
+	}
+}

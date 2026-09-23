@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 const id='11111111-1111-4111-8111-111111111111';
-test('timetable tab preserves station time, shows the transfer window and stops polling after completion',async({page})=>{
+test('timetable tab preserves station time, shows the transfer window and slows polling after completion',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  // Test data is in January 2027; keep "now" before it so journeys are not expired.
  await page.clock.setFixedTime(new Date('2027-01-01T00:00:00Z'));let ready=false;let calls=0;
@@ -84,4 +84,23 @@ test('timetable tab explains when every found journey has departed',async({page}
  await page.getByRole('button',{name:'Показать истекшие (2)',exact:true}).click();
  await expect(page.getByText('истекло: отправление уже прошло',{exact:false})).toHaveCount(2);
  await expect(page.getByText('Все найденные сочетания уже отправились',{exact:false})).toHaveCount(0);
+});
+test('re-check keeps the previous result on screen and reports a failed refresh',async({page})=>{
+ await page.clock.setFixedTime(new Date('2027-01-01T00:00:00Z'));
+ let refreshed=false;
+ const previous={schemeNumber:1,accessVariant:1,state:'compatible',warnings:[],journeys:[{timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-1',departure:'2027-01-10T09:14:00+03:00',arrival:'2027-01-10T14:37:00+03:00'}]}]};
+ await page.route('**/travelwatch.cabinet.v1.AuthService/*',r=>r.fulfill({json:{user:{id:'owner',email:'test@example.com'}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({json:{trip:{id,origin:{name:'Курск'},destination:{name:'Сочи'},departureFrom:'2027-01-10',departureTo:'2027-01-12',adults:1,status:'TRIP_STATUS_RUNNING',buildingStage:'awaiting_schedules',history:[]}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>r.fulfill({json:{result:{sources:[],scheduleCheck:refreshed
+  ? {state:'done',checkedAt:'2026-12-31T22:00:00Z',nextCheckAt:'2027-01-01T01:00:00Z',refreshFailedAt:'2026-12-31T23:59:00Z',requests:5,warnings:[],schemes:[previous]}
+  : {state:'running',checkedAt:'2026-12-31T22:00:00Z',requests:5,warnings:[],schemes:[previous]}}}}));
+ await page.goto('/#/trips/'+id);
+ await page.getByRole('button',{name:'Этап 3: Стыковки',exact:true}).click();
+ await expect(page.getByText('Обновляем расписания',{exact:true})).toBeVisible({timeout:10000});
+ await expect(page.getByText('Обновляем расписания. Пока показан результат предыдущей проверки.')).toBeVisible();
+ await expect(page.getByText(/^Поезд ТЕСТ-1/)).toBeVisible();
+ refreshed=true;
+ await expect(page.getByText('Не удалось обновить расписания',{exact:false})).toBeVisible({timeout:10000});
+ await expect(page.getByText('Следующая проверка: около',{exact:false})).toBeVisible();
+ await expect(page.getByText(/^Поезд ТЕСТ-1/)).toBeVisible();
 });

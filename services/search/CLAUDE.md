@@ -52,6 +52,6 @@ Equivalent Make targets: `make search-migrate`, `make search`, `make search-buil
 ## Notes specific to this service
 
 - `internal/schedules` config lives under the `schedules:` key in `services/search/config.yaml` — transfer durations, margins, per-run budgets (external calls, days, itinerary/combination limits). See `docs/ops/schedules.md` for the exact defaults and their status as policy, not carrier guarantees.
-- `schedules.enabled: true` also picks up previously saved active requests with a graph result, once, on startup — there is no periodic re-check or manual retry yet.
+- `schedules.enabled: true` also picks up previously saved active requests with a graph result. Active requests are re-checked every `schedules.recheck_interval` (1h; 0 disables); a failed re-check keeps the previous result. Cancelled and expired requests are not re-checked. There is no manual retry yet.
 - Only run one `route-builder` process; multiple instances split inbox work but do not share a request budget against Yandex/Google Flights.
 - Applied migrations are never edited — add a new file under `migrations/`.

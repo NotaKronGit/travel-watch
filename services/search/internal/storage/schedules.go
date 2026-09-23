@@ -10,18 +10,21 @@ import (
 	"github.com/NotaKronGit/travel-watch/services/search/internal/schedules"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // ClaimSchedules also picks up existing completed graph results. Request-row
 // locking serializes claims with cancellation. A lease token fences late workers.
-func (s *Store) ClaimSchedules(ctx context.Context, lease time.Duration) (schedules.Job, bool, error) {
+// Never-checked requests go first, then abandoned leases, then due re-checks; a
+// re-check keeps the previous result readable until it finishes.
+func (s *Store) ClaimSchedules(ctx context.Context, lease, recheck time.Duration) (schedules.Job, bool, error) {
 	j := schedules.Job{Token: uuid.NewString()}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return j, false, err
 	}
 	defer func() { _ = tx.Rollback() }()
-	_, err = tx.ExecContext(ctx, `UPDATE schedule_checks SET state='failed',finished_at=now(),lease_token=NULL,lease_until=NULL WHERE state='running' AND lease_until<now() AND attempt>=3`)
+	_, err = tx.ExecContext(ctx, `UPDATE schedule_checks SET state='failed',finished_at=now(),lease_token=NULL,lease_until=NULL,next_check_at=CASE WHEN $1::interval > interval '0' THEN now()+$1::interval END WHERE state='running' AND lease_until<now() AND attempt>=3`, recheck.String())
 	if err != nil {
 		return j, false, err
 	}
@@ -29,8 +32,8 @@ func (s *Store) ClaimSchedules(ctx context.Context, lease time.Duration) (schedu
  FROM search_requests r JOIN planner_runs p ON p.request_id=r.request_id AND p.planner_id='graph'
  LEFT JOIN schedule_checks c ON c.request_id=r.request_id
  WHERE r.status='pending' AND p.stage='awaiting_schedules' AND p.result IS NOT NULL
- AND (c.request_id IS NULL OR (c.state='running' AND c.lease_until<now() AND c.attempt<3))
- ORDER BY p.finished_at,r.request_id FOR UPDATE OF r SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Graph, &j.SourceFinishedAt)
+ AND (c.request_id IS NULL OR (c.state='running' AND c.lease_until<now() AND c.attempt<3) OR (c.state IN ('done','failed') AND c.next_check_at<=now()))
+ ORDER BY c.request_id IS NOT NULL,c.state<>'running',COALESCE(c.next_check_at,p.finished_at),r.request_id FOR UPDATE OF r SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Graph, &j.SourceFinishedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return j, false, tx.Commit()
 	}
@@ -38,7 +41,8 @@ func (s *Store) ClaimSchedules(ctx context.Context, lease time.Duration) (schedu
 		return j, false, err
 	}
 	claimed, err := tx.ExecContext(ctx, `INSERT INTO schedule_checks(request_id,state,source_finished_at,lease_token,lease_until) VALUES($1,'running',$2,$3,now()+$4::interval)
- ON CONFLICT(request_id) DO UPDATE SET state='running',attempt=schedule_checks.attempt+1,lease_token=EXCLUDED.lease_token,lease_until=EXCLUDED.lease_until,source_finished_at=EXCLUDED.source_finished_at,started_at=now(),finished_at=NULL WHERE schedule_checks.state='running' AND schedule_checks.lease_until<now() AND schedule_checks.attempt<3`, j.RequestID, j.SourceFinishedAt, j.Token, lease.String())
+ ON CONFLICT(request_id) DO UPDATE SET state='running',attempt=CASE WHEN schedule_checks.state='running' THEN schedule_checks.attempt+1 ELSE 1 END,lease_token=EXCLUDED.lease_token,lease_until=EXCLUDED.lease_until,source_finished_at=EXCLUDED.source_finished_at,started_at=now(),finished_at=NULL
+ WHERE (schedule_checks.state='running' AND schedule_checks.lease_until<now() AND schedule_checks.attempt<3) OR (schedule_checks.state IN ('done','failed') AND schedule_checks.next_check_at<=now())`, j.RequestID, j.SourceFinishedAt, j.Token, lease.String())
 	if err != nil {
 		return j, false, err
 	}
@@ -54,7 +58,10 @@ func (s *Store) SchedulesActive(ctx context.Context, j schedules.Job) (bool, err
 	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM schedule_checks c JOIN search_requests r USING(request_id) JOIN planner_runs p ON p.request_id=c.request_id AND p.planner_id='graph' WHERE c.request_id=$1 AND c.lease_token=$2 AND c.lease_until>now() AND c.state='running' AND r.status='pending' AND p.finished_at=c.source_finished_at)`, j.RequestID, j.Token).Scan(&active)
 	return active, err
 }
-func (s *Store) FinishSchedules(ctx context.Context, j schedules.Job, result *v1.ScheduleCheck) error {
+
+// FinishSchedules stores the result and schedules the next re-check. A failed re-check
+// never erases a previous result: it is kept, with the time of the failed attempt.
+func (s *Store) FinishSchedules(ctx context.Context, j schedules.Job, result *v1.ScheduleCheck, recheck time.Duration) error {
 	if result == nil || (result.State != "done" && result.State != "failed") {
 		return errors.New("invalid schedule result")
 	}
@@ -78,7 +85,14 @@ func (s *Store) FinishSchedules(ctx context.Context, j schedules.Job, result *v1
 	if status != "pending" {
 		return nil
 	}
-	_, err = tx.ExecContext(ctx, `UPDATE schedule_checks c SET state=$3,result=$4,finished_at=now(),lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND lease_token=$2 AND lease_until>now() AND state='running' AND EXISTS(SELECT 1 FROM planner_runs p WHERE p.request_id=c.request_id AND p.planner_id='graph' AND p.finished_at=c.source_finished_at)`, j.RequestID, j.Token, result.State, string(data))
+	// A failed re-check ($3='failed' with a stored result) keeps that result. Interval 0 plans nothing.
+	_, err = tx.ExecContext(ctx, `UPDATE schedule_checks c SET
+ state=CASE WHEN $3='failed' AND c.result IS NOT NULL THEN COALESCE(c.result->>'state','done') ELSE $3 END,
+ result=CASE WHEN $3='failed' AND c.result IS NOT NULL THEN c.result ELSE $4::jsonb END,
+ refresh_failed_at=CASE WHEN $3='failed' AND c.result IS NOT NULL THEN now() END,
+ next_check_at=CASE WHEN $5::interval > interval '0' THEN now()+$5::interval END,
+ finished_at=now(),lease_token=NULL,lease_until=NULL
+ WHERE request_id=$1 AND lease_token=$2 AND lease_until>now() AND state='running' AND EXISTS(SELECT 1 FROM planner_runs p WHERE p.request_id=c.request_id AND p.planner_id='graph' AND p.finished_at=c.source_finished_at)`, j.RequestID, j.Token, result.State, string(data), recheck.String())
 	if err != nil {
 		return err
 	}
@@ -87,7 +101,8 @@ func (s *Store) FinishSchedules(ctx context.Context, j schedules.Job, result *v1
 func readSchedules(ctx context.Context, tx *sql.Tx, id string) (*v1.ScheduleCheck, error) {
 	var raw []byte
 	var state, status string
-	err := tx.QueryRowContext(ctx, `SELECT c.state,r.status,c.result FROM schedule_checks c JOIN search_requests r USING(request_id) WHERE c.request_id=$1`, id).Scan(&state, &status, &raw)
+	var next, failed sql.NullTime
+	err := tx.QueryRowContext(ctx, `SELECT c.state,r.status,c.result,c.next_check_at,c.refresh_failed_at FROM schedule_checks c JOIN search_requests r USING(request_id) WHERE c.request_id=$1`, id).Scan(&state, &status, &raw, &next, &failed)
 	if errors.Is(err, sql.ErrNoRows) {
 		return &v1.ScheduleCheck{State: "pending"}, nil
 	}
@@ -99,6 +114,15 @@ func readSchedules(ctx context.Context, tx *sql.Tx, id string) (*v1.ScheduleChec
 		if err = protojson.Unmarshal(raw, result); err != nil {
 			return nil, errors.New("invalid saved schedule result")
 		}
+	}
+	// The row state wins over the saved result: during a re-check the previous
+	// result stays readable while the state says it is being refreshed.
+	result.State = state
+	if next.Valid && status == "pending" {
+		result.NextCheckAt = timestamppb.New(next.Time)
+	}
+	if failed.Valid {
+		result.RefreshFailedAt = timestamppb.New(failed.Time)
 	}
 	if status == "cancelled" {
 		result.State = "cancelled"

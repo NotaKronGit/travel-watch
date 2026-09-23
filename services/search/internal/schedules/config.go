@@ -17,8 +17,10 @@ type Transfer struct {
 	Source   string        `mapstructure:"source"`
 }
 type Config struct {
-	Enabled         bool          `mapstructure:"enabled"`
-	Timeout         time.Duration `mapstructure:"timeout"`
+	Enabled bool          `mapstructure:"enabled"`
+	Timeout time.Duration `mapstructure:"timeout"`
+	// How long after a finished check an active request is checked again; 0 disables.
+	RecheckInterval time.Duration `mapstructure:"recheck_interval"`
 	MaxRequests     int           `mapstructure:"max_requests"`
 	MaxDates        int           `mapstructure:"max_dates"`
 	MaxCombinations int           `mapstructure:"max_combinations"`
@@ -47,6 +49,9 @@ type Config struct {
 func (c Config) Validate() error {
 	if c.Timeout < time.Second || c.Timeout > 15*time.Minute || c.MaxRequests < 1 || c.MaxRequests > 300 || c.MaxDates < 1 || c.MaxDates > 31 || c.MaxCombinations < 1 || c.MaxCombinations > 100000 || c.MaxJourneys < 1 || c.MaxJourneys > 50 || c.MaxConnection < time.Hour || c.MaxConnection > 48*time.Hour || c.MaxJourney < c.MaxConnection || c.MaxJourney > 120*time.Hour {
 		return errors.New("invalid schedule limits")
+	}
+	if c.RecheckInterval != 0 && (c.RecheckInterval < 5*time.Minute || c.RecheckInterval > 7*24*time.Hour) {
+		return errors.New("invalid schedule recheck interval")
 	}
 	if c.MaxJourneysPerDay < 0 || c.MaxJourneysPerDay > c.MaxJourneys {
 		return errors.New("invalid schedule journeys per day")
