@@ -12,7 +12,7 @@ import (
 // benchScenario builds a fixed (non-random-per-run) matchInput so benchmark
 // numbers are stable and comparable across runs.
 func benchScenario(legs, depsPerLeg int, spread time.Duration) matchInput {
-	rng := rand.New(rand.NewSource(42))
+	rng := rand.New(rand.NewSource(42)) //nolint:gosec // G404: fixed seed keeps benchmark inputs reproducible; not used for security.
 	base := stamp("2027-03-01T00:00:00Z")
 	steps := make([]realroutes.Step, legs)
 	main := make([]int, legs)

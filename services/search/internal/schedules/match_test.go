@@ -67,7 +67,7 @@ func randomScenario(rng *rand.Rand, legs int) matchInput {
 // intentionally untested property. Random, but seeded for reproducibility.
 func TestWindowedMatchesBruteForce(t *testing.T) {
 	for seed := range int64(300) {
-		rng := rand.New(rand.NewSource(seed))
+		rng := rand.New(rand.NewSource(seed)) //nolint:gosec // G404: seeded for reproducible test scenarios; not used for security.
 		in := randomScenario(rng, 1+rng.Intn(4))
 		brute, bruteTruncated, bruteAttempts := searchCounting(context.Background(), in, in.Available)
 		windowed, windowedTruncated, _ := searchCounting(context.Background(), in, narrowWindows(in))

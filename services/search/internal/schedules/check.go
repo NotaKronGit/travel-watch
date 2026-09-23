@@ -30,6 +30,7 @@ func (c Checker) matcherImpl() matcher {
 	}
 	return windowedMatcher{}
 }
+
 type timetableDeparture transport.Departure
 type observed struct {
 	timetableDeparture
