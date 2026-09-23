@@ -107,7 +107,8 @@ func (s *Store) FinishSource(ctx context.Context, j planning.Job, id string, r p
 	if err = tx.QueryRowContext(ctx, `SELECT status FROM search_requests WHERE request_id=$1 FOR UPDATE`, j.RequestID).Scan(&status); err != nil {
 		return err
 	}
-	if status == "cancelled" {
+	// Cancelled or expired: late results are dropped.
+	if status != "pending" {
 		return nil
 	}
 	var active bool

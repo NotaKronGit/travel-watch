@@ -121,6 +121,20 @@ func run() error {
 	go func() { slog.Info("cabinet listening", "address", server.Addr); errCh <- server.ListenAndServe() }()
 	ticker := time.NewTicker(cfg.Auth.CleanupInterval)
 	defer ticker.Stop()
+	// Trips whose dates are over become expired; the first pass runs at startup.
+	expireTrips := func() {
+		expiry, cancel := context.WithTimeout(ctx, cfg.Trips.ExpiryTimeout)
+		n, err := store.ExpireTrips(expiry, time.Now(), cfg.Trips.ExpiryBatch)
+		cancel()
+		if err != nil {
+			slog.Error("trip expiry failed", "expired", n)
+		} else if n > 0 {
+			slog.Info("trips expired", "count", n)
+		}
+	}
+	expireTrips()
+	expiry := time.NewTicker(cfg.Trips.ExpiryInterval)
+	defer expiry.Stop()
 	for {
 		select {
 		case err = <-errCh:
@@ -139,6 +153,8 @@ func run() error {
 			if err != nil {
 				slog.Error("expired session cleanup failed")
 			}
+		case <-expiry.C:
+			expireTrips()
 		}
 	}
 }

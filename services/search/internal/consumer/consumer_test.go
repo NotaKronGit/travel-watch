@@ -114,3 +114,24 @@ func TestCommitOrder(t *testing.T) {
 		})
 	}
 }
+
+func TestDecodeExpired(t *testing.T) {
+	v := &eventsv1.TripRequestExpired{EventId: uuid.NewString(), RequestId: uuid.NewString(), SchemaVersion: 1, OccurredAt: timestamppb.Now()}
+	b, err := proto.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := kafka.Message{Key: []byte(v.RequestId), Value: b, Headers: []kafka.Header{{Key: "event_type", Value: []byte(Expired)}}}
+	e, err := Decode(m)
+	if err != nil || e.Type != Expired || e.RequestID != v.RequestId || e.ID != v.EventId {
+		t.Fatal(e, err)
+	}
+	v.SchemaVersion = 2
+	if b, err = proto.Marshal(v); err != nil {
+		t.Fatal(err)
+	}
+	m.Value = b
+	if _, err := Decode(m); !errors.Is(err, ErrInvalidEvent) {
+		t.Fatal("unknown expiry schema accepted", err)
+	}
+}

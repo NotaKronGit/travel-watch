@@ -122,7 +122,7 @@ func cityView(c storage.CityOption) *v1.CityOption {
 	return &v1.CityOption{Id: c.ID, Name: c.Name, Country: c.Country, Region: c.Region, Timezone: c.Timezone, IataCode: c.IATACode}
 }
 func tripView(t storage.TripDetails) *v1.TripDetails {
-	status := map[string]v1.TripStatus{"saved": v1.TripStatus_TRIP_STATUS_SAVED, "running": v1.TripStatus_TRIP_STATUS_RUNNING, "cancelled": v1.TripStatus_TRIP_STATUS_CANCELLED, "completed": v1.TripStatus_TRIP_STATUS_COMPLETED}[t.Status]
+	status := map[string]v1.TripStatus{"saved": v1.TripStatus_TRIP_STATUS_SAVED, "running": v1.TripStatus_TRIP_STATUS_RUNNING, "cancelled": v1.TripStatus_TRIP_STATUS_CANCELLED, "completed": v1.TripStatus_TRIP_STATUS_COMPLETED, "expired": v1.TripStatus_TRIP_STATUS_EXPIRED}[t.Status]
 	var cancelled *timestamppb.Timestamp
 	if t.CancelledAt.Valid {
 		cancelled = timestamppb.New(t.CancelledAt.Time)

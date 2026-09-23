@@ -70,7 +70,14 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 	case consumer.Cancelled:
 		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,cancelled_at)
    VALUES($1,'cancelled',$2) ON CONFLICT(request_id) DO UPDATE
-   SET status='cancelled',cancelled_at=COALESCE(search_requests.cancelled_at,EXCLUDED.cancelled_at)`, e.RequestID, e.OccurredAt)
+   SET status='cancelled',cancelled_at=COALESCE(search_requests.cancelled_at,EXCLUDED.cancelled_at),expired_at=NULL`, e.RequestID, e.OccurredAt)
+	case consumer.Expired:
+		// Stops work but keeps results readable; never overrides a cancellation, and like
+		// it leaves a tombstone if creation has not arrived yet.
+		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,expired_at)
+   VALUES($1,'expired',$2) ON CONFLICT(request_id) DO UPDATE
+   SET status='expired',expired_at=EXCLUDED.expired_at
+   WHERE search_requests.status='pending'`, e.RequestID, e.OccurredAt)
 	default:
 		return consumer.ErrInvalidEvent
 	}
@@ -92,7 +99,7 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 				return err
 			}
 		}
-	} else {
+	} else if e.Type == consumer.Cancelled {
 		r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage='cancelled',finished_at=CASE WHEN started_at IS NOT NULL THEN GREATEST(clock_timestamp(),started_at) END,lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND stage<>'cancelled'`, e.RequestID)
 		if err != nil {
 			return err

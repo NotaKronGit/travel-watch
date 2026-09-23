@@ -125,11 +125,11 @@ test('inactive checkbox resets pagination and requests history explicitly',async
  expect(queries[0].includeInactive||false).toBe(false);
  await page.getByRole('button',{name:'Далее',exact:true}).click();
  await expect(page.getByText('Страница 2')).toBeVisible();
- await page.getByRole('checkbox',{name:'Показать завершённые и отменённые'}).check();
+ await page.getByRole('checkbox',{name:'Показать завершённые, истёкшие и отменённые'}).check();
  await expect(page.getByText('Отменена',{exact:true})).toBeVisible();
  await expect(page.getByText('Страница 1')).toBeVisible();
  expect(queries.at(-1)?.includeInactive).toBe(true);
  expect(queries.at(-1)?.offset||0).toBe(0);
- await page.getByRole('checkbox',{name:'Показать завершённые и отменённые'}).uncheck();
+ await page.getByRole('checkbox',{name:'Показать завершённые, истёкшие и отменённые'}).uncheck();
  await expect(page.getByText('Выполняется',{exact:true})).toBeVisible();
 });

@@ -13,6 +13,14 @@ type Config struct {
 	Database Database            `mapstructure:"database"`
 	Catalog  Catalog             `mapstructure:"catalog"`
 	Auth     Auth                `mapstructure:"auth"`
+	Trips    Trips               `mapstructure:"trips"`
+}
+
+// Trips settings apply to serve, which runs the expiry loop.
+type Trips struct {
+	ExpiryInterval time.Duration `mapstructure:"expiry_interval"`
+	ExpiryTimeout  time.Duration `mapstructure:"expiry_timeout"`
+	ExpiryBatch    int           `mapstructure:"expiry_batch"`
 }
 
 type Server struct {

@@ -13,6 +13,7 @@ import (
 
 const Created = "travelwatch.events.v1.TripRequestCreated"
 const Cancelled = "travelwatch.events.v1.TripRequestCancelled"
+const Expired = "travelwatch.events.v1.TripRequestExpired"
 
 var ErrInvalidEvent = errors.New("invalid or unsupported trip event")
 
@@ -49,6 +50,12 @@ func Decode(m kafka.Message) (Event, error) {
 		e.ID, e.RequestID, e.OccurredAt = v.EventId, v.RequestId, v.OccurredAt.AsTime()
 	case Cancelled:
 		v := new(eventsv1.TripRequestCancelled)
+		if proto.Unmarshal(m.Value, v) != nil || v.SchemaVersion != 1 || v.OccurredAt == nil || v.OccurredAt.CheckValid() != nil {
+			return Event{}, ErrInvalidEvent
+		}
+		e.ID, e.RequestID, e.OccurredAt = v.EventId, v.RequestId, v.OccurredAt.AsTime()
+	case Expired:
+		v := new(eventsv1.TripRequestExpired)
 		if proto.Unmarshal(m.Value, v) != nil || v.SchemaVersion != 1 || v.OccurredAt == nil || v.OccurredAt.CheckValid() != nil {
 			return Event{}, ErrInvalidEvent
 		}

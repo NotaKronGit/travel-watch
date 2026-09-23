@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Divider, Stack, Typography } from '@mui/material';
 import { TripStatus, type TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
+import { isTerminal } from './tripStatus';
 
 export const buildingLabels: Record<string, string> = {
   queued: 'Ожидает построения маршрутов',
@@ -18,7 +19,7 @@ const elapsed = (value: number) => {
 
 export function TripHistory({trip}: {trip: TripDetails}) {
   const [now, setNow] = useState(Date.now());
-  const active = trip.status !== TripStatus.CANCELLED && trip.status !== TripStatus.COMPLETED && ['queued','building'].includes(trip.buildingStage);
+  const active = !isTerminal(trip.status) && ['queued','building'].includes(trip.buildingStage);
   useEffect(() => {
     if (!active) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);

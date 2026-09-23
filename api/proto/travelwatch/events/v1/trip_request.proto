@@ -42,6 +42,16 @@ message TripRequestCancelled {
   google.protobuf.Timestamp occurred_at = 4;
 }
 
+// Terminal expiry: the last departure day is over in the origin timezone.
+// Stops further work; unlike cancellation, saved results stay readable.
+// Consumers must retain it even if creation arrives later.
+message TripRequestExpired {
+  string event_id = 1;
+  uint32 schema_version = 2;
+  string request_id = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}
+
 // Search-owned progress. Monotonic revision per request; duplicates are harmless.
 enum RouteBuildingStage {
   ROUTE_BUILDING_STAGE_UNSPECIFIED = 0;

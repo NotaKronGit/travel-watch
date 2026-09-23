@@ -91,7 +91,8 @@ func (c Config) Validate(command string) error {
 		"server.shutdown_timeout": s.ShutdownTimeout, "server.request_timeout": s.RequestTimeout,
 		"server.health_timeout": s.HealthTimeout, "auth.session_ttl": a.SessionTTL,
 		"auth.cleanup_interval": a.CleanupInterval, "auth.cleanup_timeout": a.CleanupTimeout,
-		"auth.login_window": a.LoginWindow,
+		"auth.login_window":     a.LoginWindow,
+		"trips.expiry_interval": c.Trips.ExpiryInterval, "trips.expiry_timeout": c.Trips.ExpiryTimeout,
 	} {
 		if value <= 0 {
 			return fmt.Errorf("%s must be positive", key)
@@ -102,6 +103,9 @@ func (c Config) Validate(command string) error {
 	}
 	if s.MaxHeaderBytes <= 0 || s.MaxBodyBytes <= 0 || a.LoginAttempts <= 0 || a.MaxTrackedAddresses <= 0 || a.HashConcurrency <= 0 {
 		return errors.New("server size and auth concurrency limits must be positive")
+	}
+	if c.Trips.ExpiryBatch < 1 || c.Trips.ExpiryBatch > 1000 {
+		return errors.New("trips.expiry_batch must be between 1 and 1000")
 	}
 	return nil
 }

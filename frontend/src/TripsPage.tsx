@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Code, ConnectError } from '@connectrpc/connect';
 import { tripClient } from './api';
 import { TripStatus, type TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
+import { isTerminal } from './tripStatus';
 
 import { TripSchedules } from './TripSchedules';
 import { TripStages } from './TripStages';
@@ -16,6 +17,7 @@ const statuses: Record<number,string> = {
   [TripStatus.RUNNING]: 'Выполняется',
   [TripStatus.CANCELLED]: 'Отменена',
   [TripStatus.COMPLETED]: 'Завершена',
+  [TripStatus.EXPIRED]: 'Истекла: даты поездки прошли',
 };
 const date = (s: string) => s.split('-').reverse().join('.');
 function TripSummary({trip}: {trip: TripDetails}) {
@@ -23,7 +25,7 @@ function TripSummary({trip}: {trip: TripDetails}) {
     <Typography variant="h6" sx={{overflowWrap:'anywhere'}}>{trip.origin?.name} → {trip.destination?.name}</Typography>
     <Typography color="text.secondary">{[trip.origin?.country,trip.origin?.region].filter(Boolean).join(', ')} → {[trip.destination?.country,trip.destination?.region].filter(Boolean).join(', ')}</Typography>
     <Typography>Выезд с {date(trip.departureFrom)} по {date(trip.departureTo)} включительно · Взрослых: {trip.adults}</Typography>
-    <Chip label={(trip.status === TripStatus.CANCELLED || trip.status === TripStatus.COMPLETED ? statuses[trip.status] : (trip.buildingStage==='awaiting_schedules'?'Схемы маршрутов построены':buildingLabels[trip.buildingStage]) || statuses[trip.status]) || 'Статус неизвестен'} sx={{alignSelf:'flex-start',maxWidth:'100%',height:'auto', '& .MuiChip-label':{whiteSpace:'normal',py:1},bgcolor:'#eef2e5',color:'#183e38'}}/>
+    <Chip label={(isTerminal(trip.status) ? statuses[trip.status] : (trip.buildingStage==='awaiting_schedules'?'Схемы маршрутов построены':buildingLabels[trip.buildingStage]) || statuses[trip.status]) || 'Статус неизвестен'} sx={{alignSelf:'flex-start',maxWidth:'100%',height:'auto', '& .MuiChip-label':{whiteSpace:'normal',py:1},bgcolor:'#eef2e5',color:'#183e38'}}/>
   </Stack>;
 }
 export function TripsPage({detail = false}: {detail?: boolean}) {
@@ -76,7 +78,7 @@ function TripContent({id}: {id?: string}) {
       <Typography component="h1" variant="h4" sx={{fontWeight:650}}>{title}</Typography>
       <Button component={Link} to="/trips/create" variant="contained">Создать заявку</Button>
     </Stack>
-    {id === undefined && <FormControlLabel sx={{mb:2}} control={<Checkbox checked={includeInactive} onChange={(_,checked)=>{setIncludeInactive(checked);setOffset(0);setResult(null);}}/>} label="Показать завершённые и отменённые"/>}
+    {id === undefined && <FormControlLabel sx={{mb:2}} control={<Checkbox checked={includeInactive} onChange={(_,checked)=>{setIncludeInactive(checked);setOffset(0);setResult(null);}}/>} label="Показать завершённые, истёкшие и отменённые"/>}
     {id !== undefined && <Button component={Link} to="/trips" sx={{mb:2}}>← Мои заявки</Button>}
     {loading ? <Typography role="status">Загружаем заявки…</Typography> : (missing || (error && !hasResult)) ? <Stack spacing={2}><Alert severity={missing ? 'info' : 'error'}>{missing ? error : 'Не удалось загрузить данные. Повторите попытку.'}</Alert>{!missing && <Button onClick={() => setRetry(n=>n+1)}>Повторить загрузку</Button>}</Stack> : result?.offset === offset && <Stack spacing={2}>
       {error && <Alert severity="warning">{error}</Alert>}
@@ -85,6 +87,7 @@ function TripContent({id}: {id?: string}) {
         <TripSummary trip={trip}/>
         {id === undefined ? <Button component={Link} to={`/trips/${trip.id}`} sx={{mt:2}}>Открыть заявку</Button> : <Stack spacing={2} sx={{mt:3}}>
           <Typography variant="caption" sx={{overflowWrap:'anywhere'}}>Номер заявки: {trip.id}</Typography>
+          {trip.status===TripStatus.EXPIRED && <Alert severity="warning">Заявка истекла: последний день выезда уже прошёл. Поиск и проверки расписаний остановлены, сохранённые результаты доступны для просмотра.</Alert>}
           <TripActions trip={trip} onChange={updated=>setResult(current=>current ? {...current,trips:current.trips.map(item=>item.id===updated.id ? mergeTrip(item,updated) : item)} : current)}/>
           <TripStages stage={trip.buildingStage} cancelled={trip.status===TripStatus.CANCELLED || trip.status===TripStatus.COMPLETED} creation={<Stack spacing={2}>
           <Typography component="h2" variant="h6">Параметры заявки</Typography>
@@ -92,7 +95,7 @@ function TripContent({id}: {id?: string}) {
           <Alert severity="info">Поиск билетов и уведомления ещё не подключены.</Alert>
           {trip.cancelledAt && <Typography variant="body2" color="text.secondary">Отменена: {new Date(Number(trip.cancelledAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           {trip.createdAt && <Typography variant="body2" color="text.secondary">Создана: {new Date(Number(trip.createdAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
-          </Stack>} routes={<TripRouteResults key={trip.id} id={trip.id} revision={String(trip.history.reduce((revision,event)=>event.revision>revision?event.revision:revision,0n))}/>} schedules={<TripSchedules key={trip.id} id={trip.id} cancelled={trip.status===TripStatus.CANCELLED}/>} footer={<TripHistory trip={trip}/>}/>
+          </Stack>} routes={<TripRouteResults key={trip.id} id={trip.id} revision={String(trip.history.reduce((revision,event)=>event.revision>revision?event.revision:revision,0n))}/>} schedules={<TripSchedules key={trip.id} id={trip.id} cancelled={trip.status===TripStatus.CANCELLED} expired={trip.status===TripStatus.EXPIRED}/>} footer={<TripHistory trip={trip}/>}/>
         </Stack>}
       </Paper>)}
     </Stack>}
@@ -107,7 +110,7 @@ function TripContent({id}: {id?: string}) {
 // A response started before cancellation must not reactivate the UI.
 function mergeTrip(previous: TripDetails | undefined, next: TripDetails): TripDetails {
  if (!previous) return next;
- const terminal=previous.status===TripStatus.CANCELLED || previous.status===TripStatus.COMPLETED;
+ const terminal=isTerminal(previous.status);
  const previousRevision=previous.history.reduce((v,e)=>e.revision>v?e.revision:v,0n);
  const nextRevision=next.history.reduce((v,e)=>e.revision>v?e.revision:v,0n);
  return {...next,
