@@ -3,12 +3,21 @@ import { Alert, Box, Button, Chip, Divider, Stack, Typography } from '@mui/mater
 import { Code, ConnectError } from '@connectrpc/connect';
 import { useNavigate } from 'react-router-dom';
 import { tripClient } from './api';
-import type { ScheduleCheck } from './gen/travelwatch/search/v1/routes_pb';
+import type { ScheduleCheck, ScheduledLeg } from './gen/travelwatch/search/v1/routes_pb';
+import { formatMinutes } from './duration';
 
 const labels:Record<string,string>={pending:'Ожидает проверки',running:'Проверяем расписания',done:'Проверка выполнена',failed:'Проверка не завершена',cancelled:'Заявка отменена'};
 const schemeLabels:Record<string,string>={compatible:'Время согласуется с заданными запасами',unverified:'Не удалось подтвердить стыковку',no_match:'Подходящих сочетаний в проверенной выборке нет'};
 // Preserve station-local time and its UTC offset; browser timezone must not shift it.
 function stationTime(value:string){return value.replace('T',' ').replace(/:00(?=[+-]|Z$)/,' ');}
+// The transfer duration is the traveller's call: show what is left after check-in or boarding.
+function connection(leg:ScheduledLeg,verified:boolean){
+ if(leg.transferFrom){
+  const boarding=leg.mode==='train'?'на посадку':'на регистрацию';
+  return `Переезд ${leg.transferFrom} → ${leg.transferTo}: на переезд ${formatMinutes(leg.connectionMinutes-leg.boardingMinutes)} (${formatMinutes(leg.connectionMinutes)} между участками − ${formatMinutes(leg.boardingMinutes)} ${boarding})`;
+ }
+ return `Между участками: ${formatMinutes(leg.connectionMinutes)} · Учтённый минимум: ${formatMinutes(leg.requiredMinutes)}${!verified?' (без неизвестных переездов)':''}`;
+}
 export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
  const [result,setResult]=useState<ScheduleCheck>();
  const [error,setError]=useState('');
@@ -52,7 +61,7 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
     <Divider/>
     <Typography sx={{fontWeight:600}}>Сочетание {j+1}{!journey.timingVerified?' · предварительное':''}</Typography>
     {journey.legs.map((leg,k)=><Box key={k}>
-     {k>0 && <Typography variant="body2">Между участками: {String(leg.connectionMinutes)} мин · Учтённый минимум: {String(leg.requiredMinutes)} мин{!journey.timingVerified?' (без неизвестных переездов)':''}</Typography>}
+     {k>0 && <Typography variant="body2">{connection(leg,journey.timingVerified)}</Typography>}
      <Typography>{leg.mode==='train'?'Поезд':'Самолёт'} {leg.number}: {leg.from} → {leg.to}</Typography>
      <Typography variant="body2">Отправление: {stationTime(leg.departure)} · Прибытие: {stationTime(leg.arrival)}</Typography>
      {leg.observedAt && <Typography variant="caption" color="text.secondary">Наблюдение источника: {new Date(Number(leg.observedAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}

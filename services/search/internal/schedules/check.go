@@ -197,36 +197,33 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 			var main []int
 			var available [][]observed
 			incomplete := false
-			unknown := false
+			// mismatch marks adjacent legs whose nodes don't provably meet. Unknown
+			// transfer durations don't count: the traveller judges the ground transfer
+			// from the time shown between legs.
+			mismatch := false
 			transfers := make(map[int]time.Duration)
 			for i, s := range steps {
 				if i > 0 && steps[i-1].To != s.From {
 					incomplete = true
-					unknown = true
+					mismatch = true
 					row.Warnings = append(row.Warnings, "Не удалось сопоставить узлы соседних участков.")
 				}
 				if s.Mode == "transfer" {
-					found := false
 					from, to := realroutes.TransferLabels(s)
 					// Rules match physical codes only: titles are ambiguous (a station may share its city's name).
 					if s.FromPoint != nil && s.ToPoint != nil && s.FromPoint.Code != "" && s.ToPoint.Code != "" {
 						for _, t := range c.Config.Transfers {
 							if t.From == s.FromPoint.Code && t.To == s.ToPoint.Code {
 								transfers[i] = t.Duration
-								found = true
 								row.Warnings = append(row.Warnings, fmt.Sprintf("Переезд %s → %s: %s, источник оценки: %s", from, to, t.Duration, t.Source))
 								break
 							}
 						}
 					}
-					if !found {
-						unknown = true
-						row.Warnings = append(row.Warnings, "Неизвестно время переезда: "+from+" → "+to)
-					}
 					continue
 				}
 				if len(main) > 0 && main[len(main)-1] == i-1 && steps[i-1].ToCode != s.FromCode {
-					unknown = true
+					mismatch = true
 					row.Warnings = append(row.Warnings, "Не подтверждено совпадение физических узлов пересадки.")
 				}
 				main = append(main, i)
@@ -240,14 +237,16 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 				out.Incomplete = true
 				continue
 			}
-			journeys, truncated := c.matcherImpl().Match(ctx, matchInput{Steps: steps, Main: main, Transfers: transfers, Available: available, Unknown: unknown, From: from, End: end, Config: c.Config})
+			journeys, truncated := c.matcherImpl().Match(ctx, matchInput{Steps: steps, Main: main, Transfers: transfers, Available: available, Mismatch: mismatch, From: from, End: end, Config: c.Config})
 			row.Journeys = journeys
 			row.State = "no_match"
-			if incomplete || unknown || truncated {
+			if incomplete || mismatch || truncated {
 				row.State = "unverified"
 				out.Incomplete = true
 			}
-			if len(row.Journeys) > 0 && !unknown {
+			// Journeys are found in real timetables, so incompleteness or truncation
+			// limits what else might exist, not the journeys shown.
+			if len(row.Journeys) > 0 && !mismatch {
 				row.State = "compatible"
 			}
 			if incomplete {
@@ -256,8 +255,8 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 			if truncated {
 				row.Warnings = append(row.Warnings, "Перебор сочетаний ограничен; показаны не все варианты.")
 			}
-			if unknown {
-				row.Warnings = append(row.Warnings, "Показанные сочетания предварительные: время неизвестных переездов не учтено, дата выезда из города требует уточнения.")
+			if mismatch {
+				row.Warnings = append(row.Warnings, "Показанные сочетания предварительные: не подтверждено, что соседние участки сходятся в одном узле.")
 			}
 		}
 	}

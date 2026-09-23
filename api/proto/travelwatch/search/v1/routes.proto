@@ -78,4 +78,10 @@ message ScheduledLeg {
  google.protobuf.Timestamp observed_at = 7;
  int64 connection_minutes = 8;
  int64 required_minutes = 9;
+ // Ground transfer ahead of this leg, empty when the legs share a node.
+ string transfer_from = 10;
+ string transfer_to = 11;
+ // Boarding preparation before this leg: check-in for a flight. Set with a transfer;
+ // connection_minutes minus this is the time left for the transfer itself.
+ int64 boarding_minutes = 12;
 }

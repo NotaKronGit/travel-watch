@@ -3,6 +3,7 @@ package schedules
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,6 +46,9 @@ func fake(flight string) providerFunc {
 		return r, nil
 	}
 }
+
+// An unknown transfer duration is left to the traveller: it neither blocks
+// compatibility nor makes the journey preliminary.
 func TestOvernightConnectionBoundaryAndUnknownTransfer(t *testing.T) {
 	for _, tc := range []struct {
 		name, departure, state string
@@ -53,7 +57,7 @@ func TestOvernightConnectionBoundaryAndUnknownTransfer(t *testing.T) {
 	}{
 		{"exact boundary", "2027-01-11T01:40:00+03:00", "compatible", true, 1},
 		{"one second short", "2027-01-11T01:39:59+03:00", "no_match", true, 0},
-		{"unknown transfer", "2027-01-11T01:40:00+03:00", "unverified", false, 1},
+		{"unknown transfer", "2027-01-11T01:40:00+03:00", "compatible", false, 1},
 		{"offset changes instant", "2027-01-11T01:40:00+04:00", "no_match", true, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -70,8 +74,8 @@ func TestOvernightConnectionBoundaryAndUnknownTransfer(t *testing.T) {
 				t.Fatalf("unexpected result %+v", s)
 			}
 			if tc.count > 0 {
-				if s.Journeys[0].TimingVerified != tc.known {
-					t.Fatal("unknown transfer verified")
+				if !s.Journeys[0].TimingVerified {
+					t.Fatal("unknown transfer made the journey preliminary")
 				}
 				if s.Journeys[0].Legs[0].ObservedAt.AsTime() != stamp("2026-09-20T10:00:00Z") {
 					t.Fatal("observation changed")
@@ -127,8 +131,8 @@ func TestUnknownTimezoneAndInitialTransfer(t *testing.T) {
 	q := fixture()
 	q.Candidates[0].Steps = append([]realroutes.Step{{Mode: "transfer", From: "City", To: "A"}}, q.Candidates[0].Steps...)
 	r, err := (Checker{Provider: p, Config: c}).Check(context.Background(), q, "Europe/Moscow")
-	if err != nil || r.Schemes[0].State != "unverified" {
-		t.Fatal("unknown initial transfer accepted", err)
+	if err != nil || r.Schemes[0].State != "compatible" {
+		t.Fatal("unknown initial transfer blocked the scheme", err, r)
 	}
 }
 
@@ -182,7 +186,7 @@ func TestTransferRulesMatchCodesNotTitles(t *testing.T) {
 	// A result saved before city ids existed cannot match a coded rule.
 	q.Query.OriginID = ""
 	r, err = (Checker{Provider: fake("2027-01-11T01:40:00+03:00"), Config: c}).Check(context.Background(), q, "Europe/Moscow")
-	if err != nil || r.Schemes[0].State != "unverified" || !contains(r.Schemes[0].Warnings, "Неизвестно время переезда: A (город) → A (ж/д станция)") {
+	if err != nil || contains(r.Schemes[0].Warnings, "Переезд A (город) → A (ж/д станция): 30m0s, источник оценки: synthetic") {
 		t.Fatal("legacy transfer treated as known", err, r)
 	}
 	if q.Candidates[0].Steps[0].FromPoint != nil {
@@ -196,4 +200,39 @@ func contains(values []string, want string) bool {
 		}
 	}
 	return false
+}
+func TestTransferWindowShownBetweenLegs(t *testing.T) {
+	r, err := (Checker{Provider: fake("2027-01-11T03:00:00+03:00"), Config: policy()}).Check(context.Background(), fixture(), "Europe/Moscow")
+	if err != nil || len(r.Schemes[0].Journeys) != 1 {
+		t.Fatal(err, r)
+	}
+	for _, w := range r.Schemes[0].Warnings {
+		if strings.Contains(w, "Неизвестно") || strings.Contains(w, "предварительные") {
+			t.Fatalf("unknown transfer still reported: %q", w)
+		}
+	}
+	legs := r.Schemes[0].Journeys[0].Legs
+	if legs[0].TransferFrom != "" || legs[0].BoardingMinutes != 0 {
+		t.Fatalf("first leg got a transfer: %+v", legs[0])
+	}
+	// Train arrives 23:00, flight leaves 03:00: 240 min, of which 60 min check-in.
+	if legs[1].TransferFrom != "B" || legs[1].TransferTo != "C" || legs[1].ConnectionMinutes != 240 || legs[1].BoardingMinutes != 60 {
+		t.Fatalf("transfer window %+v", legs[1])
+	}
+}
+func TestIncompleteCheckKeepsFoundJourneys(t *testing.T) {
+	// The source fails for every date except those with the synthetic departures.
+	p := providerFunc(func(ctx context.Context, q transport.Request) (transport.Response, error) {
+		if q.Date != "2027-01-10" && q.Date != "2027-01-11" {
+			return transport.Response{}, errors.New("unavailable")
+		}
+		return fake("2027-01-11T03:00:00+03:00")(ctx, q)
+	})
+	r, err := (Checker{Provider: p, Config: policy()}).Check(context.Background(), fixture(), "Europe/Moscow")
+	if err != nil || !r.Incomplete || r.Schemes[0].State != "compatible" || len(r.Schemes[0].Journeys) != 1 {
+		t.Fatal("found journey lost to incompleteness", err, r)
+	}
+	if !contains(r.Schemes[0].Warnings, "Не удалось полностью проверить расписания: ошибка источника, неполная выдача, неподдерживаемые коды или лимит запросов.") {
+		t.Fatal("incompleteness not reported", r.Schemes[0].Warnings)
+	}
 }

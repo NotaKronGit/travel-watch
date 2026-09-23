@@ -18,7 +18,7 @@ type matchInput struct {
 	Main      []int
 	Transfers map[int]time.Duration
 	Available [][]observed
-	Unknown   bool
+	Mismatch  bool // adjacent legs don't provably meet; journeys stay preliminary
 	From, End time.Time
 	Config    Config
 }
@@ -81,8 +81,16 @@ func searchCounting(ctx context.Context, in matchInput, available [][]observed) 
 			if finish.Sub(start) > in.Config.MaxJourney {
 				return
 			}
-			journeys = append(journeys, &v1.ScheduledJourney{Legs: append([]*v1.ScheduledLeg(nil), legs...), TimingVerified: !in.Unknown})
+			journeys = append(journeys, &v1.ScheduledJourney{Legs: append([]*v1.ScheduledLeg(nil), legs...), TimingVerified: !in.Mismatch})
 			return
+		}
+		var transferFrom, transferTo string
+		var boarding time.Duration
+		if n > 0 {
+			transferFrom, transferTo = transferBetween(in, n-1)
+			if transferFrom != "" {
+				boarding = in.Config.before(in.Steps[in.Main[n]].Mode)
+			}
 		}
 		for _, d := range available[n] {
 			attempts++
@@ -107,7 +115,7 @@ func searchCounting(ctx context.Context, in matchInput, available [][]observed) 
 			if d.Arrival.Sub(nextStart) > in.Config.MaxJourney {
 				continue
 			}
-			leg := &v1.ScheduledLeg{From: d.From.Title, To: d.To.Title, Mode: d.Mode, Number: d.Number, Departure: d.Departure.Format(time.RFC3339), Arrival: d.Arrival.Format(time.RFC3339), ObservedAt: timestamppb.New(d.at), ConnectionMinutes: int64(gap / time.Minute), RequiredMinutes: int64(required / time.Minute)}
+			leg := &v1.ScheduledLeg{From: d.From.Title, To: d.To.Title, Mode: d.Mode, Number: d.Number, Departure: d.Departure.Format(time.RFC3339), Arrival: d.Arrival.Format(time.RFC3339), ObservedAt: timestamppb.New(d.at), ConnectionMinutes: int64(gap / time.Minute), RequiredMinutes: int64(required / time.Minute), TransferFrom: transferFrom, TransferTo: transferTo, BoardingMinutes: int64(boarding / time.Minute)}
 			walk(n+1, append(legs, leg), nextStart, d.Arrival)
 			if truncated {
 				return
@@ -207,4 +215,24 @@ func filterExact(candidates []observed, keep func(observed) bool) []observed {
 		}
 	}
 	return result
+}
+
+// transferBetween names the ground transfer between main legs k and k+1 as the
+// first transfer's origin and the last one's destination; empty if there is none.
+func transferBetween(in matchInput, k int) (string, string) {
+	first, last := -1, -1
+	for i := in.Main[k] + 1; i < in.Main[k+1]; i++ {
+		if in.Steps[i].Mode == "transfer" {
+			if first < 0 {
+				first = i
+			}
+			last = i
+		}
+	}
+	if first < 0 {
+		return "", ""
+	}
+	from, _ := realroutes.TransferLabels(in.Steps[first])
+	_, to := realroutes.TransferLabels(in.Steps[last])
+	return from, to
 }
