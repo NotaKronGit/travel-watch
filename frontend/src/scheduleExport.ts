@@ -37,6 +37,35 @@ export function transferCounts(schemes: ScheduledScheme[]) {
   return [...new Set(schemes.flatMap(s => s.journeys.map(transferCount)))].sort((a, b) => a - b);
 }
 
+// Night hours by the connection's local clock: a wait covering any part of them may
+// need somewhere to sleep. A display policy estimate, not a carrier or hotel rule.
+export const nightWindow = { fromHour: 1, toHour: 5 };
+function offsetMinutes(value: string) {
+  const m = /([+-])(\d{2}):(\d{2})$/.exec(value);
+  return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) : 0;
+}
+// Whether the free time before leg k (k > 0) overlaps the night window, on the clock of
+// the station the previous leg arrives at (both ends of a connection are in one city).
+// Free time ends when check-in or boarding starts: a 22:00 arrival for a 02:45 flight
+// is at the airport by 23:45 and needs no bed. Boarding time comes with a ground
+// transfer; without one (same airport) the wait runs to departure.
+export function overnightBefore(journey: ScheduledJourney, k: number) {
+  const arrival = journey.legs[k - 1]?.arrival, departure = journey.legs[k]?.departure;
+  if (!arrival || !departure) return false;
+  const shift = offsetMinutes(arrival) * 60000;
+  const from = Date.parse(arrival) + shift;
+  const to = Date.parse(departure) + shift - Number(journey.legs[k].boardingMinutes) * 60000;
+  const day = 24 * 3600000;
+  for (let start = Math.floor(from / day) * day; start < to; start += day) {
+    if (start + nightWindow.fromHour * 3600000 < to && start + nightWindow.toHour * 3600000 > from) return true;
+  }
+  return false;
+}
+export function overnight(journey: ScheduledJourney) {
+  return journey.legs.some((_, k) => k > 0 && overnightBefore(journey, k));
+}
+export const overnightNote = `Свободное время до регистрации или посадки захватывает ночь (${String(nightWindow.fromHour).padStart(2, '0')}:00–${String(nightWindow.toHour).padStart(2, '0')}:00 по местному времени): может понадобиться ночлег.`;
+
 // Waiting between legs, including the ground transfer the traveller plans themselves.
 export function waitMinutes(journey: ScheduledJourney) {
   return journey.legs.slice(1).reduce((sum, leg) => sum + Number(leg.connectionMinutes), 0);
@@ -55,51 +84,83 @@ function compareJourneys(a: ScheduledJourney, b: ScheduledJourney, by: JourneySo
   return sortValue(a, by) - sortValue(b, by) || departureTime(a) - departureTime(b);
 }
 
+export type JourneyFilter = { maxTransfers?: number; noOvernight?: boolean };
+function matches(journey: ScheduledJourney, filter: JourneyFilter) {
+  return (filter.maxTransfers === undefined || transferCount(journey) <= filter.maxTransfers) && (!filter.noOvernight || !overnight(journey));
+}
+
 // Journeys within each scheme, and schemes by their best journey; schemes without
-// journeys keep their order at the end. With maxTransfers, longer journeys are dropped
-// and schemes left without journeys by the filter are omitted. Only reorders saved data.
-export function sortSchemes(schemes: ScheduledScheme[], by: JourneySort, maxTransfers?: number): { scheme: ScheduledScheme; journeys: ScheduledJourney[] }[] {
-  const sorted = schemes.map(scheme => ({ scheme, journeys: scheme.journeys.filter(j => maxTransfers === undefined || transferCount(j) <= maxTransfers).sort((a, b) => compareJourneys(a, b, by)) }));
+// journeys keep their order at the end. Filtered-out journeys are dropped and schemes
+// left without journeys by the filter are omitted. Only reorders saved data.
+export function sortSchemes(schemes: ScheduledScheme[], by: JourneySort, filter: JourneyFilter = {}): { scheme: ScheduledScheme; journeys: ScheduledJourney[] }[] {
+  const sorted = schemes.map(scheme => ({ scheme, journeys: scheme.journeys.filter(j => matches(j, filter)).sort((a, b) => compareJourneys(a, b, by)) }));
   const found = sorted.filter(s => s.journeys.length > 0).sort((a, b) => compareJourneys(a.journeys[0], b.journeys[0], by));
-  return [...found, ...sorted.filter(s => s.journeys.length === 0 && (maxTransfers === undefined || s.scheme.journeys.length === 0))];
+  return [...found, ...sorted.filter(s => s.journeys.length === 0 && s.scheme.journeys.length === 0)];
 }
 
 // One line to compare journeys: waiting between legs and first departure to last arrival.
 export function journeySummary(journey: ScheduledJourney) {
-  return `${transfersText(transferCount(journey))}, ожидание ${formatMinutes(waitMinutes(journey))}, в пути ${formatMinutes(Math.round(travelMinutes(journey)))}`;
+  return `${transfersText(transferCount(journey))}, ожидание ${formatMinutes(waitMinutes(journey))}${overnight(journey) ? ' с ночёвкой' : ''}, в пути ${formatMinutes(Math.round(travelMinutes(journey)))}`;
 }
 
-function legText(leg: ScheduledLeg) {
-  return `${leg.mode === 'train' ? 'Поезд' : 'Самолёт'} ${leg.number}: ${leg.from} → ${leg.to}`;
+// Present only between legs: waiting, check-in or boarding, and what is left for the ground transfer.
+function connectionJson(leg: ScheduledLeg) {
+  return {
+    minutes: Number(leg.connectionMinutes),
+    requiredMinutes: Number(leg.requiredMinutes),
+    transfer: leg.transferFrom ? {
+      from: leg.transferFrom, to: leg.transferTo,
+      boardingMinutes: Number(leg.boardingMinutes),
+      availableMinutes: Number(leg.connectionMinutes - leg.boardingMinutes),
+    } : null,
+    text: connectionText(leg, true),
+  };
 }
 
-// Plain-text export of every scheme with found journeys, with the same caveats as the tab.
-export function formatScheduleExport(result: ScheduleCheck, by: JourneySort = 'wait', maxTransfers?: number): string {
-  const lines = ['Travel Watch — расписания и стыковки',
-    'Источник расписаний: Яндекс Расписания. Цены и наличие мест не проверены. Перед покупкой нужно уточнить расписание и условия перевозчика.',
-    'Время отправления и прибытия — местное время станции с часовым смещением.',
-    `Состояние: ${checkLabels[result.state] || result.state}`];
-  if (result.checkedAt) lines.push(`Проверено: ${new Date(Number(result.checkedAt.seconds) * 1000).toLocaleString('ru-RU')} · Запросов к источнику: ${result.requests}`);
-  if (result.incomplete) lines.push('Проверка неполная. Результаты относятся только к рассмотренным датам, участкам и сочетаниям.');
-  result.warnings.forEach(w => lines.push(`Предупреждение: ${w}`));
-  const found = sortSchemes(result.schemes, by, maxTransfers).filter(s => s.journeys.length > 0);
-  const without = result.schemes.filter(s => s.journeys.length === 0).length;
+// JSON export of every scheme with found journeys, in the on-screen order and filter,
+// with the same caveats as the tab. Times keep the station's UTC offset.
+export function scheduleToJson(result: ScheduleCheck, by: JourneySort = 'wait', filter: JourneyFilter = {}): string {
+  const found = sortSchemes(result.schemes, by, filter).filter(s => s.journeys.length > 0);
   const hidden = result.schemes.reduce((n, s) => n + s.journeys.length, 0) - found.reduce((n, s) => n + s.journeys.length, 0);
-  if (maxTransfers !== undefined) lines.push(`Фильтр: ${transferLimitText(maxTransfers).toLowerCase()}. Не выгружено сочетаний с большим числом пересадок: ${hidden}.`);
-  if (!found.length) lines.push('', 'Состыкованных сочетаний нет.');
-  else lines.push(`Сортировка: ${sortLabels[by].toLowerCase()}`);
-  for (const { scheme, journeys } of found) {
-    lines.push('', `Схема ${scheme.schemeNumber} · Подвоз ${scheme.accessVariant}`, schemeLabels[scheme.state] || scheme.state);
-    scheme.warnings.forEach(w => lines.push(`Требует проверки: ${w}`));
-    journeys.forEach((journey, j) => {
-      lines.push('', `Сочетание ${j + 1}${!journey.timingVerified ? ' · предварительное' : ''} · ${journeySummary(journey)}`);
-      journey.legs.forEach((leg, k) => {
-        if (k > 0) lines.push(`   ${connectionText(leg, journey.timingVerified)}`);
-        lines.push(`${k + 1}. ${legText(leg)}`, `   Отправление: ${stationTime(leg.departure)} · Прибытие: ${stationTime(leg.arrival)}`);
-      });
-      journey.warnings.forEach(w => lines.push(`Требует проверки: ${w}`));
-    });
-  }
-  if (without > 0) lines.push('', `Схем без подходящих сочетаний: ${without}. Они не выгружаются.`);
-  return lines.join('\n');
+  return JSON.stringify({
+    format: 'travel-watch.connections.v1',
+    notice: ['Источник расписаний: Яндекс Расписания. Цены и наличие мест не проверены. Перед покупкой нужно уточнить расписание и условия перевозчика.',
+      'Время отправления и прибытия — местное время станции с часовым смещением.'],
+    state: result.state,
+    stateName: checkLabels[result.state] || result.state,
+    checkedAt: result.checkedAt ? new Date(Number(result.checkedAt.seconds) * 1000).toISOString() : null,
+    requests: result.requests,
+    incomplete: result.incomplete,
+    warnings: result.warnings,
+    sort: by,
+    sortName: sortLabels[by],
+    maxTransfers: filter.maxTransfers ?? null,
+    noOvernight: filter.noOvernight ?? false,
+    nightWindow: `${String(nightWindow.fromHour).padStart(2, '0')}:00–${String(nightWindow.toHour).padStart(2, '0')}:00`,
+    hiddenByFilter: hidden,
+    schemesWithoutJourneys: result.schemes.filter(s => s.journeys.length === 0).length,
+    schemes: found.map(({ scheme, journeys }) => ({
+      schemeNumber: scheme.schemeNumber,
+      accessVariant: scheme.accessVariant,
+      state: scheme.state,
+      stateName: schemeLabels[scheme.state] || scheme.state,
+      warnings: scheme.warnings,
+      journeys: journeys.map((journey, j) => ({
+        number: j + 1,
+        preliminary: !journey.timingVerified,
+        transfers: transferCount(journey),
+        overnight: overnight(journey),
+        waitMinutes: waitMinutes(journey),
+        travelMinutes: Math.round(travelMinutes(journey)),
+        summary: journeySummary(journey),
+        warnings: journey.warnings,
+        legs: journey.legs.map((leg, k) => ({
+          mode: leg.mode, number: leg.number, from: leg.from, to: leg.to,
+          departure: leg.departure, arrival: leg.arrival,
+          observedAt: leg.observedAt ? new Date(Number(leg.observedAt.seconds) * 1000).toISOString() : null,
+          connectionBefore: k > 0 ? { ...connectionJson(leg), overnight: overnightBefore(journey, k) } : null,
+        })),
+      })),
+    })),
+  }, null, 2);
 }

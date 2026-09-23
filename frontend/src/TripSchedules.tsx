@@ -4,7 +4,7 @@ import { Code, ConnectError } from '@connectrpc/connect';
 import { useNavigate } from 'react-router-dom';
 import { tripClient } from './api';
 import type { ScheduleCheck } from './gen/travelwatch/search/v1/routes_pb';
-import { checkLabels as labels, connectionText as connection, formatScheduleExport, journeySummary, schemeLabels, sortLabels, sortSchemes, stationTime, transferCounts, transferLimitText, type JourneySort } from './scheduleExport';
+import { checkLabels as labels, connectionText as connection, scheduleToJson, journeySummary, overnight, overnightBefore, overnightNote, schemeLabels, sortLabels, sortSchemes, stationTime, transferCounts, transferLimitText, type JourneyFilter, type JourneySort } from './scheduleExport';
 import { copyText, downloadText } from './share';
 // Journeys shown per scheme before "show all"; sorting decides which ones.
 const shownJourneys=3;
@@ -21,7 +21,10 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
  const counts=result ? transferCounts(result.schemes) : [];
  // After the data reloads the chosen limit may cover every journey; then it filters nothing.
  const limit=maxTransfers!==undefined && counts.some(n=>n>maxTransfers) ? maxTransfers : undefined;
- const visible=result ? sortSchemes(result.schemes,sort,limit) : [];
+ const [noOvernight,setNoOvernight]=useState(false);
+ const anyOvernight=!!result && result.schemes.some(s=>s.journeys.some(overnight));
+ const filter:JourneyFilter={maxTransfers:limit,noOvernight:noOvernight && anyOvernight};
+ const visible=result ? sortSchemes(result.schemes,sort,filter) : [];
  const hidden=result ? result.schemes.reduce((n,s)=>n+s.journeys.length,0)-visible.reduce((n,s)=>n+s.journeys.length,0) : 0;
  const navigate=useNavigate();
  useEffect(()=>{
@@ -55,8 +58,8 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
   {result?.incomplete && <Alert severity="warning">Проверка неполная. Результаты относятся только к рассмотренным датам, участкам и сочетаниям.</Alert>}
   {result?.warnings.map((w,i)=><Typography variant="body2" color="text.secondary" key={i}>{w}</Typography>)}
   {result && result.schemes.some(s=>s.journeys.length>0) && <Stack direction="row" sx={{gap:1,flexWrap:'wrap'}}>
-   <Button onClick={()=>void copyText(formatScheduleExport(result,sort,limit)).then(()=>{setShareError(false);setShareMessage('Стыковки скопированы. Можно переслать сообщение.');},()=>{setShareError(true);setShareMessage('Не удалось скопировать. Скачайте TXT и перешлите файл.');})}>Скопировать стыковки</Button>
-   <Button onClick={()=>{downloadText('travel-watch-connections.txt',formatScheduleExport(result,sort,limit));setShareMessage('');}}>Скачать стыковки TXT</Button>
+   <Button onClick={()=>void copyText(scheduleToJson(result,sort,filter)).then(()=>{setShareError(false);setShareMessage('Стыковки скопированы. Можно переслать сообщение.');},()=>{setShareError(true);setShareMessage('Не удалось скопировать. Скачайте файл JSON и перешлите его.');})}>Скопировать стыковки</Button>
+   <Button onClick={()=>{downloadText('travel-watch-connections.json',scheduleToJson(result,sort,filter),'application/json');setShareMessage('');}}>Скачать стыковки JSON</Button>
   </Stack>}
   {shareMessage && <Alert role="status" severity={shareError?'warning':'success'}>{shareMessage}</Alert>}
   {result && result.schemes.some(s=>s.journeys.length>1) && <Stack spacing={0.5}>
@@ -71,8 +74,9 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
     <ToggleButton value="any">Любое</ToggleButton>
     {counts.slice(0,-1).map(n=><ToggleButton key={n} value={n}>{transferLimitText(n)}</ToggleButton>)}
    </ToggleButtonGroup>
-   {hidden>0 && <Typography variant="body2" color="text.secondary">Скрыто сочетаний с большим числом пересадок: {hidden}</Typography>}
   </Stack>}
+  {anyOvernight && <ToggleButton size="small" value="no-overnight" selected={noOvernight} onChange={()=>setNoOvernight(v=>!v)} sx={{alignSelf:'flex-start'}}>Без ночёвки</ToggleButton>}
+  {hidden>0 && <Typography variant="body2" color="text.secondary">Скрыто фильтрами сочетаний: {hidden}</Typography>}
   {result && visible.map(({scheme:s,journeys},i)=>{
    const key=result.schemes.indexOf(s);const all=expanded.has(key);
    return <Box key={key} sx={{p:2,border:'1px solid',borderColor:'divider',borderRadius:2}}>
@@ -85,6 +89,7 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
     <Typography variant="body2" color="text.secondary">{journeySummary(journey)}</Typography>
     {journey.legs.map((leg,k)=><Box key={k}>
      {k>0 && <Typography variant="body2">{connection(leg,journey.timingVerified)}</Typography>}
+     {k>0 && overnightBefore(journey,k) && <Typography variant="body2" color="warning.main">{overnightNote}</Typography>}
      <Typography>{leg.mode==='train'?'Поезд':'Самолёт'} {leg.number}: {leg.from} → {leg.to}</Typography>
      <Typography variant="body2">Отправление: {stationTime(leg.departure)} · Прибытие: {stationTime(leg.arrival)}</Typography>
      {leg.observedAt && <Typography variant="caption" color="text.secondary">Наблюдение источника: {new Date(Number(leg.observedAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}

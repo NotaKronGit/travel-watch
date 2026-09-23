@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { create } from '@bufbuild/protobuf';
 import { ScheduleCheckSchema } from './gen/travelwatch/search/v1/routes_pb';
-import { formatScheduleExport, journeySummary, sortSchemes, transferCounts, transferLimitText, transfersText, travelMinutes, waitMinutes } from './scheduleExport';
+import { journeySummary, overnight, overnightBefore, scheduleToJson, sortSchemes, transferCounts, transferLimitText, transfersText, travelMinutes, waitMinutes } from './scheduleExport';
 
 // Synthetic check: one scheme with a train + flight journey, one scheme without journeys.
 const check = create(ScheduleCheckSchema, {
@@ -15,22 +15,28 @@ const check = create(ScheduleCheckSchema, {
   ],
 });
 
-describe('formatScheduleExport', () => {
-  it('lists found journeys with station time, transfer window and caveats', () => {
-    const text = formatScheduleExport(check);
-    expect(text).toContain('Цены и наличие мест не проверены');
-    expect(text).toContain('Проверка неполная.');
-    expect(text).toContain('Предупреждение: Тестовое предупреждение');
-    expect(text).toContain('Схема 1 · Подвоз 2\nВремя согласуется с заданными запасами');
-    expect(text).toContain('1. Поезд ТЕСТ-1: Тестовый город → Тестовый вокзал\n   Отправление: 2027-01-10 23:00 +03:00');
-    expect(text).toContain('   Переезд Тестовый вокзал → Тестовый аэропорт: на переезд 8 ч 1 мин (11 ч 1 мин между участками − 3 ч на регистрацию)\n2. Самолёт ТЕСТ-2');
-    expect(text).toContain('Прибытие: 2027-01-12 06:00 +07:00');
-    expect(text).not.toContain('Схема 2');
-    expect(text).toContain('Схем без подходящих сочетаний: 1.');
+describe('scheduleToJson', () => {
+  it('exports found journeys with station time, transfer window and caveats', () => {
+    const json = JSON.parse(scheduleToJson(check));
+    expect(json.format).toBe('travel-watch.connections.v1');
+    expect(json.notice[0]).toContain('Цены и наличие мест не проверены');
+    expect(json).toMatchObject({ incomplete: true, warnings: ['Тестовое предупреждение'], sort: 'wait', maxTransfers: null, noOvernight: false, hiddenByFilter: 0, schemesWithoutJourneys: 1 });
+    expect(json.schemes).toHaveLength(1);
+    const scheme = json.schemes[0];
+    expect(scheme).toMatchObject({ schemeNumber: 1, accessVariant: 2, stateName: 'Время согласуется с заданными запасами' });
+    const journey = scheme.journeys[0];
+    expect(journey).toMatchObject({ number: 1, preliminary: false, transfers: 1, waitMinutes: 661 });
+    expect(journey.legs[0]).toMatchObject({ mode: 'train', number: 'ТЕСТ-1', departure: '2027-01-10T23:00:00+03:00', connectionBefore: null });
+    expect(journey.legs[1].arrival).toBe('2027-01-12T06:00:00+07:00');
+    expect(journey.legs[1].connectionBefore).toEqual({ minutes: 661, requiredMinutes: 255,
+      transfer: { from: 'Тестовый вокзал', to: 'Тестовый аэропорт', boardingMinutes: 180, availableMinutes: 481 },
+      text: 'Переезд Тестовый вокзал → Тестовый аэропорт: на переезд 8 ч 1 мин (11 ч 1 мин между участками − 3 ч на регистрацию)', overnight: false });
+    expect(journey.overnight).toBe(false);
   });
-  it('says so when nothing connected', () => {
-    const text = formatScheduleExport(create(ScheduleCheckSchema, { state: 'done', schemes: [{ schemeNumber: 1, state: 'no_match' }] }));
-    expect(text).toContain('Состыкованных сочетаний нет.');
+  it('exports an empty list when nothing connected', () => {
+    const json = JSON.parse(scheduleToJson(create(ScheduleCheckSchema, { state: 'done', schemes: [{ schemeNumber: 1, state: 'no_match' }] })));
+    expect(json.schemes).toEqual([]);
+    expect(json.schemesWithoutJourneys).toBe(1);
   });
 });
 
@@ -70,9 +76,9 @@ describe('sortSchemes', () => {
     expect(journeySummary(sorting.schemes[2].journeys[1])).toBe('1 пересадка, ожидание 7 ч 48 мин, в пути 22 ч 31 мин');
   });
   it('exports in the chosen order', () => {
-    const text = formatScheduleExport(sorting, 'wait');
-    expect(text).toContain('Сортировка: меньше ожидание');
-    expect(text.indexOf('Подвоз 3')).toBeLessThan(text.indexOf('Подвоз 1'));
+    const json = JSON.parse(scheduleToJson(sorting, 'wait'));
+    expect(json.sortName).toBe('Меньше ожидание');
+    expect(json.schemes.map((s: { accessVariant: number }) => s.accessVariant)).toEqual([3, 1]);
   });
 });
 
@@ -94,9 +100,45 @@ describe('transfer filter', () => {
   it('drops longer journeys and their emptied schemes, on screen and in export', () => {
     // Unfiltered, the 2-transfer journey waits less (5 h vs 8 h) and goes first.
     expect(sortSchemes(check.schemes, 'wait').map(s => s.scheme.schemeNumber)).toEqual([2, 1]);
-    expect(sortSchemes(check.schemes, 'wait', 1).map(s => s.scheme.schemeNumber)).toEqual([1]);
-    const text = formatScheduleExport(check, 'wait', 1);
-    expect(text).toContain('Фильтр: не больше 1 пересадки. Не выгружено сочетаний с большим числом пересадок: 1.');
-    expect(text).not.toContain('Р-3');
+    expect(sortSchemes(check.schemes, 'wait', { maxTransfers: 1 }).map(s => s.scheme.schemeNumber)).toEqual([1]);
+    const json = JSON.parse(scheduleToJson(check, 'wait', { maxTransfers: 1 }));
+    expect(json).toMatchObject({ maxTransfers: 1, hiddenByFilter: 1 });
+    expect(JSON.stringify(json.schemes)).not.toContain('Р-3');
+  });
+});
+
+describe('overnight connections', () => {
+  // Synthetic train + flight with the connection in a chosen window.
+  const trip = (arrival: string, departure: string, boarding = 0n) => create(ScheduleCheckSchema, { state: 'done', schemes: [{ schemeNumber: 1, accessVariant: 4, state: 'compatible', journeys: [{ timingVerified: true, legs: [
+    { from: 'А', to: 'Б', mode: 'train', number: 'П-1', departure: '2027-01-10T12:29:00+03:00', arrival },
+    { from: 'Б', to: 'В', mode: 'plane', number: 'Р-1', departure, arrival: '2027-01-12T11:45:00+07:00', connectionMinutes: BigInt(Math.round((Date.parse(departure) - Date.parse(arrival)) / 60000)), boardingMinutes: boarding },
+  ] }] }] }).schemes[0].journeys[0];
+  it('marks a wait that covers the night window at the connection', () => {
+    // 22:40 to 22:25 next day, like train 143Й and SU 272: free until 19:25.
+    expect(overnightBefore(trip('2027-01-10T22:40:00+03:00', '2027-01-11T22:25:00+03:00', 180n), 1)).toBe(true);
+    // Night flight: at 22:00 in town, check-in from 23:45 for 02:45, so the night is spent flying.
+    expect(overnightBefore(trip('2027-01-10T22:00:00+03:00', '2027-01-11T02:45:00+03:00', 180n), 1)).toBe(false);
+    // Night train at 06:00 with 30 min boarding: free until 05:30.
+    expect(overnightBefore(trip('2027-01-10T23:00:00+03:00', '2027-01-11T06:00:00+03:00', 30n), 1)).toBe(true);
+    // Same-airport layover without boarding data counts to departure.
+    expect(overnightBefore(trip('2027-01-11T02:00:00+03:00', '2027-01-11T04:00:00+03:00'), 1)).toBe(true);
+    // Daytime 11 h wait, and a late evening one ending before 01:00.
+    expect(overnightBefore(trip('2027-01-11T06:00:00+03:00', '2027-01-11T17:01:00+03:00'), 1)).toBe(false);
+    expect(overnightBefore(trip('2027-01-10T22:40:00+03:00', '2027-01-11T00:59:00+03:00'), 1)).toBe(false);
+  });
+  it('uses the local clock of the connection station', () => {
+    // 22:00 UTC is 01:00 in +03:00 but 23:00 in +01:00.
+    expect(overnightBefore(trip('2027-01-10T23:30:00+03:00', '2027-01-11T01:30:00+03:00'), 1)).toBe(true);
+    expect(overnightBefore(trip('2027-01-10T21:30:00+01:00', '2027-01-10T23:30:00+01:00'), 1)).toBe(false);
+  });
+  it('shows in the summary and can be filtered out', () => {
+    const night = trip('2027-01-10T22:40:00+03:00', '2027-01-11T22:25:00+03:00', 180n);
+    expect(overnight(night)).toBe(true);
+    expect(journeySummary(night)).toMatch(/^1 пересадка, ожидание 23 ч 45 мин с ночёвкой, в пути/);
+    const check = create(ScheduleCheckSchema, { state: 'done', schemes: [{ schemeNumber: 1, accessVariant: 4, state: 'compatible', journeys: [night] }] });
+    expect(sortSchemes(check.schemes, 'wait', { noOvernight: true })).toEqual([]);
+    const json = JSON.parse(scheduleToJson(check, 'wait', { noOvernight: true }));
+    expect(json).toMatchObject({ noOvernight: true, nightWindow: '01:00–05:00', hiddenByFilter: 1, schemes: [] });
+    expect(JSON.parse(scheduleToJson(check)).schemes[0].journeys[0].legs[1].connectionBefore.overnight).toBe(true);
   });
 });

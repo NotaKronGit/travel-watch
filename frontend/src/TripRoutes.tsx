@@ -66,15 +66,15 @@ export function TripRoutes({sources,loading,onPage,onExportAll}: {sources: Route
   const loadFailed='Не удалось загрузить все маршруты. Повторите выгрузку.';
   async function copyRoutes(selected:RouteSourceView[]) {
     try {
-      await copyText(formatRouteExport(selected));
+      await copyText(routesToJson(selected));
       setShareError(false);setShareMessage('Маршруты скопированы. Можно переслать сообщение.');
     } catch {
-      setShareError(true);setShareMessage('Не удалось скопировать. Скачайте TXT и перешлите файл.');
+      setShareError(true);setShareMessage('Не удалось скопировать. Скачайте файл JSON и перешлите его.');
     }
   }
   async function allRoutesText() {
     const all=await onExportAll();
-    return formatRouteExport(all.sources,all.complete?'all':'partial');
+    return routesToJson(all.sources,all.complete?'all':'partial');
   }
   async function copyAllRoutes() {
     setExporting(true);
@@ -84,13 +84,13 @@ export function TripRoutes({sources,loading,onPage,onExportAll}: {sources: Route
       await copyText(text);
       setShareError(false);setShareMessage('Все маршруты скопированы. Можно переслать сообщение.');
     } catch {
-      setShareError(true);setShareMessage(failedToLoad ? loadFailed : 'Не удалось скопировать. Скачайте TXT и перешлите файл.');
+      setShareError(true);setShareMessage(failedToLoad ? loadFailed : 'Не удалось скопировать. Скачайте файл JSON и перешлите его.');
     } finally { setExporting(false); }
   }
   async function downloadAllRoutes() {
     setExporting(true);
     try {
-      downloadText('travel-watch-routes.txt',await allRoutesText());
+      downloadText('travel-watch-routes.json',await allRoutesText(),'application/json');
       setShareMessage('');
     } catch {
       setShareError(true);setShareMessage(loadFailed);
@@ -102,9 +102,9 @@ export function TripRoutes({sources,loading,onPage,onExportAll}: {sources: Route
     <Typography color="text.secondary" sx={{mb:3}}>Независимые схемы поездки. Варианты подвоза поездом к одному аэропорту сгруппированы; конкретные вокзалы и поезда выбираются на этапе стыковок. Результат проверки расписаний смотрите на вкладке «Стыковки». Цены ещё не проверены; совпадения между источниками пока не объединены.</Typography>
     <Stack direction="row" sx={{gap:1,flexWrap:'wrap',mb:1}}>
       <Button disabled={loading || exporting || !sources.some(s=>s.routes.length)} onClick={()=>void copyAllRoutes()}>Скопировать все маршруты</Button>
-      <Button disabled={loading || exporting || !sources.some(s=>s.routes.length)} onClick={()=>void downloadAllRoutes()}>Скачать все маршруты TXT</Button>
+      <Button disabled={loading || exporting || !sources.some(s=>s.routes.length)} onClick={()=>void downloadAllRoutes()}>Скачать все маршруты JSON</Button>
     </Stack>
-    <Typography variant="caption" color="text.secondary" sx={{display:'block',mb:2}}>{exporting ? 'Загружаем все варианты…' : 'Выгружаются все сохранённые варианты каждого источника со всех страниц вместе с предупреждениями.'}</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{display:'block',mb:2}}>{exporting ? 'Загружаем все варианты…' : 'Выгружаются в JSON все сохранённые варианты каждого источника со всех страниц вместе с предупреждениями.'}</Typography>
     {shareMessage && <Alert role="status" severity={shareError?'warning':'success'} sx={{mb:2}}>{shareMessage}</Alert>}
     {sources.length === 0 ? <Alert severity="info">Сохранённых результатов пока нет. Они появятся после начала построения маршрутов.</Alert> : <Stack spacing={3} divider={<Divider/>}>
       {sources.map(source=><Box component="section" aria-label={`Маршруты: ${sourceNames[source.id] || source.id}`} key={source.id}>
@@ -150,32 +150,33 @@ export function TripRoutes({sources,loading,onPage,onExportAll}: {sources: Route
 }
 
 const exportScopes = {
-  selected:'Экспорт содержит только перечисленные ниже варианты.',
-  all:'Экспорт содержит все сохранённые варианты каждого источника.',
+  selected:'Выгрузка содержит только выбранные варианты.',
+  all:'Выгрузка содержит все сохранённые варианты каждого источника.',
   partial:'Выгрузка неполная: достигнут предел выгрузки, перечислены не все сохранённые варианты.',
 };
-export function formatRouteExport(sources:RouteSourceView[],scope:keyof typeof exportScopes='selected'):string {
-  const lines=['Travel Watch — схемы маршрутов',
-    'Расписания, цены, наличие билетов и допустимость стыковок не подтверждены.',
-    exportScopes[scope]];
-  for(const source of sources){
-    if(!source.routes.length)continue;
-    lines.push('',sourceNames[source.id] || source.id,
-      `Состояние: ${stateNames[source.stage] || source.stage}`,
-      `Варианты ${source.offset+1}–${source.offset+source.routes.length} из ${source.total}`);
-    if(source.finishedAt)lines.push(`Получено: ${new Date(source.finishedAt).toLocaleString('ru-RU')}`);
-    if(source.incomplete)lines.push('Выборка неполная.');
-    if(source.id==='gemini')lines.push('Предложения модели. Транспортные связи не подтверждены.');
-    if(source.outcome)lines.push(errors[source.outcome] || errors.error);
-    source.warnings.forEach(w=>lines.push(`Предупреждение: ${warningText(w)}`));
-    source.routes.forEach((route,index)=>{
-      lines.push('',`Вариант ${source.offset+index+1}`);
-      route.steps.forEach((step,i)=>{
-        lines.push(`${i+1}. ${modeNames[step.mode] || step.mode}: ${step.description}`);
-        if(step.evidence)lines.push(`   Источник / обоснование: ${step.evidence}`);
-      });
-      route.warnings.forEach(w=>lines.push(`Требует проверки: ${warningText(w)}`));
-    });
-  }
-  return lines.join('\n');
+// JSON export: codes for programs next to the same Russian labels and caveats as the screen.
+export function routesToJson(sources:RouteSourceView[],scope:keyof typeof exportScopes='selected'):string {
+  const exported=sources.filter(source=>source.routes.length>0).map(source=>({
+    planner:source.id,
+    plannerName:sourceNames[source.id] || source.id,
+    stage:source.stage,
+    stageName:stateNames[source.stage] || source.stage,
+    total:source.total,
+    incomplete:source.incomplete,
+    finishedAt:source.finishedAt ?? null,
+    outcome:source.outcome ? errors[source.outcome] || errors.error : null,
+    notice:source.id==='gemini' ? 'Предложения модели. Транспортные связи не подтверждены.' : null,
+    warnings:source.warnings.map(warningText),
+    routes:source.routes.map((route,index)=>({
+      number:source.offset+index+1,
+      steps:route.steps.map(step=>({mode:step.mode,modeName:modeNames[step.mode] || step.mode,description:step.description,evidence:step.evidence})),
+      warnings:route.warnings.map(warningText),
+    })),
+  }));
+  return JSON.stringify({
+    format:'travel-watch.routes.v1',
+    complete:scope!=='partial',
+    notice:['Расписания, цены, наличие билетов и допустимость стыковок не подтверждены.',exportScopes[scope]],
+    sources:exported,
+  },null,2);
 }
