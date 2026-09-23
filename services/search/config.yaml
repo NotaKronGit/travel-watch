@@ -79,7 +79,7 @@ schedules:
   max_requests: 80
   max_dates: 7
   max_combinations: 10000
-  max_journeys: 3
+  max_journeys: 30
   # "windowed" prunes each leg's candidates by a feasible time window before
   # searching; "brute" searches every fetched departure. Same results either
   # way (see services/search/internal/schedules/match_test.go); switch to
