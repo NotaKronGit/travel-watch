@@ -52,6 +52,7 @@ func randomScenario(rng *rand.Rand, legs int) matchInput {
 	cfg := policy()
 	cfg.MaxCombinations = 100000
 	cfg.MaxJourneys = 5
+	cfg.MaxJourneysPerDay = rng.Intn(3) // 0 disables the per-day limit
 	return matchInput{Steps: steps, Main: main, Transfers: map[int]time.Duration{}, Available: available, From: base, End: base.Add(10 * 24 * time.Hour), Config: cfg}
 }
 

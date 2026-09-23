@@ -18,7 +18,8 @@ import (
 type Checker struct {
 	Provider realroutes.Provider
 	Config   Config
-	impl     matcher // overrides Config.Matcher; set only from within this package (tests/benchmarks).
+	Now      func() time.Time // defaults to time.Now; set by tests
+	impl     matcher          // overrides Config.Matcher; set only from within this package (tests/benchmarks).
 }
 
 func (c Checker) matcherImpl() matcher {
@@ -62,6 +63,27 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 	to, err := time.ParseInLocation(time.DateOnly, input.Query.DepartureTo, loc)
 	if err != nil || to.Before(from) {
 		return out, errors.New("invalid departure interval")
+	}
+	// Past departure days are not requested: nobody can take those trains or flights.
+	nowFunc := c.Now
+	if nowFunc == nil {
+		nowFunc = time.Now
+	}
+	now := nowFunc().In(loc)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	if to.Before(today) {
+		out.Warnings = append(out.Warnings, "Все даты выезда уже прошли; расписания не запрашивались.")
+		out.CheckedAt = timestamppb.Now()
+		return out, nil
+	}
+	if from.Before(today) {
+		from = today
+		out.Warnings = append(out.Warnings, "Прошедшие даты выезда не проверялись: проверка начата с текущего дня.")
+	}
+	// Journeys must start (boarding prep and known transfers included) no earlier than now.
+	earliest := from
+	if now.After(earliest) {
+		earliest = now
 	}
 	if len(input.Candidates) == 0 {
 		return out, errors.New("no saved schemes to check")
@@ -237,7 +259,7 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 				out.Incomplete = true
 				continue
 			}
-			journeys, truncated := c.matcherImpl().Match(ctx, matchInput{Steps: steps, Main: main, Transfers: transfers, Available: available, Mismatch: mismatch, From: from, End: end, Config: c.Config})
+			journeys, truncated := c.matcherImpl().Match(ctx, matchInput{Steps: steps, Main: main, Transfers: transfers, Available: available, Mismatch: mismatch, From: earliest, End: end, Config: c.Config})
 			row.Journeys = journeys
 			row.State = "no_match"
 			if incomplete || mismatch || truncated {

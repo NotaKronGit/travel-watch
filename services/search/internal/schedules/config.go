@@ -23,14 +23,16 @@ type Config struct {
 	MaxDates        int           `mapstructure:"max_dates"`
 	MaxCombinations int           `mapstructure:"max_combinations"`
 	MaxJourneys     int           `mapstructure:"max_journeys"`
-	BeforeTrain     time.Duration `mapstructure:"before_train"`
-	AfterTrain      time.Duration `mapstructure:"after_train"`
-	BeforePlane     time.Duration `mapstructure:"before_plane"`
-	AfterPlane      time.Duration `mapstructure:"after_plane"`
-	Buffer          time.Duration `mapstructure:"buffer"`
-	MaxConnection   time.Duration `mapstructure:"max_connection"`
-	MaxJourney      time.Duration `mapstructure:"max_journey"`
-	Transfers       []Transfer    `mapstructure:"transfers"`
+	// Per start day in the origin timezone; 0 disables the per-day limit.
+	MaxJourneysPerDay int           `mapstructure:"max_journeys_per_day"`
+	BeforeTrain       time.Duration `mapstructure:"before_train"`
+	AfterTrain        time.Duration `mapstructure:"after_train"`
+	BeforePlane       time.Duration `mapstructure:"before_plane"`
+	AfterPlane        time.Duration `mapstructure:"after_plane"`
+	Buffer            time.Duration `mapstructure:"buffer"`
+	MaxConnection     time.Duration `mapstructure:"max_connection"`
+	MaxJourney        time.Duration `mapstructure:"max_journey"`
+	Transfers         []Transfer    `mapstructure:"transfers"`
 	// Matcher selects the combination search strategy: "windowed" (default,
 	// also used when empty) prunes each leg's candidates by a feasible time
 	// window before searching; "brute" searches every fetched departure
@@ -45,6 +47,9 @@ type Config struct {
 func (c Config) Validate() error {
 	if c.Timeout < time.Second || c.Timeout > 15*time.Minute || c.MaxRequests < 1 || c.MaxRequests > 300 || c.MaxDates < 1 || c.MaxDates > 31 || c.MaxCombinations < 1 || c.MaxCombinations > 100000 || c.MaxJourneys < 1 || c.MaxJourneys > 50 || c.MaxConnection < time.Hour || c.MaxConnection > 48*time.Hour || c.MaxJourney < c.MaxConnection || c.MaxJourney > 120*time.Hour {
 		return errors.New("invalid schedule limits")
+	}
+	if c.MaxJourneysPerDay < 0 || c.MaxJourneysPerDay > c.MaxJourneys {
+		return errors.New("invalid schedule journeys per day")
 	}
 	if c.Matcher != "" && c.Matcher != "windowed" && c.Matcher != "brute" {
 		return errors.New("invalid schedule matcher")

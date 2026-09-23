@@ -245,3 +245,70 @@ func TestJourneyLimitAllowsFullList(t *testing.T) {
 		}
 	}
 }
+func TestPastDatesAreNotChecked(t *testing.T) {
+	at := func(s string) func() time.Time { return func() time.Time { return stamp(s) } }
+	calls := 0
+	p := providerFunc(func(ctx context.Context, q transport.Request) (transport.Response, error) {
+		calls++
+		return fake("2027-01-11T03:00:00+03:00")(ctx, q)
+	})
+	// Every departure day is over: no provider calls, an explicit reason, no error.
+	r, err := (Checker{Provider: p, Config: policy(), Now: at("2027-01-12T09:00:00+03:00")}).Check(context.Background(), fixture(), "Europe/Moscow")
+	if err != nil || calls != 0 || len(r.Schemes) != 0 || !contains(r.Warnings, "Все даты выезда уже прошли; расписания не запрашивались.") {
+		t.Fatal("past interval checked", err, calls, r)
+	}
+	q := fixture()
+	q.Query.DepartureFrom = "2027-01-09"
+	// Earlier the same day: the 21:00 train (boarding from 20:50) is still ahead.
+	r, err = (Checker{Provider: p, Config: policy(), Now: at("2027-01-10T20:00:00+03:00")}).Check(context.Background(), q, "Europe/Moscow")
+	if err != nil || len(r.Schemes[0].Journeys) != 1 || !contains(r.Warnings, "Прошедшие даты выезда не проверялись: проверка начата с текущего дня.") {
+		t.Fatal("remaining day lost", err, r)
+	}
+	// After boarding started the journey is gone.
+	r, err = (Checker{Provider: p, Config: policy(), Now: at("2027-01-10T20:55:00+03:00")}).Check(context.Background(), q, "Europe/Moscow")
+	if err != nil || len(r.Schemes[0].Journeys) != 0 {
+		t.Fatal("departed train offered", err, r)
+	}
+}
+func TestJourneysPerDayCoverEveryDay(t *testing.T) {
+	// Synthetic direct flight: four departures on each of three days.
+	q := fixture()
+	q.Query.DepartureTo = "2027-01-12"
+	q.Candidates[0].Steps = []realroutes.Step{{Mode: "plane", From: "A", To: "B", FromCode: "s1", ToCode: "s2"}}
+	p := providerFunc(func(_ context.Context, request transport.Request) (transport.Response, error) {
+		r := transport.Response{Version: 1, ObservedAt: stamp("2026-09-20T10:00:00Z")}
+		if request.Date >= "2027-01-10" && request.Date <= "2027-01-12" {
+			for _, h := range []string{"08", "11", "14", "17"} {
+				dep := stamp(request.Date + "T" + h + ":00:00+03:00")
+				r.Departures = append(r.Departures, transport.Departure{From: transport.Station{Code: "s1", Title: "A"}, To: transport.Station{Code: "s2", Title: "B"}, Mode: "plane", Number: "F" + h, Departure: dep, Arrival: dep.Add(2 * time.Hour)})
+			}
+			r.Count, r.Total = 4, 4
+		}
+		return r, nil
+	})
+	days := func(c Config) map[string]int {
+		r, err := (Checker{Provider: p, Config: c, Now: func() time.Time { return stamp("2027-01-01T00:00:00Z") }}).Check(context.Background(), q, "Europe/Moscow")
+		if err != nil {
+			t.Fatal(err)
+		}
+		out := map[string]int{}
+		for _, j := range r.Schemes[0].Journeys {
+			out[j.Legs[0].Departure[:10]]++
+		}
+		return out
+	}
+	c := policy()
+	c.MaxDates, c.MaxJourneys = 3, 6
+	// Without a per-day limit the first day uses most of the budget and the last day is lost.
+	if got := days(c); got["2027-01-12"] != 0 || got["2027-01-10"] != 4 {
+		t.Fatalf("without per-day limit: %v", got)
+	}
+	c.MaxJourneysPerDay = 2
+	if got := days(c); got["2027-01-10"] != 2 || got["2027-01-11"] != 2 || got["2027-01-12"] != 2 {
+		t.Fatalf("per-day limit: %v", got)
+	}
+	c.MaxJourneysPerDay = 7
+	if c.Validate() == nil {
+		t.Fatal("per-day limit above max_journeys accepted")
+	}
+}

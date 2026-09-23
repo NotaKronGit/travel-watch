@@ -4,7 +4,7 @@ import { Code, ConnectError } from '@connectrpc/connect';
 import { useNavigate } from 'react-router-dom';
 import { tripClient } from './api';
 import type { ScheduleCheck } from './gen/travelwatch/search/v1/routes_pb';
-import { checkLabels as labels, connectionText as connection, scheduleToJson, journeySummary, overnight, overnightBefore, overnightNote, schemeLabels, sortLabels, sortSchemes, stationTime, transferCounts, transferLimitText, type JourneyFilter, type JourneySort } from './scheduleExport';
+import { checkLabels as labels, connectionText as connection, scheduleToJson, journeySummary, overnight, overnightBefore, overnightNote, schemeLabels, sortLabels, sortSchemes, stationTime, transferCounts, transferLimitText, type JourneyFilter, type JourneySort, expired, expiredCount } from './scheduleExport';
 import { copyText, downloadText } from './share';
 // Journeys shown per scheme before "show all"; sorting decides which ones.
 const shownJourneys=3;
@@ -22,10 +22,15 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
  // After the data reloads the chosen limit may cover every journey; then it filters nothing.
  const limit=maxTransfers!==undefined && counts.some(n=>n>maxTransfers) ? maxTransfers : undefined;
  const [noOvernight,setNoOvernight]=useState(false);
+ const [showExpired,setShowExpired]=useState(false);
+ // Read once per render; the tab re-renders when the saved result is re-read.
+ const now=Date.now();
+ const expiredJourneys=result ? expiredCount(result.schemes,now) : 0;
  const anyOvernight=!!result && result.schemes.some(s=>s.journeys.some(overnight));
- const filter:JourneyFilter={maxTransfers:limit,noOvernight:noOvernight && anyOvernight};
+ const filter:JourneyFilter={maxTransfers:limit,noOvernight:noOvernight && anyOvernight,showExpired,now};
  const visible=result ? sortSchemes(result.schemes,sort,filter) : [];
- const hidden=result ? result.schemes.reduce((n,s)=>n+s.journeys.length,0)-visible.reduce((n,s)=>n+s.journeys.length,0) : 0;
+ // Expired journeys have their own counter; this one covers the transfer and overnight filters.
+ const hidden=result ? result.schemes.reduce((n,s)=>n+s.journeys.length,0)-sortSchemes(result.schemes,sort,{...filter,showExpired:true}).reduce((n,s)=>n+s.journeys.length,0) : 0;
  const navigate=useNavigate();
  useEffect(()=>{
   const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined;
@@ -75,6 +80,8 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
     {counts.slice(0,-1).map(n=><ToggleButton key={n} value={n}>{transferLimitText(n)}</ToggleButton>)}
    </ToggleButtonGroup>
   </Stack>}
+  {expiredJourneys>0 && !showExpired && !visible.some(v=>v.journeys.length>0) && <Alert severity="info">Все найденные сочетания уже отправились ({expiredJourneys}). Более поздние даты появятся после повторной проверки расписаний.</Alert>}
+  {expiredJourneys>0 && <ToggleButton size="small" value="expired" selected={showExpired} onChange={()=>setShowExpired(v=>!v)} sx={{alignSelf:'flex-start'}}>{showExpired?'Скрыть истекшие':`Показать истекшие (${expiredJourneys})`}</ToggleButton>}
   {anyOvernight && <ToggleButton size="small" value="no-overnight" selected={noOvernight} onChange={()=>setNoOvernight(v=>!v)} sx={{alignSelf:'flex-start'}}>Без ночёвки</ToggleButton>}
   {hidden>0 && <Typography variant="body2" color="text.secondary">Скрыто фильтрами сочетаний: {hidden}</Typography>}
   {result && visible.map(({scheme:s,journeys},i)=>{
@@ -85,7 +92,7 @@ export function TripSchedules({id,cancelled}:{id:string;cancelled:boolean}){
    {s.warnings.map((w,j)=><Typography key={j} variant="body2" color="text.secondary" sx={{mb:1}}>{w}</Typography>)}
    {(all ? journeys : journeys.slice(0,shownJourneys)).map((journey,j)=><Stack spacing={1} key={j} sx={{mt:2}}>
     <Divider/>
-    <Typography sx={{fontWeight:600}}>Сочетание {j+1}{!journey.timingVerified?' · предварительное':''}{i===0 && j===0 && journeys.length>0?' · лучшее по выбранной сортировке':''}</Typography>
+    <Typography sx={{fontWeight:600}}>Сочетание {j+1}{!journey.timingVerified?' · предварительное':''}{expired(journey,now)?' · истекло: отправление уже прошло':''}{i===0 && j===0 && journeys.length>0?' · лучшее по выбранной сортировке':''}</Typography>
     <Typography variant="body2" color="text.secondary">{journeySummary(journey)}</Typography>
     {journey.legs.map((leg,k)=><Box key={k}>
      {k>0 && <Typography variant="body2">{connection(leg,journey.timingVerified)}</Typography>}

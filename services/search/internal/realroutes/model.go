@@ -50,6 +50,7 @@ type Query struct {
 	DepartureTo     string          `json:"departure_to,omitempty"`
 	Adults          int             `json:"adults,omitempty"`
 	OriginID        string          `json:"origin_id,omitempty"`
+	OriginTimezone  string          `json:"origin_timezone,omitempty"`
 	DestinationID   string          `json:"destination_id,omitempty"`
 	OriginName      string          `json:"origin_name"`
 	DestinationName string          `json:"destination_name"`
@@ -102,6 +103,7 @@ type Planner struct {
 	Provider Provider
 	Airports []airports.Airport
 	Config   Config
+	Now      func() time.Time // defaults to time.Now; set by tests
 }
 
 func distance(a, b transport.Point) float64 {

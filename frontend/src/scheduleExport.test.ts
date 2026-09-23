@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { create } from '@bufbuild/protobuf';
 import { ScheduleCheckSchema } from './gen/travelwatch/search/v1/routes_pb';
-import { journeySummary, overnight, overnightBefore, scheduleToJson, sortSchemes, transferCounts, transferLimitText, transfersText, travelMinutes, waitMinutes } from './scheduleExport';
+import { expired, journeySummary, overnight, overnightBefore, scheduleToJson, sortSchemes, transferCounts, transferLimitText, transfersText, travelMinutes, waitMinutes } from './scheduleExport';
+
+// Fixtures use January 2027; pin "now" before them so expiry does not depend on the real date.
+beforeAll(() => { vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2027-01-01T00:00:00Z')); });
+afterAll(() => { vi.useRealTimers(); });
 
 // Synthetic check: one scheme with a train + flight journey, one scheme without journeys.
 const check = create(ScheduleCheckSchema, {
@@ -140,5 +144,21 @@ describe('overnight connections', () => {
     const json = JSON.parse(scheduleToJson(check, 'wait', { noOvernight: true }));
     expect(json).toMatchObject({ noOvernight: true, nightWindow: '01:00–05:00', hiddenByFilter: 1, schemes: [] });
     expect(JSON.parse(scheduleToJson(check)).schemes[0].journeys[0].legs[1].connectionBefore.overnight).toBe(true);
+  });
+});
+
+describe('expired journeys', () => {
+  const at = (departure: string) => create(ScheduleCheckSchema, { state: 'done', schemes: [{ schemeNumber: 1, accessVariant: 1, state: 'compatible', journeys: [{ timingVerified: true, legs: [
+    { from: 'А', to: 'Б', mode: 'train', number: 'П-1', departure, arrival: '2027-01-12T10:00:00+03:00' }] }] }] });
+  it('hides a journey once its first departure has passed, unless asked', () => {
+    const check = at('2027-01-10T21:00:00+03:00');
+    const before = Date.parse('2027-01-10T17:59:00Z'), after = Date.parse('2027-01-10T18:00:00Z');
+    expect(expired(check.schemes[0].journeys[0], before)).toBe(false);
+    expect(expired(check.schemes[0].journeys[0], after)).toBe(true);
+    expect(sortSchemes(check.schemes, 'wait', { now: after })).toEqual([]);
+    expect(sortSchemes(check.schemes, 'wait', { now: after, showExpired: true })).toHaveLength(1);
+    const json = JSON.parse(scheduleToJson(check, 'wait', { now: after }));
+    expect(json).toMatchObject({ showExpired: false, expiredJourneys: 1, hiddenByFilter: 1, schemes: [] });
+    expect(JSON.parse(scheduleToJson(check, 'wait', { now: after, showExpired: true })).schemes[0].journeys[0].expired).toBe(true);
   });
 });

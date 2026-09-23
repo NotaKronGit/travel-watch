@@ -1,7 +1,9 @@
 import {test,expect} from '@playwright/test';
 const id='11111111-1111-4111-8111-111111111111';
 test('timetable tab preserves station time, shows the transfer window and stops polling after completion',async({page})=>{
- await page.setViewportSize({width:390,height:844});let ready=false;let calls=0;
+ await page.setViewportSize({width:390,height:844});
+ // Test data is in January 2027; keep "now" before it so journeys are not expired.
+ await page.clock.setFixedTime(new Date('2027-01-01T00:00:00Z'));let ready=false;let calls=0;
  await page.route('**/travelwatch.cabinet.v1.AuthService/*',r=>r.fulfill({json:{user:{id:'owner',email:'test@example.com'}}}));
  await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({json:{trip:{id,origin:{name:'Курск'},destination:{name:'Сочи'},departureFrom:'2027-01-10',departureTo:'2027-01-10',adults:1,status:'TRIP_STATUS_RUNNING',buildingStage:'awaiting_schedules',history:[]}}}));
  await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>{
@@ -10,7 +12,8 @@ test('timetable tab preserves station time, shows the transfer window and stops 
   return r.fulfill({json:{result:{sources:[],scheduleCheck:ready?{state:'done',incomplete:true,checkedAt:'2026-09-20T10:00:00Z',requests:12,warnings:['Тестовые расписания'],schemes:[{schemeNumber:1,accessVariant:2,state:'compatible',warnings:[],journeys:[{timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-123',departure:'2027-01-10T23:00:00+03:00',arrival:'2027-01-11T06:00:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-11T17:01:00+03:00',arrival:'2027-01-12T06:00:00+07:00',connectionMinutes:'661',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]},{schemeNumber:1,accessVariant:3,state:'compatible',warnings:[],journeys:[
    {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-ДОЛГО',departure:'2027-01-10T03:00:00+03:00',arrival:'2027-01-10T09:00:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-10T22:25:00+03:00',arrival:'2027-01-11T11:45:00+07:00',connectionMinutes:'805',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]},
    {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-БЫСТРО',departure:'2027-01-10T09:14:00+03:00',arrival:'2027-01-10T14:37:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-10T22:25:00+03:00',arrival:'2027-01-11T11:45:00+07:00',connectionMinutes:'468',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]},{schemeNumber:1,accessVariant:4,state:'compatible',warnings:[],journeys:[
-   {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-НОЧЬ',departure:'2027-01-10T12:29:00+03:00',arrival:'2027-01-10T22:40:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-11T22:25:00+03:00',arrival:'2027-01-12T11:45:00+07:00',connectionMinutes:'1425',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]}]}:{state:'running'}}}});
+   {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-НОЧЬ',departure:'2027-01-10T12:29:00+03:00',arrival:'2027-01-10T22:40:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2027-01-11T22:25:00+03:00',arrival:'2027-01-12T11:45:00+07:00',connectionMinutes:'1425',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]},{schemeNumber:1,accessVariant:5,state:'compatible',warnings:[],journeys:[
+   {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-УШЁЛ',departure:'2026-12-20T09:14:00+03:00',arrival:'2026-12-20T14:37:00+03:00'},{from:'Тестовый аэропорт',to:'Бангкок',mode:'plane',number:'ТЕСТ-456',departure:'2026-12-20T22:25:00+03:00',arrival:'2026-12-21T11:45:00+07:00',connectionMinutes:'468',requiredMinutes:'255',transferFrom:'Тестовый вокзал',transferTo:'Тестовый аэропорт',boardingMinutes:'180'}]}]}]}:{state:'running'}}}});
  });
  await page.goto('/#/trips/'+id);
  await page.getByRole('button',{name:'Этап 3: Стыковки',exact:true}).click();
@@ -35,6 +38,13 @@ test('timetable tab preserves station time, shows the transfer window and stops 
  await expect(page.getByText('Скрыто фильтрами сочетаний: 1')).toBeVisible();
  await page.getByRole('button',{name:'Без ночёвки',exact:true}).click();
  await expect(page.getByText('Схема 1 · Подвоз 4')).toBeVisible();
+ // The departed train is hidden by default and shown on request with a mark.
+ await expect(page.getByText('Схема 1 · Подвоз 5')).toHaveCount(0);
+ await expect(page.getByText('Все найденные сочетания уже отправились',{exact:false})).toHaveCount(0);
+ await page.getByRole('button',{name:'Показать истекшие (1)',exact:true}).click();
+ await expect(page.getByText('истекло: отправление уже прошло',{exact:false})).toBeVisible();
+ await page.getByRole('button',{name:'Скрыть истекшие',exact:true}).click();
+ await expect(page.getByText('Схема 1 · Подвоз 5')).toHaveCount(0);
  await expect(page.getByText('Отправление: 2027-01-10 23:00 +03:00',{exact:false})).toBeVisible();
  await expect(page.getByText('Переезд Тестовый вокзал → Тестовый аэропорт: на переезд 8 ч 1 мин (11 ч 1 мин между участками − 3 ч на регистрацию)',{exact:true})).toBeVisible();
  await expect(page.getByText('Неизвестно время переезда:',{exact:false})).toHaveCount(0);
@@ -46,6 +56,7 @@ test('timetable tab preserves station time, shows the transfer window and stops 
  expect(json.format).toBe('travel-watch.connections.v1');
  expect(json.schemes.map((s:{accessVariant:number})=>s.accessVariant)).toEqual([3,2,4]);
  expect(json.schemes[2].journeys[0].overnight).toBe(true);
+ expect(json).toMatchObject({showExpired:false,expiredJourneys:1});
  expect(json.schemes[0].journeys[0].legs[0].number).toBe('ТЕСТ-БЫСТРО');
  const variant2=json.schemes[1].journeys[0];
  expect(variant2.legs[0].departure).toBe('2027-01-10T23:00:00+03:00');
@@ -59,4 +70,18 @@ test('timetable tab preserves station time, shows the transfer window and stops 
  const last=calls;await page.waitForTimeout(5500);expect(calls).toBe(last);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:'test-results/schedules-mobile.png',fullPage:true});
+});
+test('timetable tab explains when every found journey has departed',async({page})=>{
+ await page.clock.setFixedTime(new Date('2027-02-01T00:00:00Z'));
+ await page.route('**/travelwatch.cabinet.v1.AuthService/*',r=>r.fulfill({json:{user:{id:'owner',email:'test@example.com'}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({json:{trip:{id,origin:{name:'Курск'},destination:{name:'Сочи'},departureFrom:'2027-01-10',departureTo:'2027-03-10',adults:1,status:'TRIP_STATUS_RUNNING',buildingStage:'awaiting_schedules',history:[]}}}));
+ await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>r.fulfill({json:{result:{sources:[],scheduleCheck:{state:'done',checkedAt:'2027-01-09T10:00:00Z',requests:3,warnings:[],schemes:[{schemeNumber:1,accessVariant:1,state:'compatible',warnings:[],journeys:[
+  {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-1',departure:'2027-01-10T09:14:00+03:00',arrival:'2027-01-10T14:37:00+03:00'}]},
+  {timingVerified:true,legs:[{from:'Курск',to:'Москва',mode:'train',number:'ТЕСТ-2',departure:'2027-01-11T09:14:00+03:00',arrival:'2027-01-11T14:37:00+03:00'}]}]}]}}}}));
+ await page.goto('/#/trips/'+id);
+ await page.getByRole('button',{name:'Этап 3: Стыковки',exact:true}).click();
+ await expect(page.getByText('Все найденные сочетания уже отправились (2).',{exact:false})).toBeVisible({timeout:10000});
+ await page.getByRole('button',{name:'Показать истекшие (2)',exact:true}).click();
+ await expect(page.getByText('истекло: отправление уже прошло',{exact:false})).toHaveCount(2);
+ await expect(page.getByText('Все найденные сочетания уже отправились',{exact:false})).toHaveCount(0);
 });

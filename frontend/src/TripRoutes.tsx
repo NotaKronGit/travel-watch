@@ -38,6 +38,8 @@ const warningLabels: Record<string,string> = {
  'Unique route scheme limit reached':'Достигнут лимит разных схем поездки. Выборка неполная.',
  'Google Flights samples departure dates; route coverage and timetable compatibility are incomplete':'Google Flights проверен на выборочных датах. Показаны схемы; время стыковок и доступность на другие даты не подтверждены.',
  'Google Flights request budget reached':'Достигнут лимит запросов Google Flights. Некоторые направления или даты не проверены.',
+ 'Google Flights skipped: all departure dates are in the past':'Google Flights не запрашивался: все даты выезда уже прошли.',
+ 'Google Flights skipped past departure dates':'Прошедшие даты выезда в Google Flights не запрашивались.',
  'Google Flights request failed':'Часть запросов Google Flights завершилась ошибкой. Результаты Яндекса сохранены.',
  'Invalid Google Flights route response':'Часть ответов Google Flights не прошла проверку формата и была пропущена.',
 

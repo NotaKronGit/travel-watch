@@ -38,8 +38,37 @@ type flightPair struct {
 	accesses [][]Step
 }
 
+// futureDates drops sampled days already over in the origin's timezone (UTC if unknown):
+// flights on them cannot be taken, and asking wastes the request budget.
+func futureDates(dates []string, q Query, now time.Time) []string {
+	loc, err := time.LoadLocation(q.OriginTimezone)
+	if err != nil || q.OriginTimezone == "" {
+		loc = time.UTC
+	}
+	today := now.In(loc).Format(time.DateOnly)
+	out := []string{}
+	for _, d := range dates {
+		if d >= today {
+			out = append(out, d)
+		}
+	}
+	return out
+}
+
 func (s *run) googlePaths(ctx context.Context, q Query, origin, dest, hubs []airports.Airport, cityCode string) {
-	dates, _ := sampleDates(q)
+	sampled, _ := sampleDates(q)
+	now := time.Now
+	if s.p.Now != nil {
+		now = s.p.Now
+	}
+	dates := futureDates(sampled, q, now())
+	if len(dates) == 0 {
+		s.issue("Google Flights skipped: all departure dates are in the past")
+		return
+	}
+	if len(dates) < len(sampled) {
+		s.issue("Google Flights skipped past departure dates")
+	}
 	s.r.Source = "Yandex Rasp + Google Flights/Fli + OurAirports"
 	s.issue("Google Flights samples departure dates; route coverage and timetable compatibility are incomplete")
 	departures := diverseAirports(append(append([]airports.Airport(nil), origin...), hubs...), q.Origin)

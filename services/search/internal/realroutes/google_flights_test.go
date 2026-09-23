@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/NotaKronGit/travel-watch/api/transport"
 )
@@ -94,5 +95,33 @@ func TestGoogleFailurePreservesYandexAndBounds(t *testing.T) {
 	r, err := p.Plan(context.Background(), q)
 	if err != nil || len(r.Candidates) != 3 || len(r.FlightChecks) != 1 || r.ProviderFailures != 1 || !r.LimitReached {
 		t.Fatal(r, err)
+	}
+}
+func TestGoogleFlightsSkipsPastDates(t *testing.T) {
+	dates := []string{"2027-01-01", "2027-01-04", "2027-01-07"}
+	// 22:30 UTC on Jan 3 is already Jan 4 in Moscow.
+	now := time.Date(2027, 1, 3, 22, 30, 0, 0, time.UTC)
+	if got := futureDates(dates, Query{OriginTimezone: "Europe/Moscow"}, now); !reflect.DeepEqual(got, []string{"2027-01-04", "2027-01-07"}) {
+		t.Fatal(got)
+	}
+	if got := futureDates(dates, Query{}, now); !reflect.DeepEqual(got, []string{"2027-01-04", "2027-01-07"}) {
+		t.Fatal("unknown timezone should fall back to UTC", got)
+	}
+	p, q := fixture()
+	f := &flightFixture{}
+	p.Provider = f
+	p.Config.GoogleFlights = FlightConfig{Enabled: true, MaxRequests: 30, MaxOptions: 20}
+	q.DepartureFrom, q.DepartureTo, q.Adults, q.OriginTimezone = "2027-01-01", "2027-01-07", 2, "Europe/Moscow"
+	p.Now = func() time.Time { return time.Date(2027, 1, 8, 12, 0, 0, 0, time.UTC) }
+	r, err := p.Plan(context.Background(), q)
+	if err != nil || len(f.requests) != 0 || len(r.FlightChecks) != 0 {
+		t.Fatal("past dates requested", err, f.requests)
+	}
+	found := false
+	for _, issue := range r.Issues {
+		found = found || issue == "Google Flights skipped: all departure dates are in the past"
+	}
+	if !found {
+		t.Fatal("skip not reported", r.Issues)
 	}
 }
