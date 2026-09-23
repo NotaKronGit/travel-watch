@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
+import type { AllRoutes } from './routeExport';
+import { copyText, downloadText } from './share';
 
 export type RouteStepView = {
   description: string;
@@ -57,32 +59,52 @@ export function warningText(message:string) {
 }
 
 // Presentation of saved results only. Opening an alternative never runs a planner.
-export function TripRoutes({sources,loading,onPage}: {sources: RouteSourceView[];loading:boolean;onPage:(source:string,offset:number)=>void}) {
+export function TripRoutes({sources,loading,onPage,onExportAll}: {sources: RouteSourceView[];loading:boolean;onPage:(source:string,offset:number)=>void;onExportAll:()=>Promise<AllRoutes>}) {
   const [shareMessage,setShareMessage]=useState('');
   const [shareError,setShareError]=useState(false);
+  const [exporting,setExporting]=useState(false);
+  const loadFailed='Не удалось загрузить все маршруты. Повторите выгрузку.';
   async function copyRoutes(selected:RouteSourceView[]) {
     try {
-      await navigator.clipboard.writeText(formatRouteExport(selected));
+      await copyText(formatRouteExport(selected));
       setShareError(false);setShareMessage('Маршруты скопированы. Можно переслать сообщение.');
     } catch {
       setShareError(true);setShareMessage('Не удалось скопировать. Скачайте TXT и перешлите файл.');
     }
   }
-  function downloadRoutes() {
-    const url=URL.createObjectURL(new Blob([formatRouteExport(sources)],{type:'text/plain;charset=utf-8'}));
-    const link=document.createElement('a');link.href=url;link.download='travel-watch-routes.txt';
-    document.body.appendChild(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  async function allRoutesText() {
+    const all=await onExportAll();
+    return formatRouteExport(all.sources,all.complete?'all':'partial');
+  }
+  async function copyAllRoutes() {
+    setExporting(true);
+    let failedToLoad=false;
+    const text=allRoutesText().catch(err=>{failedToLoad=true;throw err;});
+    try {
+      await copyText(text);
+      setShareError(false);setShareMessage('Все маршруты скопированы. Можно переслать сообщение.');
+    } catch {
+      setShareError(true);setShareMessage(failedToLoad ? loadFailed : 'Не удалось скопировать. Скачайте TXT и перешлите файл.');
+    } finally { setExporting(false); }
+  }
+  async function downloadAllRoutes() {
+    setExporting(true);
+    try {
+      downloadText('travel-watch-routes.txt',await allRoutesText());
+      setShareMessage('');
+    } catch {
+      setShareError(true);setShareMessage(loadFailed);
+    } finally { setExporting(false); }
   }
   return <Box component="section" aria-label="Маршруты этой заявки">
     <Divider sx={{mb:3}}/>
     <Typography component="h2" variant="h5" sx={{mb:1}}>Маршруты этой заявки</Typography>
     <Typography color="text.secondary" sx={{mb:3}}>Независимые схемы поездки. Варианты подвоза поездом к одному аэропорту сгруппированы; конкретные вокзалы и поезда выбираются на этапе стыковок. Результат проверки расписаний смотрите на вкладке «Стыковки». Цены ещё не проверены; совпадения между источниками пока не объединены.</Typography>
     <Stack direction="row" sx={{gap:1,flexWrap:'wrap',mb:1}}>
-      <Button disabled={loading || !sources.some(s=>s.routes.length)} onClick={()=>void copyRoutes(sources)}>Скопировать показанные маршруты</Button>
-      <Button disabled={loading || !sources.some(s=>s.routes.length)} onClick={downloadRoutes}>Скачать показанные маршруты TXT</Button>
+      <Button disabled={loading || exporting || !sources.some(s=>s.routes.length)} onClick={()=>void copyAllRoutes()}>Скопировать все маршруты</Button>
+      <Button disabled={loading || exporting || !sources.some(s=>s.routes.length)} onClick={()=>void downloadAllRoutes()}>Скачать все маршруты TXT</Button>
     </Stack>
-    <Typography variant="caption" color="text.secondary" sx={{display:'block',mb:2}}>Выгружаются варианты с текущих страниц каждого источника вместе с предупреждениями.</Typography>
+    <Typography variant="caption" color="text.secondary" sx={{display:'block',mb:2}}>{exporting ? 'Загружаем все варианты…' : 'Выгружаются все сохранённые варианты каждого источника со всех страниц вместе с предупреждениями.'}</Typography>
     {shareMessage && <Alert role="status" severity={shareError?'warning':'success'} sx={{mb:2}}>{shareMessage}</Alert>}
     {sources.length === 0 ? <Alert severity="info">Сохранённых результатов пока нет. Они появятся после начала построения маршрутов.</Alert> : <Stack spacing={3} divider={<Divider/>}>
       {sources.map(source=><Box component="section" aria-label={`Маршруты: ${sourceNames[source.id] || source.id}`} key={source.id}>
@@ -127,10 +149,15 @@ export function TripRoutes({sources,loading,onPage}: {sources: RouteSourceView[]
   </Box>;
 }
 
-export function formatRouteExport(sources:RouteSourceView[]):string {
+const exportScopes = {
+  selected:'Экспорт содержит только перечисленные ниже варианты.',
+  all:'Экспорт содержит все сохранённые варианты каждого источника.',
+  partial:'Выгрузка неполная: достигнут предел выгрузки, перечислены не все сохранённые варианты.',
+};
+export function formatRouteExport(sources:RouteSourceView[],scope:keyof typeof exportScopes='selected'):string {
   const lines=['Travel Watch — схемы маршрутов',
     'Расписания, цены, наличие билетов и допустимость стыковок не подтверждены.',
-    'Экспорт содержит только перечисленные ниже варианты с текущих страниц.'];
+    exportScopes[scope]];
   for(const source of sources){
     if(!source.routes.length)continue;
     lines.push('',sourceNames[source.id] || source.id,

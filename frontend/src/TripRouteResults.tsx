@@ -4,8 +4,11 @@ import { Code, ConnectError } from '@connectrpc/connect';
 import { useNavigate } from 'react-router-dom';
 import { tripClient } from './api';
 import { TripRoutes, type RouteSourceView } from './TripRoutes';
+import { collectAllRoutes } from './routeExport';
 import type { SourceRoutes } from './gen/travelwatch/search/v1/routes_pb';
 const pageSize=5;
+// Largest page Cabinet accepts; used only for export.
+const exportPageSize=10;
 function view(source: SourceRoutes):RouteSourceView {
  return {id:source.plannerId,stage:source.stage,outcome:source.outcome,durationMs:Number(source.durationMs),
   finishedAt:source.finishedAt ? new Date(Number(source.finishedAt.seconds)*1000).toISOString():undefined,
@@ -42,8 +45,17 @@ export function TripRouteResults({id,revision}:{id:string;revision:string}){
   }
   void load();return()=>{controller.abort();};
  },[id,revision,offsets,retry,navigate]);
+ // Reads every saved page on demand; the on-screen pages stay as they are.
+ function exportAll(){
+  return collectAllRoutes((sources ?? []).map(s=>s.id),async(plannerId,offset)=>{
+   const response=await tripClient.getTripRoutes({id,plannerId,offset,pageSize:exportPageSize});
+   if(!response.result)throw new Error('Missing route result');
+   const source=response.result.sources.find(s=>s.plannerId===plannerId);
+   return {revision:response.result.revision,source:source ? view(source):undefined};
+  });
+ }
  return <Stack spacing={2}>
   {error && <Alert severity="warning" action={<Button color="inherit" onClick={()=>setRetry(n=>n+1)}>Повторить загрузку маршрутов</Button>}>{sources===null ? 'Не удалось загрузить маршруты. Карточка и история заявки доступны.' : error}</Alert>}
-  {loading && sources===null ? <Typography role="status">Загружаем маршруты…</Typography> : sources!==null && <TripRoutes sources={sources} loading={loading} onPage={(source,offset)=>setOffsets(Object.fromEntries(sources.map(s=>[s.id,s.id===source?offset:s.offset])))}/>}
+  {loading && sources===null ? <Typography role="status">Загружаем маршруты…</Typography> : sources!==null && <TripRoutes sources={sources} loading={loading} onPage={(source,offset)=>setOffsets(Object.fromEntries(sources.map(s=>[s.id,s.id===source?offset:s.offset])))} onExportAll={exportAll}/>}
  </Stack>;
 }
