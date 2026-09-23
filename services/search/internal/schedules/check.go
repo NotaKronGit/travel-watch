@@ -160,7 +160,7 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 				groupNumbers[key] = schemeNumber
 			}
 		}
-		variants := [][]realroutes.Step{candidate.Steps}
+		variants := [][]realroutes.Step{append([]realroutes.Step(nil), candidate.Steps...)}
 		if len(candidate.RailAccessVariants) > 0 && len(candidate.Steps) >= 3 {
 			if len(candidate.RailAccessVariants) > 20 {
 				return out, errors.New("too many access variants")
@@ -175,6 +175,8 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 			}
 		}
 		for _, steps := range variants {
+			// Older saved schemes carry no transfer endpoints; derive them from the saved query.
+			realroutes.AnnotateTransfers(steps, input.Query)
 			if ctx.Err() != nil {
 				return out, ctx.Err()
 			}
@@ -205,17 +207,21 @@ func (c Checker) Check(ctx context.Context, input realroutes.Result, timezone st
 				}
 				if s.Mode == "transfer" {
 					found := false
-					for _, t := range c.Config.Transfers {
-						if t.From == s.From && t.To == s.To {
-							transfers[i] = t.Duration
-							found = true
-							row.Warnings = append(row.Warnings, fmt.Sprintf("Переезд %s → %s: %s, источник оценки: %s", s.From, s.To, t.Duration, t.Source))
-							break
+					from, to := realroutes.TransferLabels(s)
+					// Rules match physical codes only: titles are ambiguous (a station may share its city's name).
+					if s.FromPoint != nil && s.ToPoint != nil && s.FromPoint.Code != "" && s.ToPoint.Code != "" {
+						for _, t := range c.Config.Transfers {
+							if t.From == s.FromPoint.Code && t.To == s.ToPoint.Code {
+								transfers[i] = t.Duration
+								found = true
+								row.Warnings = append(row.Warnings, fmt.Sprintf("Переезд %s → %s: %s, источник оценки: %s", from, to, t.Duration, t.Source))
+								break
+							}
 						}
 					}
 					if !found {
 						unknown = true
-						row.Warnings = append(row.Warnings, "Неизвестно время переезда: "+s.From+" → "+s.To)
+						row.Warnings = append(row.Warnings, "Неизвестно время переезда: "+from+" → "+to)
 					}
 					continue
 				}

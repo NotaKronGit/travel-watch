@@ -49,6 +49,8 @@ type Query struct {
 	DepartureFrom   string          `json:"departure_from,omitempty"`
 	DepartureTo     string          `json:"departure_to,omitempty"`
 	Adults          int             `json:"adults,omitempty"`
+	OriginID        string          `json:"origin_id,omitempty"`
+	DestinationID   string          `json:"destination_id,omitempty"`
 	OriginName      string          `json:"origin_name"`
 	DestinationName string          `json:"destination_name"`
 	Origin          transport.Point `json:"origin"`
@@ -66,6 +68,9 @@ type Step struct {
 	Mode          string   `json:"mode"`
 	Evidence      string   `json:"evidence"`
 	Number        string   `json:"number,omitempty"`
+	// Set only on transfers; see AnnotateTransfers.
+	FromPoint *Endpoint `json:"from_point,omitempty"`
+	ToPoint   *Endpoint `json:"to_point,omitempty"`
 }
 
 // RailAccessVariants holds all retained three-step feeder prefixes, including

@@ -38,7 +38,7 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
  ), arrays AS (
  SELECT *,CASE WHEN jsonb_typeof(CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END)='array' THEN CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END ELSE '[]'::jsonb END AS routes FROM source_data
  )
- SELECT planner_id,stage,outcome,attempt,started_at,finished_at,route_count,incomplete,COALESCE(result->'issues','[]'::jsonb),
+ SELECT planner_id,stage,outcome,attempt,started_at,finished_at,route_count,incomplete,COALESCE(result->'issues','[]'::jsonb),COALESCE(result->'query','{}'::jsonb),
  COALESCE((SELECT jsonb_agg(value ORDER BY ordinal) FROM (SELECT value,ordinal FROM jsonb_array_elements(routes) WITH ORDINALITY AS r(value,ordinal) ORDER BY ordinal OFFSET CASE WHEN planner_id='graph' THEN 0 ELSE $3 END LIMIT CASE WHEN planner_id='graph' THEN 51 ELSE $4 END) AS page),'[]'::jsonb)
  FROM arrays WHERE ($2='' OR planner_id=$2) ORDER BY planner_id`, q.RequestId, q.PlannerId, q.Offset, q.PageSize)
 	if err != nil {
@@ -48,8 +48,8 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 	for rows.Next() {
 		source := &v1.SourceRoutes{Offset: q.Offset}
 		var started, finished sql.NullTime
-		var raw, issues []byte
-		if err = rows.Scan(&source.PlannerId, &source.Stage, &source.Outcome, &source.Attempt, &started, &finished, &source.Total, &source.Incomplete, &issues, &raw); err != nil {
+		var raw, issues, query []byte
+		if err = rows.Scan(&source.PlannerId, &source.Stage, &source.Outcome, &source.Attempt, &started, &finished, &source.Total, &source.Incomplete, &issues, &query, &raw); err != nil {
 			return nil, err
 		}
 		if started.Valid {
@@ -66,7 +66,8 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 		}
 		if source.PlannerId == "graph" {
 			var candidates []realroutes.Candidate
-			if json.Unmarshal(raw, &candidates) != nil {
+			var saved realroutes.Query
+			if json.Unmarshal(raw, &candidates) != nil || json.Unmarshal(query, &saved) != nil {
 				return nil, errors.New("invalid saved graph result")
 			}
 			// GraphPlanner is bounded to 50 candidates. Keep the read bounded too.
@@ -82,8 +83,14 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 			end := min(start+int(q.PageSize), len(candidates))
 			for _, c := range candidates[start:end] {
 				scheme := &v1.RouteScheme{Warnings: c.Warnings}
+				// Older saved schemes carry no transfer endpoints; derive them for labels.
+				realroutes.AnnotateTransfers(c.Steps, saved)
 				for _, step := range c.Steps {
-					text := step.From + " → " + step.To
+					from, to := step.From, step.To
+					if step.Mode == "transfer" {
+						from, to = realroutes.TransferLabels(step)
+					}
+					text := from + " → " + to
 					if step.Number != "" {
 						text += " · " + step.Number
 					}

@@ -315,6 +315,7 @@ func observed(c transport.Connection) Step {
 	return Step{From: c.From.Title, To: c.To.Title, FromCode: c.From.Code, ToCode: c.To.Code, Mode: c.Mode, Evidence: "yandex-rasp", Number: c.Number}
 }
 func (s *run) add(steps []Step) {
+	AnnotateTransfers(steps, s.r.Query)
 	key := topologyKey(steps)
 	if s.seen == nil {
 		s.seen = map[string]bool{}
