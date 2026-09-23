@@ -55,7 +55,7 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 	}
 	defer func() { _ = tx.Rollback() }()
 	j := planning.Job{Token: uuid.NewString()}
-	err = tx.QueryRowContext(ctx, `SELECT b.request_id,r.created_payload,b.attempt FROM route_building b JOIN search_requests r USING(request_id) WHERE r.status<>'cancelled' AND (b.stage='queued' OR (b.stage='building' AND b.lease_until<now())) ORDER BY b.created_at,b.request_id FOR UPDATE OF b SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Attempt)
+	err = tx.QueryRowContext(ctx, `SELECT b.request_id,r.created_payload,b.attempt FROM route_building b JOIN search_requests r USING(request_id) WHERE r.status='pending' AND (b.stage='queued' OR (b.stage='building' AND b.lease_until<now())) ORDER BY b.created_at,b.request_id FOR UPDATE OF b SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Attempt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return j, false, nil
 	}
@@ -106,7 +106,7 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 }
 func (s *Store) BuildingActive(ctx context.Context, j planning.Job) (bool, error) {
 	var ok bool
-	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM route_building b JOIN search_requests r USING(request_id) WHERE b.request_id=$1 AND b.lease_token=$2 AND b.lease_until>now() AND b.stage='building' AND r.status<>'cancelled')`, j.RequestID, j.Token).Scan(&ok)
+	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM route_building b JOIN search_requests r USING(request_id) WHERE b.request_id=$1 AND b.lease_token=$2 AND b.lease_until>now() AND b.stage='building' AND r.status='pending')`, j.RequestID, j.Token).Scan(&ok)
 	return ok, err
 }
 func (s *Store) FinishBuilding(ctx context.Context, j planning.Job, stage string, result realroutes.Result) error {
@@ -130,7 +130,8 @@ func (s *Store) FinishBuilding(ctx context.Context, j planning.Job, stage string
 	if err = tx.QueryRowContext(ctx, `SELECT status FROM search_requests WHERE request_id=$1 FOR UPDATE`, j.RequestID).Scan(&status); err != nil {
 		return err
 	}
-	if status == "cancelled" {
+	// Cancelled or expired: late results are dropped.
+	if status != "pending" {
 		return nil
 	}
 	r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage=$3,result=$4,finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND lease_token=$2 AND lease_until>now() AND stage='building'`, j.RequestID, j.Token, stage, string(b))

@@ -374,6 +374,77 @@ func (x *TripRequestCancelled) GetOccurredAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// Terminal expiry: the last departure day is over in the origin timezone.
+// Stops further work; unlike cancellation, saved results stay readable.
+// Consumers must retain it even if creation arrives later.
+type TripRequestExpired struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	SchemaVersion uint32                 `protobuf:"varint,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	RequestId     string                 `protobuf:"bytes,3,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripRequestExpired) Reset() {
+	*x = TripRequestExpired{}
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripRequestExpired) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripRequestExpired) ProtoMessage() {}
+
+func (x *TripRequestExpired) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripRequestExpired.ProtoReflect.Descriptor instead.
+func (*TripRequestExpired) Descriptor() ([]byte, []int) {
+	return file_travelwatch_events_v1_trip_request_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TripRequestExpired) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *TripRequestExpired) GetSchemaVersion() uint32 {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return 0
+}
+
+func (x *TripRequestExpired) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *TripRequestExpired) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
 type TripRouteBuildingUpdated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
@@ -398,7 +469,7 @@ type TripRouteBuildingUpdated struct {
 
 func (x *TripRouteBuildingUpdated) Reset() {
 	*x = TripRouteBuildingUpdated{}
-	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[3]
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -410,7 +481,7 @@ func (x *TripRouteBuildingUpdated) String() string {
 func (*TripRouteBuildingUpdated) ProtoMessage() {}
 
 func (x *TripRouteBuildingUpdated) ProtoReflect() protoreflect.Message {
-	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[3]
+	mi := &file_travelwatch_events_v1_trip_request_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -423,7 +494,7 @@ func (x *TripRouteBuildingUpdated) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripRouteBuildingUpdated.ProtoReflect.Descriptor instead.
 func (*TripRouteBuildingUpdated) Descriptor() ([]byte, []int) {
-	return file_travelwatch_events_v1_trip_request_proto_rawDescGZIP(), []int{3}
+	return file_travelwatch_events_v1_trip_request_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TripRouteBuildingUpdated) GetEventId() string {
@@ -557,6 +628,13 @@ const file_travelwatch_events_v1_trip_request_proto_rawDesc = "" +
 	"\n" +
 	"request_id\x18\x03 \x01(\tR\trequestId\x12;\n" +
 	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"occurredAt\"\xb2\x01\n" +
+	"\x12TripRequestExpired\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12%\n" +
+	"\x0eschema_version\x18\x02 \x01(\rR\rschemaVersion\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x03 \x01(\tR\trequestId\x12;\n" +
+	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"occurredAt\"\xc2\x04\n" +
 	"\x18TripRouteBuildingUpdated\x12\x19\n" +
 	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12%\n" +
@@ -605,29 +683,31 @@ func file_travelwatch_events_v1_trip_request_proto_rawDescGZIP() []byte {
 }
 
 var file_travelwatch_events_v1_trip_request_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_travelwatch_events_v1_trip_request_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_travelwatch_events_v1_trip_request_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_travelwatch_events_v1_trip_request_proto_goTypes = []any{
 	(RouteBuildingStage)(0),          // 0: travelwatch.events.v1.RouteBuildingStage
 	(*TripCity)(nil),                 // 1: travelwatch.events.v1.TripCity
 	(*TripRequestCreated)(nil),       // 2: travelwatch.events.v1.TripRequestCreated
 	(*TripRequestCancelled)(nil),     // 3: travelwatch.events.v1.TripRequestCancelled
-	(*TripRouteBuildingUpdated)(nil), // 4: travelwatch.events.v1.TripRouteBuildingUpdated
-	(*timestamppb.Timestamp)(nil),    // 5: google.protobuf.Timestamp
+	(*TripRequestExpired)(nil),       // 4: travelwatch.events.v1.TripRequestExpired
+	(*TripRouteBuildingUpdated)(nil), // 5: travelwatch.events.v1.TripRouteBuildingUpdated
+	(*timestamppb.Timestamp)(nil),    // 6: google.protobuf.Timestamp
 }
 var file_travelwatch_events_v1_trip_request_proto_depIdxs = []int32{
-	5, // 0: travelwatch.events.v1.TripRequestCreated.occurred_at:type_name -> google.protobuf.Timestamp
+	6, // 0: travelwatch.events.v1.TripRequestCreated.occurred_at:type_name -> google.protobuf.Timestamp
 	1, // 1: travelwatch.events.v1.TripRequestCreated.origin:type_name -> travelwatch.events.v1.TripCity
 	1, // 2: travelwatch.events.v1.TripRequestCreated.destination:type_name -> travelwatch.events.v1.TripCity
-	5, // 3: travelwatch.events.v1.TripRequestCancelled.occurred_at:type_name -> google.protobuf.Timestamp
-	5, // 4: travelwatch.events.v1.TripRouteBuildingUpdated.occurred_at:type_name -> google.protobuf.Timestamp
-	0, // 5: travelwatch.events.v1.TripRouteBuildingUpdated.stage:type_name -> travelwatch.events.v1.RouteBuildingStage
-	5, // 6: travelwatch.events.v1.TripRouteBuildingUpdated.started_at:type_name -> google.protobuf.Timestamp
-	5, // 7: travelwatch.events.v1.TripRouteBuildingUpdated.finished_at:type_name -> google.protobuf.Timestamp
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	6, // 3: travelwatch.events.v1.TripRequestCancelled.occurred_at:type_name -> google.protobuf.Timestamp
+	6, // 4: travelwatch.events.v1.TripRequestExpired.occurred_at:type_name -> google.protobuf.Timestamp
+	6, // 5: travelwatch.events.v1.TripRouteBuildingUpdated.occurred_at:type_name -> google.protobuf.Timestamp
+	0, // 6: travelwatch.events.v1.TripRouteBuildingUpdated.stage:type_name -> travelwatch.events.v1.RouteBuildingStage
+	6, // 7: travelwatch.events.v1.TripRouteBuildingUpdated.started_at:type_name -> google.protobuf.Timestamp
+	6, // 8: travelwatch.events.v1.TripRouteBuildingUpdated.finished_at:type_name -> google.protobuf.Timestamp
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_events_v1_trip_request_proto_init() }
@@ -641,7 +721,7 @@ func file_travelwatch_events_v1_trip_request_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_travelwatch_events_v1_trip_request_proto_rawDesc), len(file_travelwatch_events_v1_trip_request_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

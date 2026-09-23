@@ -31,6 +31,8 @@ const (
 	TripStatus_TRIP_STATUS_RUNNING     TripStatus = 2
 	TripStatus_TRIP_STATUS_CANCELLED   TripStatus = 3
 	TripStatus_TRIP_STATUS_COMPLETED   TripStatus = 4
+	// Set by Cabinet when the last departure day is over; inactive like cancelled.
+	TripStatus_TRIP_STATUS_EXPIRED TripStatus = 5
 )
 
 // Enum value maps for TripStatus.
@@ -41,6 +43,7 @@ var (
 		2: "TRIP_STATUS_RUNNING",
 		3: "TRIP_STATUS_CANCELLED",
 		4: "TRIP_STATUS_COMPLETED",
+		5: "TRIP_STATUS_EXPIRED",
 	}
 	TripStatus_value = map[string]int32{
 		"TRIP_STATUS_UNSPECIFIED": 0,
@@ -48,6 +51,7 @@ var (
 		"TRIP_STATUS_RUNNING":     2,
 		"TRIP_STATUS_CANCELLED":   3,
 		"TRIP_STATUS_COMPLETED":   4,
+		"TRIP_STATUS_EXPIRED":     5,
 	}
 )
 
@@ -1197,14 +1201,15 @@ const file_travelwatch_cabinet_v1_trips_proto_rawDesc = "" +
 	"\x06offset\x18\x03 \x01(\x05R\x06offset\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"Y\n" +
 	"\x15GetTripRoutesResponse\x12@\n" +
-	"\x06result\x18\x01 \x01(\v2(.travelwatch.search.v1.GetRoutesResponseR\x06result*\x8f\x01\n" +
+	"\x06result\x18\x01 \x01(\v2(.travelwatch.search.v1.GetRoutesResponseR\x06result*\xa8\x01\n" +
 	"\n" +
 	"TripStatus\x12\x1b\n" +
 	"\x17TRIP_STATUS_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11TRIP_STATUS_SAVED\x10\x01\x12\x17\n" +
 	"\x13TRIP_STATUS_RUNNING\x10\x02\x12\x19\n" +
 	"\x15TRIP_STATUS_CANCELLED\x10\x03\x12\x19\n" +
-	"\x15TRIP_STATUS_COMPLETED\x10\x042\xe8\x05\n" +
+	"\x15TRIP_STATUS_COMPLETED\x10\x04\x12\x17\n" +
+	"\x13TRIP_STATUS_EXPIRED\x10\x052\xe8\x05\n" +
 	"\vTripService\x12l\n" +
 	"\rGetTripRoutes\x12,.travelwatch.cabinet.v1.GetTripRoutesRequest\x1a-.travelwatch.cabinet.v1.GetTripRoutesResponse\x12i\n" +
 	"\fSearchCities\x12+.travelwatch.cabinet.v1.SearchCitiesRequest\x1a,.travelwatch.cabinet.v1.SearchCitiesResponse\x12`\n" +

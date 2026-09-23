@@ -32,7 +32,7 @@ func (s *Store) CancelTrip(ctx context.Context, user, id string) error {
 	if status == "cancelled" {
 		return nil
 	}
-	if status == "completed" {
+	if status == "completed" || status == "expired" {
 		return ErrTripTerminal
 	}
 	q, args, err := postgres.Update("trip_requests").Set(goqu.Record{"status": "cancelled", "cancelled_at": goqu.L("clock_timestamp()")}).Where(goqu.Ex{"user_id": user, "id": id}).Returning("cancelled_at", goqu.L("gen_random_uuid()")).Prepared(true).ToSQL()

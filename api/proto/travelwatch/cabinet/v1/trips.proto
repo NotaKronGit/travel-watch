@@ -41,6 +41,8 @@ enum TripStatus {
   TRIP_STATUS_RUNNING = 2;
   TRIP_STATUS_CANCELLED = 3;
   TRIP_STATUS_COMPLETED = 4;
+  // Set by Cabinet when the last departure day is over; inactive like cancelled.
+  TRIP_STATUS_EXPIRED = 5;
 }
 message CancelTripRequest { string id = 1; }
 message CancelTripResponse {}

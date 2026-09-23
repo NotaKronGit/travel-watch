@@ -35,8 +35,8 @@ func (s *Store) ApplyProgress(ctx context.Context, e *eventsv1.TripRouteBuilding
 		}
 		return tx.Commit()
 	}
-	// History may arrive out of order; projection only advances. Local cancellation is terminal.
-	if status != "cancelled" && status != "completed" && (e.SchemaVersion == 1 || e.PlannerId == "all") {
+	// History may arrive out of order; projection only advances. Local cancellation and expiry are terminal.
+	if status != "cancelled" && status != "completed" && status != "expired" && (e.SchemaVersion == 1 || e.PlannerId == "all") {
 		next := status
 		if contract.Stages[e.Stage] != "queued" {
 			next = "running"

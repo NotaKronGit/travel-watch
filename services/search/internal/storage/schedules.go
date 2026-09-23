@@ -28,7 +28,7 @@ func (s *Store) ClaimSchedules(ctx context.Context, lease time.Duration) (schedu
 	err = tx.QueryRowContext(ctx, `SELECT r.request_id,r.created_payload,p.result,p.finished_at
  FROM search_requests r JOIN planner_runs p ON p.request_id=r.request_id AND p.planner_id='graph'
  LEFT JOIN schedule_checks c ON c.request_id=r.request_id
- WHERE r.status<>'cancelled' AND p.stage='awaiting_schedules' AND p.result IS NOT NULL
+ WHERE r.status='pending' AND p.stage='awaiting_schedules' AND p.result IS NOT NULL
  AND (c.request_id IS NULL OR (c.state='running' AND c.lease_until<now() AND c.attempt<3))
  ORDER BY p.finished_at,r.request_id FOR UPDATE OF r SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Graph, &j.SourceFinishedAt)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -51,7 +51,7 @@ func (s *Store) ClaimSchedules(ctx context.Context, lease time.Duration) (schedu
 }
 func (s *Store) SchedulesActive(ctx context.Context, j schedules.Job) (bool, error) {
 	var active bool
-	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM schedule_checks c JOIN search_requests r USING(request_id) JOIN planner_runs p ON p.request_id=c.request_id AND p.planner_id='graph' WHERE c.request_id=$1 AND c.lease_token=$2 AND c.lease_until>now() AND c.state='running' AND r.status<>'cancelled' AND p.finished_at=c.source_finished_at)`, j.RequestID, j.Token).Scan(&active)
+	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM schedule_checks c JOIN search_requests r USING(request_id) JOIN planner_runs p ON p.request_id=c.request_id AND p.planner_id='graph' WHERE c.request_id=$1 AND c.lease_token=$2 AND c.lease_until>now() AND c.state='running' AND r.status='pending' AND p.finished_at=c.source_finished_at)`, j.RequestID, j.Token).Scan(&active)
 	return active, err
 }
 func (s *Store) FinishSchedules(ctx context.Context, j schedules.Job, result *v1.ScheduleCheck) error {
@@ -74,7 +74,8 @@ func (s *Store) FinishSchedules(ctx context.Context, j schedules.Job, result *v1
 	if err = tx.QueryRowContext(ctx, `SELECT status FROM search_requests WHERE request_id=$1 FOR UPDATE`, j.RequestID).Scan(&status); err != nil {
 		return err
 	}
-	if status == "cancelled" {
+	// Cancelled or expired: late results are dropped.
+	if status != "pending" {
 		return nil
 	}
 	_, err = tx.ExecContext(ctx, `UPDATE schedule_checks c SET state=$3,result=$4,finished_at=now(),lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND lease_token=$2 AND lease_until>now() AND state='running' AND EXISTS(SELECT 1 FROM planner_runs p WHERE p.request_id=c.request_id AND p.planner_id='graph' AND p.finished_at=c.source_finished_at)`, j.RequestID, j.Token, result.State, string(data))
