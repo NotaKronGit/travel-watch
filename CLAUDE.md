@@ -71,7 +71,7 @@ The target architecture (RabbitMQ for Collector jobs, Kafka for facts/results, R
 
 Cabinet and Search both follow the same shape — reuse it, don't introduce a different one without discussing the ADR change:
 
-- Own `internal/storage` package per service, `goqu` + `database/sql` (pgx driver) — no ORM.
+- Own `internal/storage` package per service, `database/sql` (pgx driver) — no ORM. `goqu` for queries built programmatically and simple CRUD; static SQL text for lock/lease/`ON CONFLICT` queries, in the format fixed by the ADR 0002 amendment.
 - SQL migrations via Goose, embedded in the binary from `services/<name>/migrations`, run with `<binary> migrate`.
 - Config: `services/<name>/config.yaml` loaded through Viper, overridable by env vars (see `docs/ops/configuration.md` for the naming convention and precedence). Override the config path via `<SERVICE>_CONFIG` env var (e.g. `SEARCH_CONFIG`).
 

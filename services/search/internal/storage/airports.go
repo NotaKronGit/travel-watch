@@ -22,19 +22,19 @@ func (s *Store) PublishAirports(ctx context.Context, snapshot airports.Snapshot,
 	}
 	defer func() { _ = tx.Rollback() }()
 	// Serialize publication and reject a download older than the published snapshot.
-	if _, err = tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(71429301)"); err != nil {
+	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(71429301)`); err != nil {
 		return err
 	}
 	var previous int
 	var fetched time.Time
-	err = tx.QueryRowContext(ctx, "SELECT row_count,fetched_at FROM airport_imports WHERE source='ourairports'").Scan(&previous, &fetched)
+	err = tx.QueryRowContext(ctx, `SELECT row_count,fetched_at FROM airport_imports WHERE source='ourairports'`).Scan(&previous, &fetched)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 	if !fetched.IsZero() && (!snapshot.FetchedAt.After(fetched) || int64(len(snapshot.Airports))*100 < int64(previous)*int64(minRetained)) {
 		return errors.New("airport snapshot is stale or has shrunk beyond configured threshold")
 	}
-	if _, err = tx.ExecContext(ctx, "UPDATE catalog_airports SET active=false WHERE active"); err != nil {
+	if _, err = tx.ExecContext(ctx, `UPDATE catalog_airports SET active=false WHERE active`); err != nil {
 		return err
 	}
 	for start := 0; start < len(snapshot.Airports); start += 500 {
@@ -53,7 +53,8 @@ func (s *Store) PublishAirports(ctx context.Context, snapshot airports.Snapshot,
 			return e
 		}
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO airport_imports(source,row_count,fetched_at,imported_at) VALUES('ourairports',$1,$2,now()) ON CONFLICT(source) DO UPDATE SET row_count=EXCLUDED.row_count,fetched_at=EXCLUDED.fetched_at,imported_at=EXCLUDED.imported_at`, len(snapshot.Airports), snapshot.FetchedAt); err != nil {
+	if _, err = tx.ExecContext(ctx, `INSERT INTO airport_imports(source,row_count,fetched_at,imported_at) VALUES('ourairports',$1,$2,now())
+ ON CONFLICT(source) DO UPDATE SET row_count=EXCLUDED.row_count,fetched_at=EXCLUDED.fetched_at,imported_at=EXCLUDED.imported_at`, len(snapshot.Airports), snapshot.FetchedAt); err != nil {
 		return err
 	}
 	return tx.Commit()

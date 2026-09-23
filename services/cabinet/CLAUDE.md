@@ -11,7 +11,7 @@ Cabinet owns users, sessions and trip requests, and is the HTTP/ConnectRPC API t
 - `cmd/cabinet/main.go` — single entrypoint, dispatches on `os.Args[1]`: `serve` (default), `migrate`, `sync-cities`, `publish-outbox`, `consume-progress`.
 - `internal/auth` — HTTP/RPC handlers, session and registration logic (this is also where the ConnectRPC handler tree is wired via `auth.Handler(...)`).
 - `internal/trips` — trip-request RPC handlers (`trips.Handler(...)`), composed into the same router as auth.
-- `internal/storage` — all goqu queries and transactions against Cabinet's own Postgres schema; registration+session creation and outbox writes are atomic here.
+- `internal/storage` — all queries (goqu, plus SQL text for the outbox lease and row locks) and transactions against Cabinet's own Postgres schema; registration+session creation and outbox writes are atomic here.
 - `internal/config` — Viper YAML + env loading (`services/cabinet/config.yaml`, override path via `CABINET_CONFIG`).
 - `internal/outbox` — transactional outbox relay (`publish-outbox` command) that ships trip-request events to Kafka at-least-once ([ADR 0004](../../docs/adr/0004-trip-request-outbox.md), [docs/ops/outbox.md](../../docs/ops/outbox.md)).
 - `internal/catalog` — GeoNames city-catalog import (`sync-cities` command) via a `catalog.Source` interface; test source has no network calls.
