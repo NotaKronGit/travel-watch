@@ -32,15 +32,22 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 		return nil, err
 	}
 	rows, err := tx.QueryContext(ctx, `WITH source_data AS (
- SELECT planner_id,stage,outcome,attempt,started_at,finished_at,route_count,incomplete,result FROM planner_runs WHERE request_id=$1
+ SELECT planner_id,stage,outcome,attempt,started_at,finished_at,route_count,incomplete,result
+ FROM planner_runs
+ WHERE request_id=$1
  UNION ALL
- SELECT 'graph',stage,'',attempt,started_at,finished_at,CASE WHEN jsonb_typeof(result->'candidates')='array' THEN jsonb_array_length(result->'candidates') ELSE 0 END,true,result FROM route_building b WHERE request_id=$1 AND result IS NOT NULL AND planners IS NULL AND NOT EXISTS(SELECT 1 FROM planner_runs p WHERE p.request_id=b.request_id)
- ), arrays AS (
- SELECT *,CASE WHEN jsonb_typeof(CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END)='array' THEN CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END ELSE '[]'::jsonb END AS routes FROM source_data
+ SELECT 'graph',stage,'',attempt,started_at,finished_at,CASE WHEN jsonb_typeof(result->'candidates')='array' THEN jsonb_array_length(result->'candidates') ELSE 0 END,true,result
+ FROM route_building b
+ WHERE request_id=$1 AND result IS NOT NULL AND planners IS NULL AND NOT EXISTS(SELECT 1 FROM planner_runs p WHERE p.request_id=b.request_id)
+ ),arrays AS (
+ SELECT *,CASE WHEN jsonb_typeof(CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END)='array' THEN CASE WHEN planner_id='graph' THEN result->'candidates' ELSE result->'paths' END ELSE '[]'::jsonb END AS routes
+ FROM source_data
  )
  SELECT planner_id,stage,outcome,attempt,started_at,finished_at,route_count,incomplete,COALESCE(result->'issues','[]'::jsonb),COALESCE(result->'query','{}'::jsonb),
  COALESCE((SELECT jsonb_agg(value ORDER BY ordinal) FROM (SELECT value,ordinal FROM jsonb_array_elements(routes) WITH ORDINALITY AS r(value,ordinal) ORDER BY ordinal OFFSET CASE WHEN planner_id='graph' THEN 0 ELSE $3 END LIMIT CASE WHEN planner_id='graph' THEN 51 ELSE $4 END) AS page),'[]'::jsonb)
- FROM arrays WHERE ($2='' OR planner_id=$2) ORDER BY planner_id`, q.RequestId, q.PlannerId, q.Offset, q.PageSize)
+ FROM arrays
+ WHERE ($2='' OR planner_id=$2)
+ ORDER BY planner_id`, q.RequestId, q.PlannerId, q.Offset, q.PageSize)
 	if err != nil {
 		return nil, err
 	}

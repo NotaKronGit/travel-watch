@@ -22,7 +22,9 @@ func progressEvent(ctx context.Context, tx *sql.Tx, id string, count int, incomp
 	var attempt int32
 	var started, finished sql.NullTime
 	var now time.Time
-	if err := tx.QueryRowContext(ctx, `UPDATE route_building SET revision=revision+1 WHERE request_id=$1 RETURNING stage,revision,attempt,started_at,finished_at,clock_timestamp()`, id).Scan(&stage, &rev, &attempt, &started, &finished, &now); err != nil {
+	if err := tx.QueryRowContext(ctx, `UPDATE route_building SET revision=revision+1
+ WHERE request_id=$1
+ RETURNING stage,revision,attempt,started_at,finished_at,clock_timestamp()`, id).Scan(&stage, &rev, &attempt, &started, &finished, &now); err != nil {
 		return err
 	}
 	if attempt < 0 || attempt > 100 || count < 0 || count > 100 {
@@ -55,7 +57,11 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 	}
 	defer func() { _ = tx.Rollback() }()
 	j := planning.Job{Token: uuid.NewString()}
-	err = tx.QueryRowContext(ctx, `SELECT b.request_id,r.created_payload,b.attempt FROM route_building b JOIN search_requests r USING(request_id) WHERE r.status='pending' AND (b.stage='queued' OR (b.stage='building' AND b.lease_until<now())) ORDER BY b.created_at,b.request_id FOR UPDATE OF b SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Attempt)
+	err = tx.QueryRowContext(ctx, `SELECT b.request_id,r.created_payload,b.attempt
+ FROM route_building b
+ JOIN search_requests r USING(request_id)
+ WHERE r.status='pending' AND (b.stage='queued' OR (b.stage='building' AND b.lease_until<now()))
+ ORDER BY b.created_at,b.request_id FOR UPDATE OF b SKIP LOCKED LIMIT 1`).Scan(&j.RequestID, &j.Payload, &j.Attempt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return j, false, nil
 	}
@@ -82,7 +88,8 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 			}
 			return j, false, tx.Commit()
 		}
-		_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage='failed',finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL WHERE request_id=$1`, j.RequestID)
+		_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage='failed',finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL
+ WHERE request_id=$1`, j.RequestID)
 		if err == nil {
 			err = progressEvent(ctx, tx, j.RequestID, 0, true)
 		}
@@ -91,7 +98,8 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 		}
 		return j, false, err
 	}
-	_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage='building',attempt=attempt+1,started_at=clock_timestamp(),finished_at=NULL,lease_token=$2,lease_until=now()+$3::interval WHERE request_id=$1`, j.RequestID, j.Token, lease.String())
+	_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage='building',attempt=attempt+1,started_at=clock_timestamp(),finished_at=NULL,lease_token=$2,lease_until=now()+$3::interval
+ WHERE request_id=$1`, j.RequestID, j.Token, lease.String())
 	if err == nil {
 		err = progressEvent(ctx, tx, j.RequestID, 0, true)
 	}
@@ -106,7 +114,10 @@ func (s *Store) ClaimBuilding(ctx context.Context, lease time.Duration, maxAttem
 }
 func (s *Store) BuildingActive(ctx context.Context, j planning.Job) (bool, error) {
 	var ok bool
-	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM route_building b JOIN search_requests r USING(request_id) WHERE b.request_id=$1 AND b.lease_token=$2 AND b.lease_until>now() AND b.stage='building' AND r.status='pending')`, j.RequestID, j.Token).Scan(&ok)
+	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1
+ FROM route_building b
+ JOIN search_requests r USING(request_id)
+ WHERE b.request_id=$1 AND b.lease_token=$2 AND b.lease_until>now() AND b.stage='building' AND r.status='pending')`, j.RequestID, j.Token).Scan(&ok)
 	return ok, err
 }
 func (s *Store) FinishBuilding(ctx context.Context, j planning.Job, stage string, result realroutes.Result) error {
@@ -134,7 +145,8 @@ func (s *Store) FinishBuilding(ctx context.Context, j planning.Job, stage string
 	if status != "pending" {
 		return nil
 	}
-	r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage=$3,result=$4,finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND lease_token=$2 AND lease_until>now() AND stage='building'`, j.RequestID, j.Token, stage, string(b))
+	r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage=$3,result=$4,finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL
+ WHERE request_id=$1 AND lease_token=$2 AND lease_until>now() AND stage='building'`, j.RequestID, j.Token, stage, string(b))
 	if err != nil {
 		return err
 	}
@@ -153,13 +165,23 @@ func (s *Store) FinishBuilding(ctx context.Context, j planning.Job, stage string
 }
 func (s *Store) ClaimProgress(ctx context.Context, lease time.Duration) (planning.Message, bool, error) {
 	m := planning.Message{Token: uuid.NewString()}
-	err := s.db.QueryRowContext(ctx, `WITH candidate AS (SELECT event_id FROM progress_outbox WHERE published_at IS NULL AND (lease_until IS NULL OR lease_until<now()) ORDER BY request_id,revision FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE progress_outbox SET lease_token=$1,lease_until=now()+$2::interval FROM candidate WHERE progress_outbox.event_id=candidate.event_id RETURNING progress_outbox.event_id,request_id,payload`, m.Token, lease.String()).Scan(&m.ID, &m.RequestID, &m.Payload)
+	err := s.db.QueryRowContext(ctx, `WITH candidate AS (
+ SELECT event_id
+ FROM progress_outbox
+ WHERE published_at IS NULL AND (lease_until IS NULL OR lease_until<now())
+ ORDER BY request_id,revision FOR UPDATE SKIP LOCKED LIMIT 1
+ )
+ UPDATE progress_outbox SET lease_token=$1,lease_until=now()+$2::interval
+ FROM candidate
+ WHERE progress_outbox.event_id=candidate.event_id
+ RETURNING progress_outbox.event_id,request_id,payload`, m.Token, lease.String()).Scan(&m.ID, &m.RequestID, &m.Payload)
 	if errors.Is(err, sql.ErrNoRows) {
 		return m, false, nil
 	}
 	return m, err == nil, err
 }
 func (s *Store) AckProgress(ctx context.Context, m planning.Message) error {
-	_, err := s.db.ExecContext(ctx, `UPDATE progress_outbox SET published_at=now(),lease_token=NULL,lease_until=NULL WHERE event_id=$1 AND lease_token=$2 AND lease_until>now()`, m.ID, m.Token)
+	_, err := s.db.ExecContext(ctx, `UPDATE progress_outbox SET published_at=now(),lease_token=NULL,lease_until=NULL
+ WHERE event_id=$1 AND lease_token=$2 AND lease_until>now()`, m.ID, m.Token)
 	return err
 }

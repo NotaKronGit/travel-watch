@@ -31,7 +31,9 @@ func (s *Store) startSources(ctx context.Context, tx *sql.Tx, j *planning.Job) e
 		return err
 	}
 	for _, id := range members {
-		r, err := tx.ExecContext(ctx, `INSERT INTO planner_runs(request_id,planner_id,stage,attempt,started_at) VALUES($1,$2,'building',$3,clock_timestamp()) ON CONFLICT(request_id,planner_id) DO UPDATE SET attempt=EXCLUDED.attempt,started_at=EXCLUDED.started_at WHERE planner_runs.stage='building'`, j.RequestID, id, j.Attempt+1)
+		r, err := tx.ExecContext(ctx, `INSERT INTO planner_runs(request_id,planner_id,stage,attempt,started_at) VALUES($1,$2,'building',$3,clock_timestamp())
+ ON CONFLICT(request_id,planner_id) DO UPDATE SET attempt=EXCLUDED.attempt,started_at=EXCLUDED.started_at
+ WHERE planner_runs.stage='building'`, j.RequestID, id, j.Attempt+1)
 		if err != nil {
 			return err
 		}
@@ -54,11 +56,15 @@ func sourceEvent(ctx context.Context, tx *sql.Tx, requestID, id string) error {
 	var started time.Time
 	var finished sql.NullTime
 	e := &eventsv1.TripRouteBuildingUpdated{SchemaVersion: 2, EventId: uuid.NewString(), RequestId: requestID, PlannerId: id}
-	if err := tx.QueryRowContext(ctx, `SELECT stage,attempt,started_at,finished_at,route_count,incomplete,outcome FROM planner_runs WHERE request_id=$1 AND planner_id=$2`, requestID, id).Scan(&stage, &e.Attempt, &started, &finished, &e.RouteCount, &e.Incomplete, &e.Outcome); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT stage,attempt,started_at,finished_at,route_count,incomplete,outcome
+ FROM planner_runs
+ WHERE request_id=$1 AND planner_id=$2`, requestID, id).Scan(&stage, &e.Attempt, &started, &finished, &e.RouteCount, &e.Incomplete, &e.Outcome); err != nil {
 		return err
 	}
 	var now time.Time
-	if err := tx.QueryRowContext(ctx, `UPDATE route_building SET revision=revision+1 WHERE request_id=$1 RETURNING revision,clock_timestamp()`, requestID).Scan(&e.Revision, &now); err != nil {
+	if err := tx.QueryRowContext(ctx, `UPDATE route_building SET revision=revision+1
+ WHERE request_id=$1
+ RETURNING revision,clock_timestamp()`, requestID).Scan(&e.Revision, &now); err != nil {
 		return err
 	}
 	e.OccurredAt = timestamppb.New(now)
@@ -112,7 +118,9 @@ func (s *Store) FinishSource(ctx context.Context, j planning.Job, id string, r p
 		return nil
 	}
 	var active bool
-	if err = tx.QueryRowContext(ctx, `SELECT stage='building' AND lease_token=$2 AND lease_until>now() FROM route_building WHERE request_id=$1 FOR UPDATE`, j.RequestID, j.Token).Scan(&active); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT stage='building' AND lease_token=$2 AND lease_until>now()
+ FROM route_building
+ WHERE request_id=$1 FOR UPDATE`, j.RequestID, j.Token).Scan(&active); err != nil {
 		return err
 	}
 	if !active {
@@ -122,7 +130,8 @@ func (s *Store) FinishSource(ctx context.Context, j planning.Job, id string, r p
 	if len(data) == 0 {
 		data = json.RawMessage(`null`)
 	}
-	update, err := tx.ExecContext(ctx, `UPDATE planner_runs SET stage=$3,finished_at=GREATEST(clock_timestamp(),started_at),route_count=$4,incomplete=$5,result=$6,outcome=$7 WHERE request_id=$1 AND planner_id=$2 AND stage='building'`, j.RequestID, id, stage, r.Count, r.Incomplete, string(data), r.Outcome)
+	update, err := tx.ExecContext(ctx, `UPDATE planner_runs SET stage=$3,finished_at=GREATEST(clock_timestamp(),started_at),route_count=$4,incomplete=$5,result=$6,outcome=$7
+ WHERE request_id=$1 AND planner_id=$2 AND stage='building'`, j.RequestID, id, stage, r.Count, r.Incomplete, string(data), r.Outcome)
 	if err != nil {
 		return err
 	}
@@ -144,7 +153,10 @@ func finishAggregate(ctx context.Context, tx *sql.Tx, id string) error {
 	var pending, count, failed int
 	var incomplete bool
 	var result []byte
-	err := tx.QueryRowContext(ctx, `SELECT count(*) FILTER(WHERE stage='building'),COALESCE(sum(route_count),0),count(*) FILTER(WHERE stage='failed'),COALESCE(bool_or(incomplete),false),jsonb_object_agg(planner_id,jsonb_build_object('stage',stage,'outcome',outcome,'result',result,'route_count',route_count)) FROM planner_runs WHERE request_id=$1`, id).Scan(&pending, &count, &failed, &incomplete, &result)
+	err := tx.QueryRowContext(ctx, `SELECT count(*) FILTER(WHERE stage='building'),COALESCE(sum(route_count),0),count(*) FILTER(WHERE stage='failed'),COALESCE(bool_or(incomplete),false),
+ jsonb_object_agg(planner_id,jsonb_build_object('stage',stage,'outcome',outcome,'result',result,'route_count',route_count))
+ FROM planner_runs
+ WHERE request_id=$1`, id).Scan(&pending, &count, &failed, &incomplete, &result)
 	if err != nil || pending > 0 {
 		return err
 	}
@@ -155,7 +167,8 @@ func finishAggregate(ctx context.Context, tx *sql.Tx, id string) error {
 			stage = "failed"
 		}
 	}
-	_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage=$2,result=$3,finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL WHERE request_id=$1`, id, stage, string(result))
+	_, err = tx.ExecContext(ctx, `UPDATE route_building SET stage=$2,result=$3,finished_at=GREATEST(clock_timestamp(),started_at),lease_token=NULL,lease_until=NULL
+ WHERE request_id=$1`, id, stage, string(result))
 	if err != nil {
 		return err
 	}
@@ -163,7 +176,9 @@ func finishAggregate(ctx context.Context, tx *sql.Tx, id string) error {
 }
 
 func exhaustSources(ctx context.Context, tx *sql.Tx, id string) error {
-	rows, err := tx.QueryContext(ctx, `UPDATE planner_runs SET stage='failed',outcome='timeout',incomplete=true,finished_at=GREATEST(clock_timestamp(),started_at) WHERE request_id=$1 AND stage='building' RETURNING planner_id`, id)
+	rows, err := tx.QueryContext(ctx, `UPDATE planner_runs SET stage='failed',outcome='timeout',incomplete=true,finished_at=GREATEST(clock_timestamp(),started_at)
+ WHERE request_id=$1 AND stage='building'
+ RETURNING planner_id`, id)
 	if err != nil {
 		return err
 	}
@@ -191,7 +206,9 @@ func exhaustSources(ctx context.Context, tx *sql.Tx, id string) error {
 }
 
 func cancelSources(ctx context.Context, tx *sql.Tx, id string) error {
-	rows, err := tx.QueryContext(ctx, `UPDATE planner_runs SET stage='cancelled',finished_at=GREATEST(clock_timestamp(),started_at) WHERE request_id=$1 AND stage='building' RETURNING planner_id`, id)
+	rows, err := tx.QueryContext(ctx, `UPDATE planner_runs SET stage='cancelled',finished_at=GREATEST(clock_timestamp(),started_at)
+ WHERE request_id=$1 AND stage='building'
+ RETURNING planner_id`, id)
 	if err != nil {
 		return err
 	}

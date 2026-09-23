@@ -23,7 +23,7 @@ var ErrRequestConflict = errors.New("request id reused with different trip")
 
 func (s *Store) SearchCities(ctx context.Context, prefix string) ([]CityOption, error) {
 	pattern := strings.NewReplacer("\\", "\\\\", "%", "\\%", "_", "\\_").Replace(strings.ToLower(prefix)) + "%"
-	q, args, err := postgres.From(goqu.T("catalog_cities").As("c")).Join(goqu.T("catalog_countries").As("n"), goqu.On(goqu.I("n.code").Eq(goqu.I("c.country_code")))).Select(goqu.I("c.id"), goqu.I("c.name_ru"), goqu.L("COALESCE(NULLIF(n.name_ru, ''), n.name)"), goqu.I("c.region_name"), goqu.I("c.timezone"), goqu.I("c.iata_code")).Where(goqu.I("c.active").IsTrue(), goqu.I("c.name_ru").Neq(""), goqu.L("lower(c.name_ru) LIKE ?", pattern)).Order(goqu.I("c.population").Desc(), goqu.I("c.id").Asc()).Limit(10).Prepared(true).ToSQL()
+	q, args, err := postgres.From(goqu.T("catalog_cities").As("c")).Join(goqu.T("catalog_countries").As("n"), goqu.On(goqu.I("n.code").Eq(goqu.I("c.country_code")))).Select(goqu.I("c.id"), goqu.I("c.name_ru"), goqu.L("COALESCE(NULLIF(n.name_ru,''),n.name)"), goqu.I("c.region_name"), goqu.I("c.timezone"), goqu.I("c.iata_code")).Where(goqu.I("c.active").IsTrue(), goqu.I("c.name_ru").Neq(""), goqu.L("lower(c.name_ru) LIKE ?", pattern)).Order(goqu.I("c.population").Desc(), goqu.I("c.id").Asc()).Limit(10).Prepared(true).ToSQL()
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 	}
 	defer func() { _ = tx.Rollback() }()
 	// Serialize retries for the same user and request, including concurrent requests.
-	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", trip.UserID+":"+trip.RequestID); err != nil {
+	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, trip.UserID+":"+trip.RequestID); err != nil {
 		return "", err
 	}
 	q, args, err := postgres.From("trip_requests").Select("id", "origin_id", "destination_id", goqu.L("departure_from::text"), goqu.L("departure_to::text"), "adults").Where(goqu.Ex{"user_id": trip.UserID, "request_id": trip.RequestID}).Prepared(true).ToSQL()
@@ -68,7 +68,10 @@ func (s *Store) CreateTrip(ctx context.Context, trip Trip) (string, error) {
 		return "", err
 	}
 	// Read both cities in one snapshot; the application only has SELECT on the catalog.
-	rows, err := tx.QueryContext(ctx, "SELECT id, source, source_id, name_ru, country_code, latitude, longitude, timezone, iata_code FROM catalog_cities WHERE id IN ($1,$2) AND active AND name_ru<>'' ORDER BY id", trip.OriginID, trip.DestinationID)
+	rows, err := tx.QueryContext(ctx, `SELECT id,source,source_id,name_ru,country_code,latitude,longitude,timezone,iata_code
+ FROM catalog_cities
+ WHERE id IN ($1,$2) AND active AND name_ru<>''
+ ORDER BY id`, trip.OriginID, trip.DestinationID)
 	if err != nil {
 		return "", err
 	}
@@ -151,7 +154,7 @@ func tripReadQuery(user string) *goqu.SelectDataset {
 	}
 	columns := []interface{}{goqu.I("t.id"), goqu.L("t.departure_from::text"), goqu.L("t.departure_to::text"), goqu.I("t.adults"), goqu.I("t.created_at"), goqu.I("t.status"), goqu.I("t.comment"), goqu.I("t.cancelled_at"), goqu.I("t.building_stage")}
 	for _, alias := range []string{"o", "d"} {
-		columns = append(columns, goqu.I(alias+".id"), goqu.I(alias+".name_ru"), goqu.L("COALESCE(NULLIF(?, ''), ?)", goqu.I(alias+"n.name_ru"), goqu.I(alias+"n.name")), goqu.I(alias+".region_name"), goqu.I(alias+".timezone"), goqu.I(alias+".iata_code"))
+		columns = append(columns, goqu.I(alias+".id"), goqu.I(alias+".name_ru"), goqu.L("COALESCE(NULLIF(?,''),?)", goqu.I(alias+"n.name_ru"), goqu.I(alias+"n.name")), goqu.I(alias+".region_name"), goqu.I(alias+".timezone"), goqu.I(alias+".iata_code"))
 	}
 	// Inactive catalog entries remain readable for existing requests.
 	return q.Select(columns...).Where(goqu.I("t.user_id").Eq(user))

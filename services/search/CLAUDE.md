@@ -11,7 +11,7 @@ Search consumes trip-request events from Cabinet, builds composite route candida
 `cmd/search/main.go` dispatches on `os.Args[1]` (default `consume`): `migrate`, `consume` (Kafka inbox, the normal long-running process), `build-routes`, `publish-progress`, `serve-results`, `plan-route`, `airports-sync`, `airports-find`, `compare-planners`, `compare-real-routes`.
 
 - `internal/consumer` — Kafka inbox consumer for trip-request events ([ADR 0006](../../docs/adr/0006-search-inbox.md)).
-- `internal/storage` — goqu queries/transactions for Search's own Postgres schema (results, schedule checks, etc.).
+- `internal/storage` — queries/transactions for Search's own Postgres schema, mostly static SQL text (leases, `SKIP LOCKED`, `ON CONFLICT`) per the ADR 0002 amendment (results, schedule checks, etc.).
 - `internal/config` — Viper YAML + env loading (`services/search/config.yaml`, override path via `SEARCH_CONFIG`).
 - `internal/routes` — `GraphPlanner`: the own-algorithm route-candidate builder, originally on a synthetic dataset.
 - `internal/realroutes` — builds schemas from real Collector responses (via `transport-stdio`): picks candidate airports/stations, checks links, tags assumed transfers. Backs both `plan-route` and the automatic `build-routes` graph path.

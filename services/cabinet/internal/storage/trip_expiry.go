@@ -39,10 +39,11 @@ func (s *Store) ExpireTrips(ctx context.Context, now time.Time, limit int) (int,
 
 // expiryCandidates reads the batch and releases its connection before the per-trip transactions.
 func (s *Store) expiryCandidates(ctx context.Context, now time.Time, limit int) ([]string, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT t.id FROM trip_requests t
+	rows, err := s.db.QueryContext(ctx, `SELECT t.id
+ FROM trip_requests t
  JOIN catalog_cities c ON c.id=t.origin_id
  LEFT JOIN pg_timezone_names z ON z.name=c.timezone
- WHERE t.status IN ('saved','running') AND t.departure_to < ($1::timestamptz AT TIME ZONE COALESCE(z.name,'UTC'))::date
+ WHERE t.status IN ('saved','running') AND t.departure_to<($1::timestamptz AT TIME ZONE COALESCE(z.name,'UTC'))::date
  ORDER BY t.departure_to,t.id LIMIT $2`, now, limit)
 	if err != nil {
 		return nil, err
@@ -66,7 +67,7 @@ func (s *Store) expireTrip(ctx context.Context, id string) (bool, error) {
 	}
 	defer func() { _ = tx.Rollback() }()
 	var status string
-	if err = tx.QueryRowContext(ctx, "SELECT status FROM trip_requests WHERE id=$1 FOR UPDATE", id).Scan(&status); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT status FROM trip_requests WHERE id=$1 FOR UPDATE`, id).Scan(&status); err != nil {
 		return false, err
 	}
 	// Cancelled or completed meanwhile, or expired by another process.

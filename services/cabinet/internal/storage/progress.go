@@ -19,7 +19,8 @@ func (s *Store) ApplyProgress(ctx context.Context, e *eventsv1.TripRouteBuilding
 	if err = tx.QueryRowContext(ctx, `SELECT status FROM trip_requests WHERE id=$1 FOR UPDATE`, e.RequestId).Scan(&status); err != nil {
 		return err
 	}
-	r, err := tx.ExecContext(ctx, `INSERT INTO trip_stage_history(event_id,request_id,revision,payload) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, e.EventId, e.RequestId, e.Revision, payload)
+	r, err := tx.ExecContext(ctx, `INSERT INTO trip_stage_history(event_id,request_id,revision,payload) VALUES($1,$2,$3,$4)
+ ON CONFLICT DO NOTHING`, e.EventId, e.RequestId, e.Revision, payload)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,8 @@ func (s *Store) ApplyProgress(ctx context.Context, e *eventsv1.TripRouteBuilding
 		if contract.Stages[e.Stage] == "cancelled" {
 			return errors.New("Search cancellation without Cabinet cancellation")
 		}
-		_, err = tx.ExecContext(ctx, `UPDATE trip_requests SET building_stage=$2,building_revision=$3,status=$4 WHERE id=$1 AND building_revision<$3`, e.RequestId, contract.Stages[e.Stage], e.Revision, next)
+		_, err = tx.ExecContext(ctx, `UPDATE trip_requests SET building_stage=$2,building_revision=$3,status=$4
+ WHERE id=$1 AND building_revision<$3`, e.RequestId, contract.Stages[e.Stage], e.Revision, next)
 		if err != nil {
 			return err
 		}

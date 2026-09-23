@@ -45,7 +45,7 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 	if n == 0 {
 		var requestID, kind string
 		var hash []byte
-		if err = tx.QueryRowContext(ctx, "SELECT request_id,event_type,payload_hash FROM inbox_events WHERE event_id=$1", e.ID).Scan(&requestID, &kind, &hash); err != nil {
+		if err = tx.QueryRowContext(ctx, `SELECT request_id,event_type,payload_hash FROM inbox_events WHERE event_id=$1`, e.ID).Scan(&requestID, &kind, &hash); err != nil {
 			return err
 		}
 		if requestID != e.RequestID || kind != e.Type || !bytes.Equal(hash, digest[:]) {
@@ -56,28 +56,25 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 	switch e.Type {
 	case consumer.Created:
 		// Only enrich a cancellation tombstone; never reactivate it or replace a snapshot.
-		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,created_payload,created_at)
-   VALUES($1,'pending',$2,$3) ON CONFLICT(request_id) DO UPDATE
-   SET created_payload=EXCLUDED.created_payload,created_at=EXCLUDED.created_at
-   WHERE search_requests.created_payload IS NULL`, e.RequestID, e.Payload, e.OccurredAt)
+		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,created_payload,created_at) VALUES($1,'pending',$2,$3)
+ ON CONFLICT(request_id) DO UPDATE SET created_payload=EXCLUDED.created_payload,created_at=EXCLUDED.created_at
+ WHERE search_requests.created_payload IS NULL`, e.RequestID, e.Payload, e.OccurredAt)
 		if err == nil {
 			var payload []byte
-			err = tx.QueryRowContext(ctx, "SELECT created_payload FROM search_requests WHERE request_id=$1", e.RequestID).Scan(&payload)
+			err = tx.QueryRowContext(ctx, `SELECT created_payload FROM search_requests WHERE request_id=$1`, e.RequestID).Scan(&payload)
 			if err == nil && !bytes.Equal(payload, e.Payload) {
 				err = ErrConflict
 			}
 		}
 	case consumer.Cancelled:
-		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,cancelled_at)
-   VALUES($1,'cancelled',$2) ON CONFLICT(request_id) DO UPDATE
-   SET status='cancelled',cancelled_at=COALESCE(search_requests.cancelled_at,EXCLUDED.cancelled_at),expired_at=NULL`, e.RequestID, e.OccurredAt)
+		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,cancelled_at) VALUES($1,'cancelled',$2)
+ ON CONFLICT(request_id) DO UPDATE SET status='cancelled',cancelled_at=COALESCE(search_requests.cancelled_at,EXCLUDED.cancelled_at),expired_at=NULL`, e.RequestID, e.OccurredAt)
 	case consumer.Expired:
 		// Stops work but keeps results readable; never overrides a cancellation, and like
 		// it leaves a tombstone if creation has not arrived yet.
-		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,expired_at)
-   VALUES($1,'expired',$2) ON CONFLICT(request_id) DO UPDATE
-   SET status='expired',expired_at=EXCLUDED.expired_at
-   WHERE search_requests.status='pending'`, e.RequestID, e.OccurredAt)
+		_, err = tx.ExecContext(ctx, `INSERT INTO search_requests(request_id,status,expired_at) VALUES($1,'expired',$2)
+ ON CONFLICT(request_id) DO UPDATE SET status='expired',expired_at=EXCLUDED.expired_at
+ WHERE search_requests.status='pending'`, e.RequestID, e.OccurredAt)
 	default:
 		return consumer.ErrInvalidEvent
 	}
@@ -86,7 +83,10 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 	}
 	if e.Type == consumer.Created {
 		// Only genuinely new creations enter the queue, never migrated history or tombstones.
-		r, err := tx.ExecContext(ctx, `INSERT INTO route_building(request_id,stage) SELECT request_id,'queued' FROM search_requests WHERE request_id=$1 AND status='pending' ON CONFLICT DO NOTHING`, e.RequestID)
+		r, err := tx.ExecContext(ctx, `INSERT INTO route_building(request_id,stage) SELECT request_id,'queued'
+ FROM search_requests
+ WHERE request_id=$1 AND status='pending'
+ ON CONFLICT DO NOTHING`, e.RequestID)
 		if err != nil {
 			return err
 		}
@@ -100,7 +100,8 @@ func (s *Store) Apply(ctx context.Context, e consumer.Event) error {
 			}
 		}
 	} else if e.Type == consumer.Cancelled {
-		r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage='cancelled',finished_at=CASE WHEN started_at IS NOT NULL THEN GREATEST(clock_timestamp(),started_at) END,lease_token=NULL,lease_until=NULL WHERE request_id=$1 AND stage<>'cancelled'`, e.RequestID)
+		r, err := tx.ExecContext(ctx, `UPDATE route_building SET stage='cancelled',finished_at=CASE WHEN started_at IS NOT NULL THEN GREATEST(clock_timestamp(),started_at) END,lease_token=NULL,lease_until=NULL
+ WHERE request_id=$1 AND stage<>'cancelled'`, e.RequestID)
 		if err != nil {
 			return err
 		}

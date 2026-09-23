@@ -22,7 +22,7 @@ func (s *Store) CancelTrip(ctx context.Context, user, id string) error {
 	defer func() { _ = tx.Rollback() }()
 	var status string
 	// Lock by owner and ID to serialize concurrent cancellations and future state transitions.
-	err = tx.QueryRowContext(ctx, "SELECT status FROM trip_requests WHERE user_id=$1 AND id=$2 FOR UPDATE", user, id).Scan(&status)
+	err = tx.QueryRowContext(ctx, `SELECT status FROM trip_requests WHERE user_id=$1 AND id=$2 FOR UPDATE`, user, id).Scan(&status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrNotFound
 	}
