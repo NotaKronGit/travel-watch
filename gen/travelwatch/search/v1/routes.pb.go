@@ -645,8 +645,14 @@ type ScheduledLeg struct {
 	ObservedAt        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=observed_at,json=observedAt,proto3" json:"observed_at,omitempty"`
 	ConnectionMinutes int64                  `protobuf:"varint,8,opt,name=connection_minutes,json=connectionMinutes,proto3" json:"connection_minutes,omitempty"`
 	RequiredMinutes   int64                  `protobuf:"varint,9,opt,name=required_minutes,json=requiredMinutes,proto3" json:"required_minutes,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Ground transfer ahead of this leg, empty when the legs share a node.
+	TransferFrom string `protobuf:"bytes,10,opt,name=transfer_from,json=transferFrom,proto3" json:"transfer_from,omitempty"`
+	TransferTo   string `protobuf:"bytes,11,opt,name=transfer_to,json=transferTo,proto3" json:"transfer_to,omitempty"`
+	// Boarding preparation before this leg: check-in for a flight. Set with a transfer;
+	// connection_minutes minus this is the time left for the transfer itself.
+	BoardingMinutes int64 `protobuf:"varint,12,opt,name=boarding_minutes,json=boardingMinutes,proto3" json:"boarding_minutes,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ScheduledLeg) Reset() {
@@ -742,6 +748,27 @@ func (x *ScheduledLeg) GetRequiredMinutes() int64 {
 	return 0
 }
 
+func (x *ScheduledLeg) GetTransferFrom() string {
+	if x != nil {
+		return x.TransferFrom
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetTransferTo() string {
+	if x != nil {
+		return x.TransferTo
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetBoardingMinutes() int64 {
+	if x != nil {
+		return x.BoardingMinutes
+	}
+	return 0
+}
+
 var File_travelwatch_search_v1_routes_proto protoreflect.FileDescriptor
 
 const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
@@ -806,7 +833,7 @@ const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
 	"\x10ScheduledJourney\x127\n" +
 	"\x04legs\x18\x01 \x03(\v2#.travelwatch.search.v1.ScheduledLegR\x04legs\x12\x1a\n" +
 	"\bwarnings\x18\x02 \x03(\tR\bwarnings\x12'\n" +
-	"\x0ftiming_verified\x18\x03 \x01(\bR\x0etimingVerified\"\xad\x02\n" +
+	"\x0ftiming_verified\x18\x03 \x01(\bR\x0etimingVerified\"\x9e\x03\n" +
 	"\fScheduledLeg\x12\x12\n" +
 	"\x04from\x18\x01 \x01(\tR\x04from\x12\x0e\n" +
 	"\x02to\x18\x02 \x01(\tR\x02to\x12\x12\n" +
@@ -817,7 +844,12 @@ const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
 	"\vobserved_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"observedAt\x12-\n" +
 	"\x12connection_minutes\x18\b \x01(\x03R\x11connectionMinutes\x12)\n" +
-	"\x10required_minutes\x18\t \x01(\x03R\x0frequiredMinutes2u\n" +
+	"\x10required_minutes\x18\t \x01(\x03R\x0frequiredMinutes\x12#\n" +
+	"\rtransfer_from\x18\n" +
+	" \x01(\tR\ftransferFrom\x12\x1f\n" +
+	"\vtransfer_to\x18\v \x01(\tR\n" +
+	"transferTo\x12)\n" +
+	"\x10boarding_minutes\x18\f \x01(\x03R\x0fboardingMinutes2u\n" +
 	"\x13RouteResultsService\x12^\n" +
 	"\tGetRoutes\x12'.travelwatch.search.v1.GetRoutesRequest\x1a(.travelwatch.search.v1.GetRoutesResponseBHZFgithub.com/NotaKronGit/travel-watch/gen/travelwatch/search/v1;searchv1b\x06proto3"
 
