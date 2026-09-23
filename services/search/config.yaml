@@ -80,6 +80,8 @@ schedules:
   max_dates: 7
   max_combinations: 10000
   max_journeys: 30
+  # Per start day, so every day of the range is represented before max_journeys is hit.
+  max_journeys_per_day: 5
   # "windowed" prunes each leg's candidates by a feasible time window before
   # searching; "brute" searches every fetched departure. Same results either
   # way (see services/search/internal/schedules/match_test.go); switch to

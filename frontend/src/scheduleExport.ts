@@ -84,9 +84,21 @@ function compareJourneys(a: ScheduledJourney, b: ScheduledJourney, by: JourneySo
   return sortValue(a, by) - sortValue(b, by) || departureTime(a) - departureTime(b);
 }
 
-export type JourneyFilter = { maxTransfers?: number; noOvernight?: boolean };
+// A journey whose first departure has passed can no longer be taken. Kept in the data
+// for history and future notifications, hidden unless asked for.
+export function expired(journey: ScheduledJourney, now: number) {
+  const departure = Date.parse(journey.legs[0]?.departure ?? '');
+  return !Number.isNaN(departure) && departure <= now;
+}
+export function expiredCount(schemes: ScheduledScheme[], now: number) {
+  return schemes.reduce((n, s) => n + s.journeys.filter(j => expired(j, now)).length, 0);
+}
+
+// now defaults to the current time; showExpired keeps journeys already departed.
+export type JourneyFilter = { maxTransfers?: number; noOvernight?: boolean; showExpired?: boolean; now?: number };
 function matches(journey: ScheduledJourney, filter: JourneyFilter) {
-  return (filter.maxTransfers === undefined || transferCount(journey) <= filter.maxTransfers) && (!filter.noOvernight || !overnight(journey));
+  return (filter.maxTransfers === undefined || transferCount(journey) <= filter.maxTransfers) && (!filter.noOvernight || !overnight(journey))
+    && (filter.showExpired || !expired(journey, filter.now ?? Date.now()));
 }
 
 // Journeys within each scheme, and schemes by their best journey; schemes without
@@ -120,6 +132,8 @@ function connectionJson(leg: ScheduledLeg) {
 // JSON export of every scheme with found journeys, in the on-screen order and filter,
 // with the same caveats as the tab. Times keep the station's UTC offset.
 export function scheduleToJson(result: ScheduleCheck, by: JourneySort = 'wait', filter: JourneyFilter = {}): string {
+  const now = filter.now ?? Date.now();
+  filter = { ...filter, now };
   const found = sortSchemes(result.schemes, by, filter).filter(s => s.journeys.length > 0);
   const hidden = result.schemes.reduce((n, s) => n + s.journeys.length, 0) - found.reduce((n, s) => n + s.journeys.length, 0);
   return JSON.stringify({
@@ -136,6 +150,8 @@ export function scheduleToJson(result: ScheduleCheck, by: JourneySort = 'wait', 
     sortName: sortLabels[by],
     maxTransfers: filter.maxTransfers ?? null,
     noOvernight: filter.noOvernight ?? false,
+    showExpired: filter.showExpired ?? false,
+    expiredJourneys: expiredCount(result.schemes, now),
     nightWindow: `${String(nightWindow.fromHour).padStart(2, '0')}:00–${String(nightWindow.toHour).padStart(2, '0')}:00`,
     hiddenByFilter: hidden,
     schemesWithoutJourneys: result.schemes.filter(s => s.journeys.length === 0).length,
@@ -150,6 +166,7 @@ export function scheduleToJson(result: ScheduleCheck, by: JourneySort = 'wait', 
         preliminary: !journey.timingVerified,
         transfers: transferCount(journey),
         overnight: overnight(journey),
+        expired: expired(journey, now),
         waitMinutes: waitMinutes(journey),
         travelMinutes: Math.round(travelMinutes(journey)),
         summary: journeySummary(journey),

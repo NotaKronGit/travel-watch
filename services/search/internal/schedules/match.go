@@ -64,6 +64,10 @@ func searchCounting(ctx context.Context, in matchInput, available [][]observed) 
 	var journeys []*v1.ScheduledJourney
 	attempts := 0
 	truncated := false
+	// Journeys per start day in the origin timezone, so a busy first day cannot use up
+	// MaxJourneys before later days of the request are reached.
+	perDay := map[string]int{}
+	day := func(start time.Time) string { return start.In(in.From.Location()).Format(time.DateOnly) }
 	var walk func(n int, legs []*v1.ScheduledLeg, start, previous time.Time)
 	walk = func(n int, legs []*v1.ScheduledLeg, start, previous time.Time) {
 		if ctx.Err() != nil {
@@ -82,6 +86,7 @@ func searchCounting(ctx context.Context, in matchInput, available [][]observed) 
 				return
 			}
 			journeys = append(journeys, &v1.ScheduledJourney{Legs: append([]*v1.ScheduledLeg(nil), legs...), TimingVerified: !in.Mismatch})
+			perDay[day(start)]++
 			return
 		}
 		var transferFrom, transferTo string
@@ -105,6 +110,11 @@ func searchCounting(ctx context.Context, in matchInput, available [][]observed) 
 				if nextStart.Before(in.From) || !nextStart.Before(in.End) {
 					continue
 				}
+				// Truncation is reported from the result below, not here: windowed never
+				// visits departures it pruned, and both matchers must report the same.
+				if in.Config.MaxJourneysPerDay > 0 && perDay[day(nextStart)] >= in.Config.MaxJourneysPerDay {
+					continue
+				}
 			} else {
 				required = connectionRequirement(in, n-1)
 				gap = d.Departure.Sub(previous)
@@ -123,6 +133,12 @@ func searchCounting(ctx context.Context, in matchInput, available [][]observed) 
 		}
 	}
 	walk(0, nil, time.Time{}, time.Time{})
+	// A day at its limit may have had more journeys.
+	for _, n := range perDay {
+		if in.Config.MaxJourneysPerDay > 0 && n >= in.Config.MaxJourneysPerDay {
+			truncated = true
+		}
+	}
 	return journeys, truncated, attempts
 }
 
