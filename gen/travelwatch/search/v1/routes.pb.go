@@ -349,6 +349,7 @@ type GetRoutesResponse struct {
 	Revision      int64                  `protobuf:"varint,1,opt,name=revision,proto3" json:"revision,omitempty"`
 	Stage         string                 `protobuf:"bytes,2,opt,name=stage,proto3" json:"stage,omitempty"`
 	Sources       []*SourceRoutes        `protobuf:"bytes,3,rep,name=sources,proto3" json:"sources,omitempty"`
+	ScheduleCheck *ScheduleCheck         `protobuf:"bytes,4,opt,name=schedule_check,json=scheduleCheck,proto3" json:"schedule_check,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -404,6 +405,343 @@ func (x *GetRoutesResponse) GetSources() []*SourceRoutes {
 	return nil
 }
 
+func (x *GetRoutesResponse) GetScheduleCheck() *ScheduleCheck {
+	if x != nil {
+		return x.ScheduleCheck
+	}
+	return nil
+}
+
+// Saved timetable check; reading it never invokes a supplier.
+type ScheduleCheck struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	State         string                 `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
+	CheckedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=checked_at,json=checkedAt,proto3" json:"checked_at,omitempty"`
+	Incomplete    bool                   `protobuf:"varint,3,opt,name=incomplete,proto3" json:"incomplete,omitempty"`
+	Requests      int32                  `protobuf:"varint,4,opt,name=requests,proto3" json:"requests,omitempty"`
+	Warnings      []string               `protobuf:"bytes,5,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	Schemes       []*ScheduledScheme     `protobuf:"bytes,6,rep,name=schemes,proto3" json:"schemes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScheduleCheck) Reset() {
+	*x = ScheduleCheck{}
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScheduleCheck) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScheduleCheck) ProtoMessage() {}
+
+func (x *ScheduleCheck) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScheduleCheck.ProtoReflect.Descriptor instead.
+func (*ScheduleCheck) Descriptor() ([]byte, []int) {
+	return file_travelwatch_search_v1_routes_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ScheduleCheck) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *ScheduleCheck) GetCheckedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CheckedAt
+	}
+	return nil
+}
+
+func (x *ScheduleCheck) GetIncomplete() bool {
+	if x != nil {
+		return x.Incomplete
+	}
+	return false
+}
+
+func (x *ScheduleCheck) GetRequests() int32 {
+	if x != nil {
+		return x.Requests
+	}
+	return 0
+}
+
+func (x *ScheduleCheck) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
+func (x *ScheduleCheck) GetSchemes() []*ScheduledScheme {
+	if x != nil {
+		return x.Schemes
+	}
+	return nil
+}
+
+type ScheduledScheme struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SchemeNumber  int32                  `protobuf:"varint,1,opt,name=scheme_number,json=schemeNumber,proto3" json:"scheme_number,omitempty"`
+	AccessVariant int32                  `protobuf:"varint,2,opt,name=access_variant,json=accessVariant,proto3" json:"access_variant,omitempty"`
+	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+	Warnings      []string               `protobuf:"bytes,4,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	Journeys      []*ScheduledJourney    `protobuf:"bytes,5,rep,name=journeys,proto3" json:"journeys,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScheduledScheme) Reset() {
+	*x = ScheduledScheme{}
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScheduledScheme) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScheduledScheme) ProtoMessage() {}
+
+func (x *ScheduledScheme) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScheduledScheme.ProtoReflect.Descriptor instead.
+func (*ScheduledScheme) Descriptor() ([]byte, []int) {
+	return file_travelwatch_search_v1_routes_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ScheduledScheme) GetSchemeNumber() int32 {
+	if x != nil {
+		return x.SchemeNumber
+	}
+	return 0
+}
+
+func (x *ScheduledScheme) GetAccessVariant() int32 {
+	if x != nil {
+		return x.AccessVariant
+	}
+	return 0
+}
+
+func (x *ScheduledScheme) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *ScheduledScheme) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
+func (x *ScheduledScheme) GetJourneys() []*ScheduledJourney {
+	if x != nil {
+		return x.Journeys
+	}
+	return nil
+}
+
+type ScheduledJourney struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Legs           []*ScheduledLeg        `protobuf:"bytes,1,rep,name=legs,proto3" json:"legs,omitempty"`
+	Warnings       []string               `protobuf:"bytes,2,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	TimingVerified bool                   `protobuf:"varint,3,opt,name=timing_verified,json=timingVerified,proto3" json:"timing_verified,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ScheduledJourney) Reset() {
+	*x = ScheduledJourney{}
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScheduledJourney) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScheduledJourney) ProtoMessage() {}
+
+func (x *ScheduledJourney) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScheduledJourney.ProtoReflect.Descriptor instead.
+func (*ScheduledJourney) Descriptor() ([]byte, []int) {
+	return file_travelwatch_search_v1_routes_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ScheduledJourney) GetLegs() []*ScheduledLeg {
+	if x != nil {
+		return x.Legs
+	}
+	return nil
+}
+
+func (x *ScheduledJourney) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
+func (x *ScheduledJourney) GetTimingVerified() bool {
+	if x != nil {
+		return x.TimingVerified
+	}
+	return false
+}
+
+type ScheduledLeg struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	From   string                 `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	To     string                 `protobuf:"bytes,2,opt,name=to,proto3" json:"to,omitempty"`
+	Mode   string                 `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
+	Number string                 `protobuf:"bytes,4,opt,name=number,proto3" json:"number,omitempty"`
+	// RFC3339 with the station offset, preserved for display.
+	Departure         string                 `protobuf:"bytes,5,opt,name=departure,proto3" json:"departure,omitempty"`
+	Arrival           string                 `protobuf:"bytes,6,opt,name=arrival,proto3" json:"arrival,omitempty"`
+	ObservedAt        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=observed_at,json=observedAt,proto3" json:"observed_at,omitempty"`
+	ConnectionMinutes int64                  `protobuf:"varint,8,opt,name=connection_minutes,json=connectionMinutes,proto3" json:"connection_minutes,omitempty"`
+	RequiredMinutes   int64                  `protobuf:"varint,9,opt,name=required_minutes,json=requiredMinutes,proto3" json:"required_minutes,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ScheduledLeg) Reset() {
+	*x = ScheduledLeg{}
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScheduledLeg) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScheduledLeg) ProtoMessage() {}
+
+func (x *ScheduledLeg) ProtoReflect() protoreflect.Message {
+	mi := &file_travelwatch_search_v1_routes_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScheduledLeg.ProtoReflect.Descriptor instead.
+func (*ScheduledLeg) Descriptor() ([]byte, []int) {
+	return file_travelwatch_search_v1_routes_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ScheduledLeg) GetFrom() string {
+	if x != nil {
+		return x.From
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetTo() string {
+	if x != nil {
+		return x.To
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetNumber() string {
+	if x != nil {
+		return x.Number
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetDeparture() string {
+	if x != nil {
+		return x.Departure
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetArrival() string {
+	if x != nil {
+		return x.Arrival
+	}
+	return ""
+}
+
+func (x *ScheduledLeg) GetObservedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ObservedAt
+	}
+	return nil
+}
+
+func (x *ScheduledLeg) GetConnectionMinutes() int64 {
+	if x != nil {
+		return x.ConnectionMinutes
+	}
+	return 0
+}
+
+func (x *ScheduledLeg) GetRequiredMinutes() int64 {
+	if x != nil {
+		return x.RequiredMinutes
+	}
+	return 0
+}
+
 var File_travelwatch_search_v1_routes_proto protoreflect.FileDescriptor
 
 const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
@@ -443,11 +781,43 @@ const file_travelwatch_search_v1_routes_proto_rawDesc = "" +
 	" \x01(\x05R\x06offset\x12\x19\n" +
 	"\bhas_more\x18\v \x01(\bR\ahasMore\x12:\n" +
 	"\x06routes\x18\f \x03(\v2\".travelwatch.search.v1.RouteSchemeR\x06routes\x12\x1a\n" +
-	"\bwarnings\x18\r \x03(\tR\bwarnings\"\x84\x01\n" +
+	"\bwarnings\x18\r \x03(\tR\bwarnings\"\xd1\x01\n" +
 	"\x11GetRoutesResponse\x12\x1a\n" +
 	"\brevision\x18\x01 \x01(\x03R\brevision\x12\x14\n" +
 	"\x05stage\x18\x02 \x01(\tR\x05stage\x12=\n" +
-	"\asources\x18\x03 \x03(\v2#.travelwatch.search.v1.SourceRoutesR\asources2u\n" +
+	"\asources\x18\x03 \x03(\v2#.travelwatch.search.v1.SourceRoutesR\asources\x12K\n" +
+	"\x0eschedule_check\x18\x04 \x01(\v2$.travelwatch.search.v1.ScheduleCheckR\rscheduleCheck\"\xfa\x01\n" +
+	"\rScheduleCheck\x12\x14\n" +
+	"\x05state\x18\x01 \x01(\tR\x05state\x129\n" +
+	"\n" +
+	"checked_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tcheckedAt\x12\x1e\n" +
+	"\n" +
+	"incomplete\x18\x03 \x01(\bR\n" +
+	"incomplete\x12\x1a\n" +
+	"\brequests\x18\x04 \x01(\x05R\brequests\x12\x1a\n" +
+	"\bwarnings\x18\x05 \x03(\tR\bwarnings\x12@\n" +
+	"\aschemes\x18\x06 \x03(\v2&.travelwatch.search.v1.ScheduledSchemeR\aschemes\"\xd4\x01\n" +
+	"\x0fScheduledScheme\x12#\n" +
+	"\rscheme_number\x18\x01 \x01(\x05R\fschemeNumber\x12%\n" +
+	"\x0eaccess_variant\x18\x02 \x01(\x05R\raccessVariant\x12\x14\n" +
+	"\x05state\x18\x03 \x01(\tR\x05state\x12\x1a\n" +
+	"\bwarnings\x18\x04 \x03(\tR\bwarnings\x12C\n" +
+	"\bjourneys\x18\x05 \x03(\v2'.travelwatch.search.v1.ScheduledJourneyR\bjourneys\"\x90\x01\n" +
+	"\x10ScheduledJourney\x127\n" +
+	"\x04legs\x18\x01 \x03(\v2#.travelwatch.search.v1.ScheduledLegR\x04legs\x12\x1a\n" +
+	"\bwarnings\x18\x02 \x03(\tR\bwarnings\x12'\n" +
+	"\x0ftiming_verified\x18\x03 \x01(\bR\x0etimingVerified\"\xad\x02\n" +
+	"\fScheduledLeg\x12\x12\n" +
+	"\x04from\x18\x01 \x01(\tR\x04from\x12\x0e\n" +
+	"\x02to\x18\x02 \x01(\tR\x02to\x12\x12\n" +
+	"\x04mode\x18\x03 \x01(\tR\x04mode\x12\x16\n" +
+	"\x06number\x18\x04 \x01(\tR\x06number\x12\x1c\n" +
+	"\tdeparture\x18\x05 \x01(\tR\tdeparture\x12\x18\n" +
+	"\aarrival\x18\x06 \x01(\tR\aarrival\x12;\n" +
+	"\vobserved_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"observedAt\x12-\n" +
+	"\x12connection_minutes\x18\b \x01(\x03R\x11connectionMinutes\x12)\n" +
+	"\x10required_minutes\x18\t \x01(\x03R\x0frequiredMinutes2u\n" +
 	"\x13RouteResultsService\x12^\n" +
 	"\tGetRoutes\x12'.travelwatch.search.v1.GetRoutesRequest\x1a(.travelwatch.search.v1.GetRoutesResponseBHZFgithub.com/NotaKronGit/travel-watch/gen/travelwatch/search/v1;searchv1b\x06proto3"
 
@@ -463,28 +833,38 @@ func file_travelwatch_search_v1_routes_proto_rawDescGZIP() []byte {
 	return file_travelwatch_search_v1_routes_proto_rawDescData
 }
 
-var file_travelwatch_search_v1_routes_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_travelwatch_search_v1_routes_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_travelwatch_search_v1_routes_proto_goTypes = []any{
 	(*GetRoutesRequest)(nil),      // 0: travelwatch.search.v1.GetRoutesRequest
 	(*RouteStep)(nil),             // 1: travelwatch.search.v1.RouteStep
 	(*RouteScheme)(nil),           // 2: travelwatch.search.v1.RouteScheme
 	(*SourceRoutes)(nil),          // 3: travelwatch.search.v1.SourceRoutes
 	(*GetRoutesResponse)(nil),     // 4: travelwatch.search.v1.GetRoutesResponse
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*ScheduleCheck)(nil),         // 5: travelwatch.search.v1.ScheduleCheck
+	(*ScheduledScheme)(nil),       // 6: travelwatch.search.v1.ScheduledScheme
+	(*ScheduledJourney)(nil),      // 7: travelwatch.search.v1.ScheduledJourney
+	(*ScheduledLeg)(nil),          // 8: travelwatch.search.v1.ScheduledLeg
+	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_travelwatch_search_v1_routes_proto_depIdxs = []int32{
-	1, // 0: travelwatch.search.v1.RouteScheme.steps:type_name -> travelwatch.search.v1.RouteStep
-	5, // 1: travelwatch.search.v1.SourceRoutes.started_at:type_name -> google.protobuf.Timestamp
-	5, // 2: travelwatch.search.v1.SourceRoutes.finished_at:type_name -> google.protobuf.Timestamp
-	2, // 3: travelwatch.search.v1.SourceRoutes.routes:type_name -> travelwatch.search.v1.RouteScheme
-	3, // 4: travelwatch.search.v1.GetRoutesResponse.sources:type_name -> travelwatch.search.v1.SourceRoutes
-	0, // 5: travelwatch.search.v1.RouteResultsService.GetRoutes:input_type -> travelwatch.search.v1.GetRoutesRequest
-	4, // 6: travelwatch.search.v1.RouteResultsService.GetRoutes:output_type -> travelwatch.search.v1.GetRoutesResponse
-	6, // [6:7] is the sub-list for method output_type
-	5, // [5:6] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	1,  // 0: travelwatch.search.v1.RouteScheme.steps:type_name -> travelwatch.search.v1.RouteStep
+	9,  // 1: travelwatch.search.v1.SourceRoutes.started_at:type_name -> google.protobuf.Timestamp
+	9,  // 2: travelwatch.search.v1.SourceRoutes.finished_at:type_name -> google.protobuf.Timestamp
+	2,  // 3: travelwatch.search.v1.SourceRoutes.routes:type_name -> travelwatch.search.v1.RouteScheme
+	3,  // 4: travelwatch.search.v1.GetRoutesResponse.sources:type_name -> travelwatch.search.v1.SourceRoutes
+	5,  // 5: travelwatch.search.v1.GetRoutesResponse.schedule_check:type_name -> travelwatch.search.v1.ScheduleCheck
+	9,  // 6: travelwatch.search.v1.ScheduleCheck.checked_at:type_name -> google.protobuf.Timestamp
+	6,  // 7: travelwatch.search.v1.ScheduleCheck.schemes:type_name -> travelwatch.search.v1.ScheduledScheme
+	7,  // 8: travelwatch.search.v1.ScheduledScheme.journeys:type_name -> travelwatch.search.v1.ScheduledJourney
+	8,  // 9: travelwatch.search.v1.ScheduledJourney.legs:type_name -> travelwatch.search.v1.ScheduledLeg
+	9,  // 10: travelwatch.search.v1.ScheduledLeg.observed_at:type_name -> google.protobuf.Timestamp
+	0,  // 11: travelwatch.search.v1.RouteResultsService.GetRoutes:input_type -> travelwatch.search.v1.GetRoutesRequest
+	4,  // 12: travelwatch.search.v1.RouteResultsService.GetRoutes:output_type -> travelwatch.search.v1.GetRoutesResponse
+	12, // [12:13] is the sub-list for method output_type
+	11, // [11:12] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_travelwatch_search_v1_routes_proto_init() }
@@ -498,7 +878,7 @@ func file_travelwatch_search_v1_routes_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_travelwatch_search_v1_routes_proto_rawDesc), len(file_travelwatch_search_v1_routes_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

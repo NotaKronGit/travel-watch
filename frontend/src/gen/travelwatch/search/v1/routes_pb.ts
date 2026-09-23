@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file travelwatch/search/v1/routes.proto.
  */
 export const file_travelwatch_search_v1_routes: GenFile = /*@__PURE__*/
-  fileDesc("CiJ0cmF2ZWx3YXRjaC9zZWFyY2gvdjEvcm91dGVzLnByb3RvEhV0cmF2ZWx3YXRjaC5zZWFyY2gudjEiXQoQR2V0Um91dGVzUmVxdWVzdBISCgpyZXF1ZXN0X2lkGAEgASgJEhIKCnBsYW5uZXJfaWQYAiABKAkSDgoGb2Zmc2V0GAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSJACglSb3V0ZVN0ZXASEwoLZGVzY3JpcHRpb24YASABKAkSDAoEbW9kZRgCIAEoCRIQCghldmlkZW5jZRgDIAEoCSJQCgtSb3V0ZVNjaGVtZRIvCgVzdGVwcxgBIAMoCzIgLnRyYXZlbHdhdGNoLnNlYXJjaC52MS5Sb3V0ZVN0ZXASEAoId2FybmluZ3MYAiADKAki1AIKDFNvdXJjZVJvdXRlcxISCgpwbGFubmVyX2lkGAEgASgJEg0KBXN0YWdlGAIgASgJEg8KB291dGNvbWUYAyABKAkSDwoHYXR0ZW1wdBgEIAEoBRIuCgpzdGFydGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLZHVyYXRpb25fbXMYByABKAMSEgoKaW5jb21wbGV0ZRgIIAEoCBINCgV0b3RhbBgJIAEoBRIOCgZvZmZzZXQYCiABKAUSEAoIaGFzX21vcmUYCyABKAgSMgoGcm91dGVzGAwgAygLMiIudHJhdmVsd2F0Y2guc2VhcmNoLnYxLlJvdXRlU2NoZW1lEhAKCHdhcm5pbmdzGA0gAygJImoKEUdldFJvdXRlc1Jlc3BvbnNlEhAKCHJldmlzaW9uGAEgASgDEg0KBXN0YWdlGAIgASgJEjQKB3NvdXJjZXMYAyADKAsyIy50cmF2ZWx3YXRjaC5zZWFyY2gudjEuU291cmNlUm91dGVzMnUKE1JvdXRlUmVzdWx0c1NlcnZpY2USXgoJR2V0Um91dGVzEicudHJhdmVsd2F0Y2guc2VhcmNoLnYxLkdldFJvdXRlc1JlcXVlc3QaKC50cmF2ZWx3YXRjaC5zZWFyY2gudjEuR2V0Um91dGVzUmVzcG9uc2VCSFpGZ2l0aHViLmNvbS9Ob3RhS3JvbkdpdC90cmF2ZWwtd2F0Y2gvZ2VuL3RyYXZlbHdhdGNoL3NlYXJjaC92MTtzZWFyY2h2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("CiJ0cmF2ZWx3YXRjaC9zZWFyY2gvdjEvcm91dGVzLnByb3RvEhV0cmF2ZWx3YXRjaC5zZWFyY2gudjEiXQoQR2V0Um91dGVzUmVxdWVzdBISCgpyZXF1ZXN0X2lkGAEgASgJEhIKCnBsYW5uZXJfaWQYAiABKAkSDgoGb2Zmc2V0GAMgASgFEhEKCXBhZ2Vfc2l6ZRgEIAEoBSJACglSb3V0ZVN0ZXASEwoLZGVzY3JpcHRpb24YASABKAkSDAoEbW9kZRgCIAEoCRIQCghldmlkZW5jZRgDIAEoCSJQCgtSb3V0ZVNjaGVtZRIvCgVzdGVwcxgBIAMoCzIgLnRyYXZlbHdhdGNoLnNlYXJjaC52MS5Sb3V0ZVN0ZXASEAoId2FybmluZ3MYAiADKAki1AIKDFNvdXJjZVJvdXRlcxISCgpwbGFubmVyX2lkGAEgASgJEg0KBXN0YWdlGAIgASgJEg8KB291dGNvbWUYAyABKAkSDwoHYXR0ZW1wdBgEIAEoBRIuCgpzdGFydGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgtmaW5pc2hlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLZHVyYXRpb25fbXMYByABKAMSEgoKaW5jb21wbGV0ZRgIIAEoCBINCgV0b3RhbBgJIAEoBRIOCgZvZmZzZXQYCiABKAUSEAoIaGFzX21vcmUYCyABKAgSMgoGcm91dGVzGAwgAygLMiIudHJhdmVsd2F0Y2guc2VhcmNoLnYxLlJvdXRlU2NoZW1lEhAKCHdhcm5pbmdzGA0gAygJIqgBChFHZXRSb3V0ZXNSZXNwb25zZRIQCghyZXZpc2lvbhgBIAEoAxINCgVzdGFnZRgCIAEoCRI0Cgdzb3VyY2VzGAMgAygLMiMudHJhdmVsd2F0Y2guc2VhcmNoLnYxLlNvdXJjZVJvdXRlcxI8Cg5zY2hlZHVsZV9jaGVjaxgEIAEoCzIkLnRyYXZlbHdhdGNoLnNlYXJjaC52MS5TY2hlZHVsZUNoZWNrIr8BCg1TY2hlZHVsZUNoZWNrEg0KBXN0YXRlGAEgASgJEi4KCmNoZWNrZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCmluY29tcGxldGUYAyABKAgSEAoIcmVxdWVzdHMYBCABKAUSEAoId2FybmluZ3MYBSADKAkSNwoHc2NoZW1lcxgGIAMoCzImLnRyYXZlbHdhdGNoLnNlYXJjaC52MS5TY2hlZHVsZWRTY2hlbWUinAEKD1NjaGVkdWxlZFNjaGVtZRIVCg1zY2hlbWVfbnVtYmVyGAEgASgFEhYKDmFjY2Vzc192YXJpYW50GAIgASgFEg0KBXN0YXRlGAMgASgJEhAKCHdhcm5pbmdzGAQgAygJEjkKCGpvdXJuZXlzGAUgAygLMicudHJhdmVsd2F0Y2guc2VhcmNoLnYxLlNjaGVkdWxlZEpvdXJuZXkicAoQU2NoZWR1bGVkSm91cm5leRIxCgRsZWdzGAEgAygLMiMudHJhdmVsd2F0Y2guc2VhcmNoLnYxLlNjaGVkdWxlZExlZxIQCgh3YXJuaW5ncxgCIAMoCRIXCg90aW1pbmdfdmVyaWZpZWQYAyABKAgi0QEKDFNjaGVkdWxlZExlZxIMCgRmcm9tGAEgASgJEgoKAnRvGAIgASgJEgwKBG1vZGUYAyABKAkSDgoGbnVtYmVyGAQgASgJEhEKCWRlcGFydHVyZRgFIAEoCRIPCgdhcnJpdmFsGAYgASgJEi8KC29ic2VydmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIaChJjb25uZWN0aW9uX21pbnV0ZXMYCCABKAMSGAoQcmVxdWlyZWRfbWludXRlcxgJIAEoAzJ1ChNSb3V0ZVJlc3VsdHNTZXJ2aWNlEl4KCUdldFJvdXRlcxInLnRyYXZlbHdhdGNoLnNlYXJjaC52MS5HZXRSb3V0ZXNSZXF1ZXN0GigudHJhdmVsd2F0Y2guc2VhcmNoLnYxLkdldFJvdXRlc1Jlc3BvbnNlQkhaRmdpdGh1Yi5jb20vTm90YUtyb25HaXQvdHJhdmVsLXdhdGNoL2dlbi90cmF2ZWx3YXRjaC9zZWFyY2gvdjE7c2VhcmNodjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message travelwatch.search.v1.GetRoutesRequest
@@ -194,6 +194,11 @@ export type GetRoutesResponse = Message<"travelwatch.search.v1.GetRoutesResponse
    * @generated from field: repeated travelwatch.search.v1.SourceRoutes sources = 3;
    */
   sources: SourceRoutes[];
+
+  /**
+   * @generated from field: travelwatch.search.v1.ScheduleCheck schedule_check = 4;
+   */
+  scheduleCheck?: ScheduleCheck | undefined;
 };
 
 /**
@@ -202,6 +207,173 @@ export type GetRoutesResponse = Message<"travelwatch.search.v1.GetRoutesResponse
  */
 export const GetRoutesResponseSchema: GenMessage<GetRoutesResponse> = /*@__PURE__*/
   messageDesc(file_travelwatch_search_v1_routes, 4);
+
+/**
+ * Saved timetable check; reading it never invokes a supplier.
+ *
+ * @generated from message travelwatch.search.v1.ScheduleCheck
+ */
+export type ScheduleCheck = Message<"travelwatch.search.v1.ScheduleCheck"> & {
+  /**
+   * @generated from field: string state = 1;
+   */
+  state: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp checked_at = 2;
+   */
+  checkedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: bool incomplete = 3;
+   */
+  incomplete: boolean;
+
+  /**
+   * @generated from field: int32 requests = 4;
+   */
+  requests: number;
+
+  /**
+   * @generated from field: repeated string warnings = 5;
+   */
+  warnings: string[];
+
+  /**
+   * @generated from field: repeated travelwatch.search.v1.ScheduledScheme schemes = 6;
+   */
+  schemes: ScheduledScheme[];
+};
+
+/**
+ * Describes the message travelwatch.search.v1.ScheduleCheck.
+ * Use `create(ScheduleCheckSchema)` to create a new message.
+ */
+export const ScheduleCheckSchema: GenMessage<ScheduleCheck> = /*@__PURE__*/
+  messageDesc(file_travelwatch_search_v1_routes, 5);
+
+/**
+ * @generated from message travelwatch.search.v1.ScheduledScheme
+ */
+export type ScheduledScheme = Message<"travelwatch.search.v1.ScheduledScheme"> & {
+  /**
+   * @generated from field: int32 scheme_number = 1;
+   */
+  schemeNumber: number;
+
+  /**
+   * @generated from field: int32 access_variant = 2;
+   */
+  accessVariant: number;
+
+  /**
+   * @generated from field: string state = 3;
+   */
+  state: string;
+
+  /**
+   * @generated from field: repeated string warnings = 4;
+   */
+  warnings: string[];
+
+  /**
+   * @generated from field: repeated travelwatch.search.v1.ScheduledJourney journeys = 5;
+   */
+  journeys: ScheduledJourney[];
+};
+
+/**
+ * Describes the message travelwatch.search.v1.ScheduledScheme.
+ * Use `create(ScheduledSchemeSchema)` to create a new message.
+ */
+export const ScheduledSchemeSchema: GenMessage<ScheduledScheme> = /*@__PURE__*/
+  messageDesc(file_travelwatch_search_v1_routes, 6);
+
+/**
+ * @generated from message travelwatch.search.v1.ScheduledJourney
+ */
+export type ScheduledJourney = Message<"travelwatch.search.v1.ScheduledJourney"> & {
+  /**
+   * @generated from field: repeated travelwatch.search.v1.ScheduledLeg legs = 1;
+   */
+  legs: ScheduledLeg[];
+
+  /**
+   * @generated from field: repeated string warnings = 2;
+   */
+  warnings: string[];
+
+  /**
+   * @generated from field: bool timing_verified = 3;
+   */
+  timingVerified: boolean;
+};
+
+/**
+ * Describes the message travelwatch.search.v1.ScheduledJourney.
+ * Use `create(ScheduledJourneySchema)` to create a new message.
+ */
+export const ScheduledJourneySchema: GenMessage<ScheduledJourney> = /*@__PURE__*/
+  messageDesc(file_travelwatch_search_v1_routes, 7);
+
+/**
+ * @generated from message travelwatch.search.v1.ScheduledLeg
+ */
+export type ScheduledLeg = Message<"travelwatch.search.v1.ScheduledLeg"> & {
+  /**
+   * @generated from field: string from = 1;
+   */
+  from: string;
+
+  /**
+   * @generated from field: string to = 2;
+   */
+  to: string;
+
+  /**
+   * @generated from field: string mode = 3;
+   */
+  mode: string;
+
+  /**
+   * @generated from field: string number = 4;
+   */
+  number: string;
+
+  /**
+   * RFC3339 with the station offset, preserved for display.
+   *
+   * @generated from field: string departure = 5;
+   */
+  departure: string;
+
+  /**
+   * @generated from field: string arrival = 6;
+   */
+  arrival: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp observed_at = 7;
+   */
+  observedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: int64 connection_minutes = 8;
+   */
+  connectionMinutes: bigint;
+
+  /**
+   * @generated from field: int64 required_minutes = 9;
+   */
+  requiredMinutes: bigint;
+};
+
+/**
+ * Describes the message travelwatch.search.v1.ScheduledLeg.
+ * Use `create(ScheduledLegSchema)` to create a new message.
+ */
+export const ScheduledLegSchema: GenMessage<ScheduledLeg> = /*@__PURE__*/
+  messageDesc(file_travelwatch_search_v1_routes, 8);
 
 /**
  * Internal gRPC service. Only Cabinet's verified mTLS identity is authorized.

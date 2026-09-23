@@ -130,6 +130,10 @@ func (s *Store) ReadRoutes(ctx context.Context, q *v1.GetRoutesRequest) (*v1.Get
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+	res.ScheduleCheck, err = readSchedules(ctx, tx, q.RequestId)
+	if err != nil {
+		return nil, err
+	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}

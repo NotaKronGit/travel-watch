@@ -43,4 +43,39 @@ message GetRoutesResponse {
   int64 revision = 1;
   string stage = 2;
   repeated SourceRoutes sources = 3;
+  ScheduleCheck schedule_check = 4;
+}
+
+// Saved timetable check; reading it never invokes a supplier.
+message ScheduleCheck {
+ string state = 1;
+ google.protobuf.Timestamp checked_at = 2;
+ bool incomplete = 3;
+ int32 requests = 4;
+ repeated string warnings = 5;
+ repeated ScheduledScheme schemes = 6;
+}
+message ScheduledScheme {
+ int32 scheme_number = 1;
+ int32 access_variant = 2;
+ string state = 3;
+ repeated string warnings = 4;
+ repeated ScheduledJourney journeys = 5;
+}
+message ScheduledJourney {
+ repeated ScheduledLeg legs = 1;
+ repeated string warnings = 2;
+ bool timing_verified = 3;
+}
+message ScheduledLeg {
+ string from = 1;
+ string to = 2;
+ string mode = 3;
+ string number = 4;
+ // RFC3339 with the station offset, preserved for display.
+ string departure = 5;
+ string arrival = 6;
+ google.protobuf.Timestamp observed_at = 7;
+ int64 connection_minutes = 8;
+ int64 required_minutes = 9;
 }

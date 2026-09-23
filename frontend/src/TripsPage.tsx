@@ -6,6 +6,7 @@ import { Code, ConnectError } from '@connectrpc/connect';
 import { tripClient } from './api';
 import { TripStatus, type TripDetails } from './gen/travelwatch/cabinet/v1/trips_pb';
 
+import { TripSchedules } from './TripSchedules';
 import { TripStages } from './TripStages';
 import { TripRouteResults } from './TripRouteResults';
 import { TripActions } from './TripActions';
@@ -22,7 +23,7 @@ function TripSummary({trip}: {trip: TripDetails}) {
     <Typography variant="h6" sx={{overflowWrap:'anywhere'}}>{trip.origin?.name} → {trip.destination?.name}</Typography>
     <Typography color="text.secondary">{[trip.origin?.country,trip.origin?.region].filter(Boolean).join(', ')} → {[trip.destination?.country,trip.destination?.region].filter(Boolean).join(', ')}</Typography>
     <Typography>Выезд с {date(trip.departureFrom)} по {date(trip.departureTo)} включительно · Взрослых: {trip.adults}</Typography>
-    <Chip label={(trip.status === TripStatus.CANCELLED || trip.status === TripStatus.COMPLETED ? statuses[trip.status] : buildingLabels[trip.buildingStage] || statuses[trip.status]) || 'Статус неизвестен'} sx={{alignSelf:'flex-start',maxWidth:'100%',height:'auto', '& .MuiChip-label':{whiteSpace:'normal',py:1},bgcolor:'#eef2e5',color:'#183e38'}}/>
+    <Chip label={(trip.status === TripStatus.CANCELLED || trip.status === TripStatus.COMPLETED ? statuses[trip.status] : (trip.buildingStage==='awaiting_schedules'?'Схемы маршрутов построены':buildingLabels[trip.buildingStage]) || statuses[trip.status]) || 'Статус неизвестен'} sx={{alignSelf:'flex-start',maxWidth:'100%',height:'auto', '& .MuiChip-label':{whiteSpace:'normal',py:1},bgcolor:'#eef2e5',color:'#183e38'}}/>
   </Stack>;
 }
 export function TripsPage({detail = false}: {detail?: boolean}) {
@@ -91,7 +92,7 @@ function TripContent({id}: {id?: string}) {
           <Alert severity="info">Поиск билетов и уведомления ещё не подключены.</Alert>
           {trip.cancelledAt && <Typography variant="body2" color="text.secondary">Отменена: {new Date(Number(trip.cancelledAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
           {trip.createdAt && <Typography variant="body2" color="text.secondary">Создана: {new Date(Number(trip.createdAt.seconds)*1000).toLocaleString('ru-RU')}</Typography>}
-          </Stack>} routes={<TripRouteResults key={trip.id} id={trip.id} revision={String(trip.history.reduce((revision,event)=>event.revision>revision?event.revision:revision,0n))}/>} footer={<TripHistory trip={trip}/>}/>
+          </Stack>} routes={<TripRouteResults key={trip.id} id={trip.id} revision={String(trip.history.reduce((revision,event)=>event.revision>revision?event.revision:revision,0n))}/>} schedules={<TripSchedules key={trip.id} id={trip.id} cancelled={trip.status===TripStatus.CANCELLED}/>} footer={<TripHistory trip={trip}/>}/>
         </Stack>}
       </Paper>)}
     </Stack>}

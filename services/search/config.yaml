@@ -71,3 +71,28 @@ results:
     ca_base64: ""
     cert_base64: ""
     key_base64: ""
+
+# Timetable checks run independently after graph results are saved.
+schedules:
+  enabled: true
+  timeout: 8m
+  max_requests: 80
+  max_dates: 7
+  max_combinations: 10000
+  max_journeys: 3
+  # "windowed" prunes each leg's candidates by a feasible time window before
+  # searching; "brute" searches every fetched departure. Same results either
+  # way (see services/search/internal/schedules/match_test.go); switch to
+  # "brute" if a direction's schemes are small enough that pruning overhead
+  # outweighs the saving.
+  matcher: windowed
+  # Configurable estimates for separate tickets, not carrier guarantees.
+  before_train: 30m
+  after_train: 15m
+  before_plane: 3h
+  after_plane: 1h
+  buffer: 1h
+  max_connection: 24h
+  max_journey: 96h
+  # Exact directed node names; never assume an unknown transfer takes zero time.
+  transfers: []

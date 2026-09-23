@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	wire "github.com/NotaKronGit/travel-watch/api/transport"
 )
@@ -56,9 +57,17 @@ func (p *Provider) Transport(ctx context.Context, q wire.Request) (wire.Response
 		method = "thread"
 		params.Set("uid", q.UID)
 		params.Set("show_systems", "all")
-	case "search":
+	case "search", "departures":
 		if q.From == "" || q.To == "" || (q.Mode != "train" && q.Mode != "plane") || (q.System != "iata" && q.System != "yandex") {
 			return out, errors.New("invalid connection query")
+		}
+		if q.Method == "departures" {
+			d, err := time.Parse(time.DateOnly, q.Date)
+			if err != nil || d.Format(time.DateOnly) != q.Date {
+				return out, errors.New("invalid schedule date")
+			}
+			params.Set("date", q.Date)
+			params.Set("show_systems", "all")
 		}
 		method = "search"
 		params.Set("from", q.From)
@@ -113,9 +122,10 @@ func (p *Provider) Transport(ctx context.Context, q wire.Request) (wire.Response
 		TransportType string `json:"transport_type"`
 		Number        string
 		Segments      *[]struct {
-			From, To     wireStation
-			HasTransfers bool `json:"has_transfers"`
-			Thread       struct {
+			From, To           wireStation
+			Departure, Arrival string
+			HasTransfers       bool `json:"has_transfers"`
+			Thread             struct {
 				Number        string
 				TransportType string `json:"transport_type"`
 			}
@@ -168,7 +178,7 @@ func (p *Provider) Transport(ctx context.Context, q wire.Request) (wire.Response
 		}
 		out.Count = len(*raw.Schedule)
 		out.Incomplete = len(raw.IntervalSchedule) > 0
-	case "search":
+	case "search", "departures":
 		if raw.Segments == nil {
 			return out, errors.New("missing segments")
 		}
@@ -178,6 +188,22 @@ func (p *Provider) Transport(ctx context.Context, q wire.Request) (wire.Response
 				return out, errors.New("unexpected transport segment")
 			}
 			out.Connections = append(out.Connections, wire.Connection{From: s.From.normalized(), To: s.To.normalized(), Mode: q.Mode, Number: s.Thread.Number})
+			if q.Method == "departures" {
+				departure, de := time.Parse(time.RFC3339, s.Departure)
+				arrival, ae := time.Parse(time.RFC3339, s.Arrival)
+				if de != nil || ae != nil || !arrival.After(departure) || s.Thread.Number == "" {
+					return wire.Response{}, errors.New("invalid schedule timestamps")
+				}
+				// City-level responses cannot silently substitute a different physical station.
+				if q.System == "yandex" && (s.From.Code != q.From || s.To.Code != q.To) {
+					return wire.Response{}, errors.New("schedule endpoints mismatch")
+				}
+				from, to := s.From.normalized(), s.To.normalized()
+				if q.System == "iata" && (from.IATA != q.From || to.IATA != q.To) {
+					return wire.Response{}, errors.New("schedule airport codes mismatch")
+				}
+				out.Departures = append(out.Departures, wire.Departure{From: from, To: to, Mode: q.Mode, Number: s.Thread.Number, Departure: departure, Arrival: arrival})
+			}
 		}
 		out.Incomplete = len(raw.IntervalSegments) > 0
 	}
@@ -200,5 +226,6 @@ func (p *Provider) Transport(ctx context.Context, q wire.Request) (wire.Response
 			return out, errors.New("invalid station")
 		}
 	}
+	out.ObservedAt = time.Now().UTC()
 	return out, ctx.Err()
 }

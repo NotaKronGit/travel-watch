@@ -7,14 +7,14 @@ test('saved schemes paginate independently, survive errors and update only on pr
  await page.route('**/travelwatch.cabinet.v1.AuthService/*',r=>r.fulfill({json:{user:{id:'owner',email:'test@example.com'}}}));
  await page.route('**/travelwatch.cabinet.v1.TripService/GetTrip',r=>r.fulfill({json:{trip:{...trip,history:[{revision:String(revision),stage:'building',plannerId:'all'}]}}}));
  await page.route('**/travelwatch.cabinet.v1.TripService/GetTripRoutes',r=>{
-  calls++;
+  if(r.request().postDataJSON().pageSize!==1)calls++;
   if(offline)return r.fulfill({status:503,json:{code:'unavailable'}});
   const q=r.request().postDataJSON();const offset=q.offset||0;
   const sources=[
    {plannerId:'graph',stage:'awaiting_schedules',total:7,offset,hasMore:offset===0,incomplete:true,warnings:['Collector thread failed','Incomplete provider page: thread','Provider coverage and timetable compatibility are not complete; transfers are assumptions'],routes:Array.from({length:offset?2:5},(_,i)=>({steps:[{description:`Курск → Москва, вариант ${offset+i+1}`,mode:'train',evidence:'Связь найдена в Яндекс Расписаниях'},{description:'Вокзал → аэропорт',mode:'transfer',evidence:'Предполагаемый переезд'}],warnings:['Время переезда требует проверки']}))},
    {plannerId:'gemini',stage:revision>1?'awaiting_schedules':'building',total:revision>1?1:0,incomplete:true,routes:revision>1?[{steps:[{description:'Независимая схема Gemini через другой город'}],warnings:[]}]:[]},
   ].filter(source=>!q.plannerId || source.plannerId===q.plannerId);
-  return r.fulfill({json:{result:{revision:String(revision),stage:'building',sources}}});
+  return r.fulfill({json:{result:{revision:String(revision),stage:'building',sources,scheduleCheck:{state:'done'}}}});
  });
  await page.goto('/#/trips/'+id);
  const graph=page.getByRole('region',{name:'Маршруты: Наш алгоритм'});
@@ -69,7 +69,7 @@ test('saved schemes paginate independently, survive errors and update only on pr
  await expect(gemini.getByText('Предложения модели. Транспортные связи не подтверждены.')).toBeVisible();
  const beforeSwitch=calls;
  await page.getByRole('button',{name:'Этап 3: Стыковки',exact:true}).click();
- await expect(page.getByText('Проверка расписаний и стыковок пока не подключена.',{exact:false})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Расписания и стыковки'})).toBeVisible();
  await expect(graph).toBeHidden();
  await expect(page.getByText('Номер заявки: '+id,{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Этап 1: Заявка',exact:true}).click();
