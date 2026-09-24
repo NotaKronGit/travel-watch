@@ -12,6 +12,7 @@ Collector normalizes calls to transport providers. **It is not a persistent serv
 
 - `internal/rail` — two independent interfaces a provider may implement one or both of: `StationProvider.FindStations` (text+country or coordinates+radius mode, radius capped at 50km) and `TrainProvider.FindTrains` (two stations of the *same* provider, local date, 1–9 adults, limit 1–100). These are internal Go contracts — Search does not import this package directly; it talks over `api/transport`.
   - `internal/rail/yandex` — the real adapter (Yandex Schedules API). Requires `yandex.api_key` in config.
+  - `SeatProvider.FindSeats` (same-provider stations, train number, local date → cars with normalized class and free seats with number, position and one-adult price). `ErrTrainNotFound` and `ErrNotOnSale` are distinct from errors and from a complete result with no free seats; adapters must run `SeatResult.Validate` before returning. No real seat adapter yet — see `docs/specs/seat-availability.md`.
   - `internal/rail/testprovider` — synthetic, three fictional stations in two cities, fixed 2027-01-10 offers, no I/O, used in tests and as the default local experiment provider.
 - `internal/flights` — `Provider` interface for flight search by airports/dates/adults.
   - `tools/fli` — a Python bridge (`bridge.py`) that the Fli flight-search implementation shells out to as an isolated local subprocess; requires `make flights-setup` (creates `.local/fli-venv`) before use.

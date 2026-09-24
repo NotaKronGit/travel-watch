@@ -101,3 +101,70 @@ func TestInvalidQueries(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+func seatQuery() rail.SeatQuery {
+	return rail.SeatQuery{From: ref("test-origin"), To: ref("test-destination"), TrainNumber: "TEST", DepartureDate: "2027-01-10"}
+}
+func TestSeats(t *testing.T) {
+	p := Provider{}
+	r, err := p.FindSeats(context.Background(), seatQuery())
+	if err != nil || !r.Complete || !r.Synthetic || r.ObservedAt.IsZero() || len(r.Cars) != 4 {
+		t.Fatal(r, err)
+	}
+	// The run matches the first FindTrains offer.
+	offers, err := p.FindTrains(context.Background(), query())
+	if err != nil || !r.Departure.Equal(offers.Offers[0].Departure) || !r.Arrival.Equal(offers.Offers[0].Arrival) {
+		t.Fatal("seat run differs from the train offer")
+	}
+	platzkart, coupe, sv, seated := r.Cars[0], r.Cars[1], r.Cars[2], r.Cars[3]
+	if platzkart.Class != rail.ClassPlatzkart || platzkart.Seats[4].Position != rail.PositionSideLower || platzkart.Seats[5].Position != rail.PositionSideUpper {
+		t.Fatal("platzkart side seats lost", platzkart)
+	}
+	if coupe.Class != rail.ClassCoupe || len(coupe.Seats) != 5 {
+		t.Fatal("coupe lost", coupe)
+	}
+	if sv.Class != rail.ClassSV || sv.Seats == nil || len(sv.Seats) != 0 {
+		t.Fatal("car without free seats lost", sv)
+	}
+	if seated.Seats[0].Position != rail.PositionSeat || seated.Seats[0].Price == nil || seated.Seats[1].Price != nil {
+		t.Fatal("seated car or unknown price lost", seated)
+	}
+	r.Cars[0].Seats[0].Price.MinorUnits = 0
+	r.Cars[0].Seats = r.Cars[0].Seats[:1]
+	fresh, err := p.FindSeats(context.Background(), seatQuery())
+	if err != nil || fresh.Cars[0].Seats[0].Price.MinorUnits != 315000 || len(fresh.Cars[0].Seats) != 6 {
+		t.Fatal("mutable fixture shared")
+	}
+	partial, err := Provider{SeatsIncomplete: true}.FindSeats(context.Background(), seatQuery())
+	if err != nil || partial.Complete || len(partial.Cars) != 3 {
+		t.Fatal("partial result looks complete", partial, err)
+	}
+}
+func TestSeatFailures(t *testing.T) {
+	for name, tc := range map[string]struct {
+		change func(*rail.SeatQuery)
+		want   error
+	}{
+		"other stations": {func(q *rail.SeatQuery) { q.To = ref("test-other") }, rail.ErrUnsupported},
+		"unknown train":  {func(q *rail.SeatQuery) { q.TrainNumber = "OTHER" }, rail.ErrTrainNotFound},
+		"not on sale":    {func(q *rail.SeatQuery) { q.DepartureDate = "2027-06-01" }, rail.ErrNotOnSale},
+		"invalid query":  {func(q *rail.SeatQuery) { q.TrainNumber = "" }, rail.ErrInvalidQuery},
+	} {
+		q := seatQuery()
+		tc.change(&q)
+		r, err := (Provider{}).FindSeats(context.Background(), q)
+		if !errors.Is(err, tc.want) || r.Complete || r.Cars != nil {
+			t.Fatalf("%s: %v %+v", name, err, r)
+		}
+	}
+	for _, failure := range []error{rail.ErrUnavailable, rail.ErrRateLimited} {
+		r, err := Provider{SeatError: failure}.FindSeats(context.Background(), seatQuery())
+		if !errors.Is(err, failure) || r.Complete || r.Cars != nil {
+			t.Fatal("seat failure lost")
+		}
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := (Provider{}).FindSeats(ctx, seatQuery()); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+}
